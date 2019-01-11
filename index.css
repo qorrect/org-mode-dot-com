@@ -1,0 +1,41 @@
+body {
+    font-family: "DejaVu Sans Mono", "Lucida Sans Typewriter", monospace;
+    background-color: wheat;
+    color: #000;
+    padding: 10px;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+#dropboxbtn {
+    font-size: 1.4em;
+    border: #5a5a5a solid;
+    margin: 0 auto;
+    height: 100px;
+    width: 600px;
+    background-color: #1a81ff;
+    border-radius: 25px;
+}
+
+#dropboxbtn:hover {
+    background-color: #1566ca;
+    cursor: pointer;
+}
+
+
+#demobtn {
+    font-size: 1.4em;
+    border: black solid;
+    margin: 0 auto;
+    height: 100px;
+    width: 600px;
+    background-color: #5a5a5a;
+    border-radius: 25px;
+}
+
+#demobtn:hover {
+    background-color: #4e4e4e;
+    cursor: pointer;
+}

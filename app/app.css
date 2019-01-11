@@ -1,0 +1,10 @@
+html, body {
+    background-color: #997;
+    overflow: hidden;
+}
+
+.DlDialog-Title div {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    display: none;
+}
