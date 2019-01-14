@@ -1,5 +1,5 @@
 const rp = require('request-promise');
-const auth = "Basic " + new Buffer('q981hmn10d95t1t:wtmt7hgtatm6w0v').toString("base64");
+const auth = "Basic " + new Buffer('').toString("base64");
 
 async function getAccessToken(code) {
 
