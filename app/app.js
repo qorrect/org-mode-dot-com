@@ -1,3 +1,7 @@
+// This has become the org-mode-dot-com app , Charlie Manning Sanders 1/11/2019
+
+// ORIGINAL COMMENTS
+
 /*
 
   Note that this file is just an example.  It should not be treated as
@@ -52,6 +56,7 @@ try {
         "    - [ ] Get Groceries\n"
     );
     markdown.cmd("org_mode");
+    markdown.cmd("paren_match_mode");
 
     var keys = new Ymacs_Buffer({name: "keybindings.txt"});
     keys.setCode(info);
@@ -118,27 +123,32 @@ try {
     });
     menu.addFiller();
 
-    var item = new DlMenuItem({parent: menu, label: "Set indentation level".makeLabel()});
-    item.addEventListener("onSelect", function () {
-        var buf = ymacs.getActiveBuffer(), newIndent;
-        newIndent = prompt("Indentation level for the current buffer: ", buf.getq("indent_level"));
-        if (newIndent != null)
-            newIndent = parseInt(newIndent, 10);
-        if (newIndent != null && !isNaN(newIndent)) {
-            buf.setq("indent_level", newIndent);
-            buf.signalInfo("Done setting indentation level to " + newIndent);
-        }
-    });
+    const optionsMenu = new DlMenuItem({parent: menu, label: "Options".makeLabel()});
+
+    var optionsSubmenu = new DlVMenu({});
+    optionsMenu.setMenu(optionsSubmenu);
+
+    // var item = new DlMenuItem({parent: optionsSubmenu, label: "Set indentation level".makeLabel()});
+    // item.addEventListener("onSelect", function () {
+    //     var buf = ymacs.getActiveBuffer(), newIndent;
+    //     newIndent = prompt("Indentation level for the current buffer: ", buf.getq("indent_level"));
+    //     if (newIndent != null)
+    //         newIndent = parseInt(newIndent, 10);
+    //     if (newIndent != null && !isNaN(newIndent)) {
+    //         buf.setq("indent_level", newIndent);
+    //         buf.signalInfo("Done setting indentation level to " + newIndent);
+    //     }
+    // });
 
 
-    var item = new DlMenuItem({parent: menu, label: "Toggle line numbers".makeLabel()});
+    var item = new DlMenuItem({parent: optionsSubmenu, label: "Toggle line numbers".makeLabel()});
     item.addEventListener("onSelect", function () {
         ymacs.getActiveBuffer().cmd("toggle_line_numbers");
     });
 
     /* -----[ color theme ]----- */
 
-    var item = new DlMenuItem({parent: menu, label: "Color theme".makeLabel()});
+    var item = new DlMenuItem({parent: optionsSubmenu, label: "Color theme".makeLabel()});
     var submenu = new DlVMenu({});
     item.setMenu(submenu);
 
@@ -179,7 +189,7 @@ try {
 
     /* -----[ font ]----- */
 
-    var item = new DlMenuItem({parent: menu, label: "Font family".makeLabel()});
+    var item = new DlMenuItem({parent: optionsSubmenu, label: "Font family".makeLabel()});
     var submenu = new DlVMenu({});
     item.setMenu(submenu);
 
@@ -211,7 +221,7 @@ try {
 
     /* -----[ font size ]----- */
 
-    var item = new DlMenuItem({parent: menu, label: "Font size".makeLabel()});
+    var item = new DlMenuItem({parent: optionsSubmenu, label: "Font size".makeLabel()});
     var submenu = new DlVMenu({});
     item.setMenu(submenu);
 
@@ -240,7 +250,7 @@ try {
     });
 
 
-    item = new DlMenuItem({parent: menu, label: "About"});
+    item = new DlMenuItem({parent: optionsSubmenu, label: "About"});
     item.addEventListener("onSelect", function () {
         alert('About org-mode online.')
     });

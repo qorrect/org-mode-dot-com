@@ -147,7 +147,7 @@ DEFINE_SINGLETON("Ymacs_Keymap_Emacs", Ymacs_Keymap, function (D, P) {
         "M-y": "yank_pop",
         "C-SPACE": "set_mark_command",
         "C-x C-x": "exchange_point_and_mark",
-        "C-w": "kill_region",
+        "C-x C-q": "kill_region",
         "C-q": "delete_region",
         "M-t": "transpose_words",
         "C-t": "transpose_chars",
@@ -223,7 +223,6 @@ DEFINE_SINGLETON("Ymacs_Keymap_Emacs", Ymacs_Keymap, function (D, P) {
 
         // file system commands
         "C-x C-f": "find_file",
-        "C-x C-w": "write_file",
         "C-x C-s": "save_buffer",
         "C-x s": "save_some_buffers",
 

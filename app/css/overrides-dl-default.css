@@ -1,0 +1,11 @@
+.DlDialog .DlHMenu {
+    border: none;
+    border-bottom: 1px solid #9b9bb8;
+    font-size: 24px;
+}
+
+.DlMenuItem .div2 {
+    padding: 2px 5px;
+    font-size: 22px;
+    font-family: "DejaVu Sans Mono", "Lucida Sans Typewriter", monospace;
+}
