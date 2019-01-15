@@ -563,7 +563,18 @@ Ymacs_Buffer.newCommands({
         this._killingAction(begin, end);
     }),
 
-    copy_region_as_kill: Ymacs_Interactive("r", function (begin, end) {
+    kill_ring_save: Ymacs_Interactive("r", function (begin, end) {
+        // this.cmd("exchange_point_and_mark");
+        // setTimeout(() => this.cmd("exchange_point_and_mark"), 700);
+        var pos1 = self.ymacs.getBuffer("today.org")._positionToRowCol(begin);
+        var pos2 = self.ymacs.getBuffer("today.org")._positionToRowCol(end);
+
+        this.setOverlay("mark-highlight", {
+            line1: pos1.row, line2: pos2.row,
+            col1: pos1.col, col2: pos2.col
+        });
+        setTimeout(() => this.deleteOverlay("mark-highlight"), 700);
+
         this._killingAction(begin, end, false, true);
     }),
 
@@ -1335,7 +1346,7 @@ Ymacs_Buffer.newCommands({
         copy_for_operating_system: Ymacs_Interactive("r", function (begin, end) {
             var self = this;
             modalTextarea(self, "copy", "Press CTRL-C to copy", self.cmd("buffer_substring"), function () {
-                self.cmd("copy_region_as_kill", begin, end);
+                self.cmd("kill_ring_save", begin, end);
             });
         })
 

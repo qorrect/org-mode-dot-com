@@ -1027,17 +1027,6 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             this._deleteText(p1, p2);
     };
 
-    P._hideRegion = function (p1, p2, prepend, noDelete) {
-        p1 = MRK(p1);
-        p2 = MRK(p2);
-        var text = this._bufferSubstring(p1, p2);
-        let firstTag = "<span style='display: none'>";
-        this._insertText(firstTag, p1);
-        this._insertText("</span>", firstTag.length + p2);
-        console.log(text);
-        if (!noDelete)
-            this._deleteText(p1, p2);
-    };
 
     P._saveKilledText = function (text, prepend) {
         if (!this._lastCommandWasKill)
