@@ -113,14 +113,14 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 console.log(currentLine);
                 const cache = HIDE_RING[res[1]];
                 console.log(cache);
-                stream.nextLine();
-                stream.eol();
+                // stream.nextLine();
+                // stream.eol();
+                stream.buffer.cmd("end_of_line");
                 stream.buffer._insertText(cache.join("\n"), stream.buffer.caretMarker.getPosition() + 1);
                 delete HIDE_RING[res[1]];
                 stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("(" + res[1] + ")", ""));
                 stream.buffer.cmd("end_of_line");
 
-                stream.eol();
 
             } else {
                 const pos = Object.keys(HIDE_RING).length;

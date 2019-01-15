@@ -43,18 +43,16 @@ try {
 
 
     var markdown = new Ymacs_Buffer({name: "today.org"});
-    markdown.setCode("\
-* Sample Org File\n\
-\n\
-* Next\n" +
-        "** asdf asdf \n" +
-        "*** Testing \n" +
-        "**** This is a test \n" +
-        "***** Now its another one \n" +
-        "****** Yet another one \n\n" +
-        "    - [ ] Write org-mode.js\n" +
-        "    - [ ] Get Groceries\n"
-    );
+    markdown.setCode(
+        "* Today \n" +
+        "** Work\n" +
+        "    - [ ] Die slowly inside\n" +
+        "    - [ ] Act like a human\n" +
+        "*** Next Sprint \n" +
+        "    - [ ] Replace all truthys with falsys\n" +
+        "    - [ ] Scriggle that scriz\n"
+    )
+    ;
     markdown.cmd("org_mode");
     // markdown.cmd("paren_match_mode");
 
