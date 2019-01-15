@@ -56,7 +56,7 @@ try {
         "    - [ ] Get Groceries\n"
     );
     markdown.cmd("org_mode");
-    markdown.cmd("paren_match_mode");
+    // markdown.cmd("paren_match_mode");
 
     var keys = new Ymacs_Buffer({name: "keybindings.txt"});
     keys.setCode(info);

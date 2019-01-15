@@ -551,7 +551,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.cmd = function (cmd) {
-        console.log(cmd);
+        console.log(cmd + ' ' +  Array.$(arguments, 1).toString());
+
         return this.COMMANDS[cmd].apply(this, Array.$(arguments, 1));
     };
 
