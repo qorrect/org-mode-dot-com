@@ -34,9 +34,6 @@ function print(obj) {
     }).join("\n");
 };
 
-var info = ("Existing keybindings:\n\n" +
-    print(Ymacs_Keymap_Emacs().constructor.KEYS)
-    + "\n\nHave fun!\n");
 
 try {
     var dlg = new DlDialog({title: "Ymacs", resizable: false});
@@ -56,8 +53,9 @@ try {
     markdown.cmd("org_mode");
     // markdown.cmd("paren_match_mode");
 
-    var keys = new Ymacs_Buffer({name: "keybindings.txt"});
-    keys.setCode(info);
+    var keys = new Ymacs_Buffer({name: "keybindings.json"});
+    keys.setCode(JSON.stringify(Ymacs_Keymap_Emacs().constructor.KEYS, null, 4));
+    keys.cmd("javascript_mode");
 
     var layout = new DlLayout({parent: dlg});
 
