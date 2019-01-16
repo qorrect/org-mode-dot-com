@@ -188,6 +188,69 @@
     color: #aaa;
 }
 
+
+/* Markdown mode */
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-level-1 {
+    color: orange;
+    font-weight: bold;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-level-2 {
+    color: #a6e22e;
+    font-weight: bold;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-level-3 {
+    color: #66d9ef;
+    font-weight: bold;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-level-4 {
+    color: #e6db74;
+    font-weight: bold;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-level-5 {
+    color: #96ded3;
+    font-weight: bold;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-level-6 {
+    color: orange;
+    font-weight: bold;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-blockquote1 {
+    color: #8f8;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-blockquote2 {
+    color: #88f;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-blockquote3 {
+    color: #f8f;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-blockquote {
+    color: #aaa;
+}
+
+
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-checkbox {
     color: #aaa;
     border: orangered groove medium;

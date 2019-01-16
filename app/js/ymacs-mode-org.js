@@ -33,6 +33,8 @@
 
 // @require ymacs-tokenizer.js
 
+const HEADING_REGEX = /(\*)+/;
+
 DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
     D.KEYS = {
@@ -48,10 +50,10 @@ DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap_OrgMode().constructor, fun
 });
 
 function safePush(obj, label, element) {
-    if (obj[label] !== undefined) {
-        obj[label].push(element);
+    if (obj[label.toString()] !== undefined) {
+        obj[label.toString()].push(element);
     } else {
-        obj[label] = [];
+        obj[label.toString()] = [element];
     }
 }
 
@@ -77,19 +79,18 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
         stream.checkStop();
         var tmp;
 
-        if ((tmp = stream.lookingAt("[ ]"))) {
-        } else if (stream.col == 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
-            foundToken(0, stream.col = stream.lineLength(), "markdown-heading" + tmp[0].length);
+        if (stream.col == 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
+            foundToken(0, stream.col = stream.lineLength(), "org-level-" + tmp[0].length);
         } else if (stream.line > 0 && stream.col == 0 && (tmp = stream.lookingAt(/^[=-]+$/)) && /\S/.test(stream.lineText(stream.line - 1))) {
             tmp = tmp[0].charAt(0) == "=" ? 1 : 2;
-            tmp = "markdown-heading" + tmp;
+            tmp = "org-level-" + tmp;
             tok.onToken(stream.line - 1, 0, stream.lineLength(stream.line - 1), tmp);
             foundToken(0, stream.col = stream.lineLength(), tmp);
         } else if (stream.col == 0 && (tmp = stream.lookingAt(/^[>\s]*/))) {
             tmp = tmp[0].replace(/\s+/g, "").length;
             if (tmp > 3)
                 tmp = "";
-            tmp = "markdown-blockquote" + tmp;
+            tmp = "org-blockquote" + tmp;
             foundToken(0, stream.col = stream.lineLength(), tmp);
         } else {
             foundToken(stream.col, ++stream.col, null);
@@ -99,65 +100,81 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
     function indentation() {
 
         window.HIDE_RING = HIDE_RING;
-        var currentLine = stream.lineText();
-        var previousLine = stream.lineText(stream.line - 1);
 
-        console.log('previousLine');
-        console.log(previousLine);
-        console.log('currentLine');
-        console.log(currentLine);
+        _do_indent(stream);
+
+    }
+
+    function _do_indent(stream) {
+        const currentLine = stream.lineText();
+        const previousLine = stream.lineText(stream.line - 1);
+
         if (currentLine && currentLine.match(/^\*/)) {
-            const res = /\((...\d+)\)/.exec(currentLine);
+            const res = /\(...(\d+)\)/.exec(currentLine);
             if (res && HIDE_RING[res[1]]) {
-                console.log(res[1]);
-                console.log(currentLine);
+
                 const cache = HIDE_RING[res[1]];
-                console.log(cache);
-                // stream.nextLine();
-                // stream.eol();
+
+                stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("(..." + res[1] + ")", ""));
                 stream.buffer.cmd("end_of_line");
-                stream.buffer._insertText(cache.join("\n"), stream.buffer.caretMarker.getPosition() + 1);
-                delete HIDE_RING[res[1]];
-                stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("(" + res[1] + ")", ""));
+                stream.buffer._insertText("\n" + cache.join("\n"), stream.buffer.caretMarker.getPosition());
                 stream.buffer.cmd("end_of_line");
 
+                delete HIDE_RING[res[1]];
 
             } else {
                 const pos = Object.keys(HIDE_RING).length;
+                HIDE_RING[pos] = ensureList(HIDE_RING[pos]);
 
-                safePush(HIDE_RING, "..." + pos, stream.lineText());
-
-                stream.nextLine();
-                stream.eol();
-                stream.buffer.cmd("end_of_line");
-
-                stream.buffer._insertText("(..." + pos + ")");
-
+                console.dir(stream);
                 let line = stream.lineText();
-                while (line.match(/^\*/)) {
-                    safePush(HIDE_RING, "..." + pos, line);
-                    console.log('Deleteing ' + line);
-                    stream.buffer._deleteLine(stream.line);
-                    line = stream.lineText();
-                    console.log('lin');
-                    console.log(line);
-                }
-                safePush(HIDE_RING, "..." + pos, stream.lineText());
 
+                stream.buffer.cmd("end_of_line");
+                stream.buffer._insertText("(..." + pos + ")", stream.buffer._rowColToPosition(stream.line, stream.col) + line.length);
+
+                let orgLevel = 0;
+                const match = line.match(HEADING_REGEX);
+                if (match) orgLevel = match[0].length;
+
+                // prepare the next line for the while loop
                 stream.nextLine();
+                line = stream.lineText();
 
-                while (!stream.eof()) {
+                while (line) {
 
-                    if (line.match(/^\*/)) break;
-                    safePush(HIDE_RING, "..." + pos, stream.lineText());
-                    console.log('Deleteing ' + line);
-                    stream.buffer._deleteLine(stream.line);
-                    line = stream.lineText();
-                    console.log('lin');
-                    console.log(line);
+                    let x = line.match(HEADING_REGEX);
+                    let found = false;
+                    if (x) {
+                        if (x[0].length <= orgLevel) break;
+                        else {
+                            console.log('FOUND A SUB HEADING');
+
+
+                            _do_indent(stream);
+                            line = stream.lineText();
+                            safePush(HIDE_RING, pos, line);
+
+                            stream.buffer._deleteLine(stream.line);
+                            found = true;
+                            line = stream.lineText();
+
+                        }
+                    } else {
+
+                        safePush(HIDE_RING, pos, line);
+                        stream.buffer._deleteLine(stream.line);
+                        found = true;
+                        line = stream.lineText();
+
+                    }
+                    if (!found) {
+                        stream.nextLine();
+                        line = stream.lineText();
+                    }
                 }
             }
         } else {
+
             let previousIndent = previousLine.search(/\S/);
             previousIndent = previousIndent > 0 ? previousIndent : 0;
             const currentIndent = currentLine.search(/\S/);

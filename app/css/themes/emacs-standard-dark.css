@@ -33,6 +33,8 @@
 .Ymacs-Theme-standard-dark .Ymacs_Frame .xml-cdata-starter { color: #ff7f24; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .xml-cdata-stopper { color: #ff7f24; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .lisp-keyword { color: #b0c4de; }
+
+
 .Ymacs-Theme-standard-dark .Ymacs_Frame .markdown-heading1 { font-size: 1.711em; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .markdown-heading2 { font-size: 1.434em; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .markdown-heading3 { font-size: 1.211em; }
@@ -43,3 +45,16 @@
 .Ymacs-Theme-standard-dark .Ymacs_Frame .markdown-blockquote1 { color: #ff7f24; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .markdown-blockquote2 { color: #ff7f24; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .markdown-blockquote3 { color: #ff7f24; }
+
+
+
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-1 { font-size: 1.711em; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-2 { font-size: 1.434em; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-3 { font-size: 1.211em; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-4 { font-weight: bold; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-5 { font-weight: bold; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-6 { font-weight: bold; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-blockquote { color: #ff7f24; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-blockquote1 { color: #ff7f24; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-blockquote2 { color: #ff7f24; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-blockquote3 { color: #ff7f24; }
