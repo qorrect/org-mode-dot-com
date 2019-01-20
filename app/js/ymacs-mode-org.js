@@ -34,6 +34,8 @@
 // @require ymacs-tokenizer.js
 
 const HEADING_REGEX = /(\*)+/;
+const FOLDED_REGEX = /\(...(\d+)\)/;
+
 
 DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
@@ -79,19 +81,12 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
         stream.checkStop();
         var tmp;
 
+        if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
+            console.log('here ' + tmp);
+            foundToken(stream.col, stream.col + 4, "org-folded-" + tmp[0].length);
+        }
         if (stream.col == 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
             foundToken(0, stream.col = stream.lineLength(), "org-level-" + tmp[0].length);
-        } else if (stream.line > 0 && stream.col == 0 && (tmp = stream.lookingAt(/^[=-]+$/)) && /\S/.test(stream.lineText(stream.line - 1))) {
-            tmp = tmp[0].charAt(0) == "=" ? 1 : 2;
-            tmp = "org-level-" + tmp;
-            tok.onToken(stream.line - 1, 0, stream.lineLength(stream.line - 1), tmp);
-            foundToken(0, stream.col = stream.lineLength(), tmp);
-        } else if (stream.col == 0 && (tmp = stream.lookingAt(/^[>\s]*/))) {
-            tmp = tmp[0].replace(/\s+/g, "").length;
-            if (tmp > 3)
-                tmp = "";
-            tmp = "org-blockquote" + tmp;
-            foundToken(0, stream.col = stream.lineLength(), tmp);
         } else {
             foundToken(stream.col, ++stream.col, null);
         }
@@ -101,7 +96,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
 
         window.HIDE_RING = HIDE_RING;
 
-        _do_indent(stream);
+        return _do_indent(stream);
 
     }
 
@@ -110,7 +105,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
         const previousLine = stream.lineText(stream.line - 1);
 
         if (currentLine && currentLine.match(/^\*/)) {
-            const res = /\(...(\d+)\)/.exec(currentLine);
+            const res = FOLDED_REGEX.exec(currentLine);
             if (res && HIDE_RING[res[1]]) {
 
                 const cache = HIDE_RING[res[1]];
@@ -120,7 +115,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 stream.buffer._insertText("\n" + cache.join("\n"), stream.buffer.caretMarker.getPosition());
                 stream.buffer.cmd("end_of_line");
 
-                delete HIDE_RING[res[1]];
+                // delete HIDE_RING[res[1]];
 
             } else {
                 const pos = Object.keys(HIDE_RING).length;
@@ -130,7 +125,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 let line = stream.lineText();
 
                 stream.buffer.cmd("end_of_line");
-                stream.buffer._insertText("(..." + pos + ")", stream.buffer._rowColToPosition(stream.line, stream.col) + line.length);
+                stream.buffer._replaceLine(stream.line, line + "(..." + pos + ")");
 
                 let orgLevel = 0;
                 const match = line.match(HEADING_REGEX);
@@ -146,18 +141,21 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                     let found = false;
                     if (x) {
                         if (x[0].length <= orgLevel) break;
+                        if (line.match(FOLDED_REGEX)) break;
                         else {
                             console.log('FOUND A SUB HEADING');
 
-
+                            const originalStream = _.clone(stream);
                             _do_indent(stream);
-                            line = stream.lineText();
-                            safePush(HIDE_RING, pos, line);
+                            stream = originalStream;
+                            if (stream && stream.lineText) {
+                                line = stream.lineText();
+                                safePush(HIDE_RING, pos, line);
 
-                            stream.buffer._deleteLine(stream.line);
-                            found = true;
-                            line = stream.lineText();
-
+                                stream.buffer._deleteLine(stream.line);
+                                found = true;
+                                line = stream.lineText();
+                            } else break;
                         }
                     } else {
 
@@ -185,7 +183,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
             } else if (currentIndent === 2 * previousIndent ||
                 (currentIndent > previousIndent && (currentIndent % INDENT_LEVEL()) === 0)) {
                 return previousIndent;
-            } else return previousIndent + INDENT_LEVEL();
+            } else return currentIndent + INDENT_LEVEL();
         }
     }
 
