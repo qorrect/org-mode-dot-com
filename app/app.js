@@ -43,11 +43,14 @@ try {
     markdown.setCode(
         "* Today \n" +
         "** Work\n" +
-        "    - [ ] Die slowly inside\n" +
-        "    - [ ] Act like a human\n" +
+        "    - [ ] Automation\n" +
+        "    - [ ] Tickets\n" +
         "*** Next Sprint \n" +
         "    - [ ] Replace all truthys with falsys\n" +
-        "    - [ ] Scriggle that scriz\n"
+        "    - [ ] Scriggle that scriz\n" +
+        "** Home\n" +
+        "    - [ ] Play video games\n" +
+        "    - [ ] Exercise\n"
     )
     ;
     markdown.cmd("org_mode");

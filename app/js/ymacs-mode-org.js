@@ -35,6 +35,9 @@
 
 const HEADING_REGEX = /(\*)+/;
 const UNGROUPED_HEADING_REGEX = /^\*/;
+const FOLDED_MARKER = "(...)";
+const FOLDED_REGEX = /\(...\)/;
+
 DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
     D.KEYS = {
@@ -110,68 +113,83 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
         const previousLine = stream.lineText(stream.line - 1);
 
         if (currentLine && currentLine.match(UNGROUPED_HEADING_REGEX)) {
-            const res = /\(...(\d+)\)/.exec(currentLine);
-            if (res && HIDE_RING[res[1]]) {
+            const res = FOLDED_REGEX.exec(currentLine);
+            if (res) {
 
-                const cache = HIDE_RING[res[1]];
 
-                stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("(..." + res[1] + ")", ""));
+                stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("(...)", ""));
                 stream.buffer.cmd("end_of_line");
-                stream.buffer._insertText("\n" + cache.join("\n"), stream.buffer.caretMarker.getPosition());
+                stream.buffer._unhideLines();
                 stream.buffer.cmd("end_of_line");
 
-                delete HIDE_RING[res[1]];
 
             } else {
-                const pos = Object.keys(HIDE_RING).length;
-                HIDE_RING[pos] = ensureList(HIDE_RING[pos]);
 
                 console.dir(stream);
                 let line = stream.lineText();
-
-                stream.buffer.cmd("end_of_line");
-                stream.buffer._insertText("(..." + pos + ")", stream.buffer._rowColToPosition(stream.line, stream.col) + line.length);
-
                 let orgLevel = 0;
                 const match = line.match(HEADING_REGEX);
                 if (match) orgLevel = match[0].length;
-
-                // prepare the next line for the while loop
+                let needsNextLine = true;
+                //
+                stream.buffer.cmd("end_of_line");
+                stream.buffer._insertText(FOLDED_MARKER, stream.buffer._rowColToPosition(stream.line, stream.col) + line.length);
                 stream.nextLine();
                 line = stream.lineText();
-
                 while (line) {
+                    console.log('line=' + line);
+                    const matches = line.match(HEADING_REGEX);
+                    if (matches) {
+                        if (matches[0].length <= orgLevel) break;
+                        stream.buffer._hideLine(line, stream.line);
+                        needsNextLine = false;
 
-                    let x = line.match(HEADING_REGEX);
-                    let found = false;
-                    if (x) {
-                        if (x[0].length <= orgLevel) break;
-                        else {
-                            console.log('FOUND A SUB HEADING');
-
-
-                            _do_indent(stream);
-                            line = stream.lineText();
-                            safePush(HIDE_RING, pos, line);
-
-                            stream.buffer._deleteLine(stream.line);
-                            found = true;
-                            line = stream.lineText();
-
-                        }
+                    } else if (line.match(FOLDED_REGEX)) {
+                        break;
                     } else {
-
-                        safePush(HIDE_RING, pos, line);
-                        stream.buffer._deleteLine(stream.line);
-                        found = true;
-                        line = stream.lineText();
+                        stream.buffer._hideLine(line, stream.line);
+                        needsNextLine = false;
 
                     }
-                    if (!found) {
-                        stream.nextLine();
-                        line = stream.lineText();
-                    }
+
+                    if (needsNextLine) stream.nextLine();
+                    line = stream.lineText();
                 }
+                //
+
+                //     // prepare the next line for the while loop
+                //     stream.nextLine();
+                //     line = stream.lineText();
+                //
+                //     while (line && !stream.eof()) {
+                //
+                //         let matches = line.match(HEADING_REGEX);
+                //         let found = false;
+                //         if (matches) {
+                //             if (matches[0].length <= orgLevel) break;
+                //             else {
+                //                 // console.log('FOUND A SUB HEADING');
+                //                 //
+                //                 // _do_indent(stream);
+                //                 // line = stream.lineText();
+                //                 // safePush(HIDE_RING, pos, line);
+                //                 //
+                //                 // stream.buffer._hideLine(line);
+                //                 // found = true;
+                //                 // line = stream.lineText();
+                //
+                //             }
+                //         } else {
+                //
+                //             stream.buffer._hideLine(stream.line);
+                //             found = true;
+                //             line = stream.lineText();
+                //         }
+                //         if (!found) {
+                //             stream.nextLine();
+                //             line = stream.lineText();
+                //         }
+                //     }
             }
         } else {
 
