@@ -34,7 +34,7 @@
 // @require ymacs-tokenizer.js
 
 const HEADING_REGEX = /(\*)+/;
-
+const UNGROUPED_HEADING_REGEX = /^\*/;
 DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
     D.KEYS = {
@@ -101,7 +101,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
 
         window.HIDE_RING = HIDE_RING;
 
-        _do_indent(stream);
+        return _do_indent(stream);
 
     }
 
@@ -109,7 +109,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
         const currentLine = stream.lineText();
         const previousLine = stream.lineText(stream.line - 1);
 
-        if (currentLine && currentLine.match(/^\*/)) {
+        if (currentLine && currentLine.match(UNGROUPED_HEADING_REGEX)) {
             const res = /\(...(\d+)\)/.exec(currentLine);
             if (res && HIDE_RING[res[1]]) {
 
@@ -178,7 +178,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
             let previousIndent = previousLine.search(/\S/);
             previousIndent = previousIndent > 0 ? previousIndent : 0;
             const currentIndent = currentLine.search(/\S/);
-
+            if (previousLine.match(UNGROUPED_HEADING_REGEX)) previousIndent = 0;
             // Start of line, go to existing indent
             if (currentIndent === 0) {
                 return previousIndent ? previousIndent > 0 : INDENT_LEVEL();
