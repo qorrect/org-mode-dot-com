@@ -1,41 +1,13 @@
-//> This file is part of Ymacs, an Emacs-like editor for the Web
-//> http://www.ymacs.org/
 //>
-//> Copyright (c) 2009-2012, Mihai Bazon, Dynarch.com.  All rights reserved.
-//>
-//> Redistribution and use in source and binary forms, with or without
-//> modification, are permitted provided that the following conditions are
-//> met:
-//>
-//>     * Redistributions of source code must retain the above copyright
-//>       notice, this list of conditions and the following disclaimer.
-//>
-//>     * Redistributions in binary form must reproduce the above copyright
-//>       notice, this list of conditions and the following disclaimer in
-//>       the documentation and/or other materials provided with the
-//>       distribution.
-//>
-//>     * Neither the name of Dynarch.com nor the names of its contributors
-//>       may be used to endorse or promote products derived from this
-//>       software without specific prior written permission.
-//>
-//> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
-//> EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//> IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-//> PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE
-//> FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//> CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//> SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//> INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//> CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//> ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-//> THE POSSIBILITY OF SUCH DAMAGE.
-
 // @require ymacs-tokenizer.js
+// @require lib/lodash.js
+// @require lib/async.js
 
 const HEADING_REGEX = /(\*)+/;
 const FOLDED_REGEX = /\(...(\d+)\)/;
 
+// Our memory hungry hide ring
+const HIDE_RING = {};
 
 DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
@@ -60,9 +32,8 @@ function safePush(obj, label, element) {
 }
 
 Ymacs_Tokenizer.define("org", function (stream, tok) {
-    var HIDE_RING = {};
 
-    var PARSER = {next: next, copy: copy, indentation: indentation, hideRing: HIDE_RING};
+    var PARSER = {next: next, copy: copy, indentation: indentation};
 
     function copy() {
         var context = restore.context = {};
@@ -80,14 +51,34 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
     function next() {
         stream.checkStop();
         var tmp;
+        let found = false;
+        console.log('strea.col=' + stream.col);
 
-        if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
-            console.log('here ' + tmp);
-            foundToken(stream.col, stream.col + 4, "org-folded-" + tmp[0].length);
+        // If its a line heading
+        if (stream.col === 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
+            const isFolded = stream.lineText().match(FOLDED_REGEX);
+
+            // if (isFolded) {
+            //     console.log('here');
+            //     console.log(isFolded);
+            //     foundToken(0, stream.col = stream.lineLength() - isFolded[0].length, "org-heading-" + tmp[0].length);
+            // } else {
+            foundToken(0, stream.col = stream.lineLength(), "org-heading-" + tmp[0].length);
+            // }
         }
-        if (stream.col == 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
-            foundToken(0, stream.col = stream.lineLength(), "org-level-" + tmp[0].length);
-        } else {
+        // If its folded
+        // else if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
+        //
+        //     const line = stream.lineText();
+        //     let orgLevel = 0;
+        //     const match = line.match(HEADING_REGEX);
+        //     if (match) orgLevel = match[0].length;
+        //
+        //     foundToken(stream.col, stream.col += tmp[0].length, "org-folded-" + orgLevel);
+        //
+        // }
+        // If nothing was found than just increment the column
+        else {
             foundToken(stream.col, ++stream.col, null);
         }
     };
@@ -104,6 +95,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
         const currentLine = stream.lineText();
         const previousLine = stream.lineText(stream.line - 1);
 
+        // If its on an org-heading
         if (currentLine && currentLine.match(/^\*/)) {
             const res = FOLDED_REGEX.exec(currentLine);
             if (res && HIDE_RING[res[1]]) {
@@ -114,8 +106,6 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 stream.buffer.cmd("end_of_line");
                 stream.buffer._insertText("\n" + cache.join("\n"), stream.buffer.caretMarker.getPosition());
                 stream.buffer.cmd("end_of_line");
-
-                // delete HIDE_RING[res[1]];
 
             } else {
                 const pos = Object.keys(HIDE_RING).length;
@@ -131,7 +121,6 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 const match = line.match(HEADING_REGEX);
                 if (match) orgLevel = match[0].length;
 
-                // prepare the next line for the while loop
                 stream.nextLine();
                 line = stream.lineText();
 

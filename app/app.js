@@ -127,19 +127,6 @@ try {
     var optionsSubmenu = new DlVMenu({});
     optionsMenu.setMenu(optionsSubmenu);
 
-    // var item = new DlMenuItem({parent: optionsSubmenu, label: "Set indentation level".makeLabel()});
-    // item.addEventListener("onSelect", function () {
-    //     var buf = ymacs.getActiveBuffer(), newIndent;
-    //     newIndent = prompt("Indentation level for the current buffer: ", buf.getq("indent_level"));
-    //     if (newIndent != null)
-    //         newIndent = parseInt(newIndent, 10);
-    //     if (newIndent != null && !isNaN(newIndent)) {
-    //         buf.setq("indent_level", newIndent);
-    //         buf.signalInfo("Done setting indentation level to " + newIndent);
-    //     }
-    // });
-
-
     var item = new DlMenuItem({parent: optionsSubmenu, label: "Toggle line numbers".makeLabel()});
     item.addEventListener("onSelect", function () {
         ymacs.getActiveBuffer().cmd("toggle_line_numbers");
@@ -262,7 +249,7 @@ try {
 
     // show two frames initially
     // ymacs.getActiveFrame().hsplit();
-    ymacs.getActiveFrame().setStyle({fontSize: "22px"});
+    ymacs.getActiveFrame().setStyle({fontSize: "18px"});
 
     dlg.show(true);
     dlg.maximize(true);

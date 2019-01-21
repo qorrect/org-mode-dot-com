@@ -48,12 +48,12 @@
 
 
 
-.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-1 { font-size: 1.711em; }
-.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-2 { font-size: 1.434em; }
-.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-3 { font-size: 1.211em; }
-.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-4 { font-weight: bold; }
-.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-5 { font-weight: bold; }
-.Ymacs-Theme-standard-dark .Ymacs_Frame .org-level-6 { font-weight: bold; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-heading-1 { font-size: 1.711em; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-heading-2 { font-size: 1.434em; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-heading-3 { font-size: 1.211em; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-heading-4 { font-weight: bold; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-heading-5 { font-weight: bold; }
+.Ymacs-Theme-standard-dark .Ymacs_Frame .org-heading-6 { font-weight: bold; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .org-blockquote { color: #ff7f24; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .org-blockquote1 { color: #ff7f24; }
 .Ymacs-Theme-standard-dark .Ymacs_Frame .org-blockquote2 { color: #ff7f24; }
