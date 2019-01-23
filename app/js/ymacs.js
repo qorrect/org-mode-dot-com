@@ -69,9 +69,7 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
         /* -----[ variables ]----- */
         this.killRing = [];
-        this.hideRing = [];
         this.killMasterOfRings = [];
-        this.hideMasterOfRings = [];
 
         this.progress = {};
 
@@ -165,32 +163,6 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
         }
     };
 
-
-    P.pushToHideRing = function (text, prepend) {
-        prepend ? this.hideRing.unshift(text)
-            : this.hideRing.push(text);
-    };
-
-    P.hideRingToMaster = function () {
-        if (this.hideRing.length && (this.hideMasterOfRings.length == 0 ||
-            this.hideMasterOfRings.peek().join("") != this.hideRing.join("")))
-            this.hideMasterOfRings.push(this.hideRing);
-        this.hideRing = [];
-    };
-
-    P.hideRingText = function () {
-        return this.hideRing.join("");
-    };
-
-    P.rotateHideRing = function (push) {
-        if (push) {
-            this.hideMasterOfRings.push(this.hideRing);
-            this.hideRing = this.hideMasterOfRings.shift();
-        } else {
-            this.hideMasterOfRings.unshift(this.hideRing);
-            this.hideRing = this.hideMasterOfRings.pop();
-        }
-    };
 
     P.getBuffer = function (buf) {
         if (!(buf instanceof Ymacs_Buffer)) {

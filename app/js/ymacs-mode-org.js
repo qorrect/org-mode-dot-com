@@ -12,10 +12,15 @@ const HIDE_RING = {};
 DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
     D.KEYS = {
+
         "C-c C-c": "org_ctrl_c_ctrl_c",
         "[": "auto_insert_braces",
-        "]": "auto_fix_braces"
+        "]": "auto_fix_braces",
 
+        // User friendly keybindings
+
+        "C-c c": "kill_ring_save",
+        "C-c v": "yank",
     };
 
 });
@@ -51,32 +56,28 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
     function next() {
         stream.checkStop();
         var tmp;
-        let found = false;
-        console.log('strea.col=' + stream.col);
 
         // If its a line heading
         if (stream.col === 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
             const isFolded = stream.lineText().match(FOLDED_REGEX);
 
-            // if (isFolded) {
-            //     console.log('here');
-            //     console.log(isFolded);
-            //     foundToken(0, stream.col = stream.lineLength() - isFolded[0].length, "org-heading-" + tmp[0].length);
-            // } else {
-            foundToken(0, stream.col = stream.lineLength(), "org-heading-" + tmp[0].length);
-            // }
+            if (isFolded) {
+                foundToken(0, stream.col = stream.lineLength() - isFolded[0].length, "org-heading-" + tmp[0].length);
+            } else {
+                foundToken(0, stream.col = stream.lineLength(), "org-heading-" + tmp[0].length);
+            }
         }
         // If its folded
-        // else if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
-        //
-        //     const line = stream.lineText();
-        //     let orgLevel = 0;
-        //     const match = line.match(HEADING_REGEX);
-        //     if (match) orgLevel = match[0].length;
-        //
-        //     foundToken(stream.col, stream.col += tmp[0].length, "org-folded-" + orgLevel);
-        //
-        // }
+        else if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
+
+            const line = stream.lineText();
+            let orgLevel = 0;
+            const match = line.match(HEADING_REGEX);
+            if (match) orgLevel = match[0].length;
+
+            foundToken(stream.col, stream.col += tmp[0].length, "org-folded-" + orgLevel);
+
+        }
         // If nothing was found than just increment the column
         else {
             foundToken(stream.col, ++stream.col, null);
@@ -84,11 +85,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
     };
 
     function indentation() {
-
-        window.HIDE_RING = HIDE_RING;
-
         return _do_indent(stream);
-
     }
 
     function _do_indent(stream) {
@@ -101,10 +98,11 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
             if (res && HIDE_RING[res[1]]) {
 
                 const cache = HIDE_RING[res[1]];
+                const prefix = cache.length ? "\n" : "";
 
                 stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("(..." + res[1] + ")", ""));
                 stream.buffer.cmd("end_of_line");
-                stream.buffer._insertText("\n" + cache.join("\n"), stream.buffer.caretMarker.getPosition());
+                stream.buffer._insertText(prefix + cache.join("\n"), stream.buffer.caretMarker.getPosition());
                 stream.buffer.cmd("end_of_line");
 
             } else {
@@ -126,21 +124,18 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
 
                 while (line) {
 
-                    let x = line.match(HEADING_REGEX);
+                    let isAHeadingMatch = line.match(HEADING_REGEX);
                     let found = false;
-                    if (x) {
-                        if (x[0].length <= orgLevel) break;
+                    if (isAHeadingMatch) {
+                        if (isAHeadingMatch[0].length <= orgLevel) break;
                         if (line.match(FOLDED_REGEX)) break;
                         else {
-                            console.log('FOUND A SUB HEADING');
-
                             const originalStream = _.clone(stream);
                             _do_indent(stream);
                             stream = originalStream;
                             if (stream && stream.lineText) {
                                 line = stream.lineText();
                                 safePush(HIDE_RING, pos, line);
-
                                 stream.buffer._deleteLine(stream.line);
                                 found = true;
                                 line = stream.lineText();
@@ -202,6 +197,10 @@ Ymacs_Buffer.newCommands({
 
     org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
         this.cmd("org_toggle_check");
+    }),
+
+    org_ctrl_c_c: Ymacs_Interactive(function () {
+        this.cmd("kill_ring_save");
     }),
 
     auto_insert_braces: Ymacs_Interactive(function () {

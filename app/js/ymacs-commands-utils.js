@@ -283,6 +283,8 @@ Ymacs_Buffer.newCommands({
 
         var self = this;
         self.dirty(false);
+        localStorage.setItem(self.name,self.getCode());
+        cont(true);
         //
         // function did_save(stamp) {
         //     self.dirty(false);

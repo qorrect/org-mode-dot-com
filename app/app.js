@@ -56,8 +56,11 @@ try {
     markdown.cmd("org_mode");
     // markdown.cmd("paren_match_mode");
 
-    var keys = new Ymacs_Buffer({name: "keybindings.json"});
-    keys.setCode(JSON.stringify(Ymacs_Keymap_Emacs().constructor.KEYS, null, 4));
+    var keys = new Ymacs_Buffer({name: ".ymacs"});
+    const ymacsContents = localStorage.getItem('.ymacs');
+    if (ymacsContents) keys.setCode(ymacsContents);
+
+    // keys.setCode('testing');
     keys.cmd("javascript_mode");
 
     var layout = new DlLayout({parent: dlg});
@@ -67,7 +70,7 @@ try {
     ymacs.setColorTheme(["dark", "y"]);
 
     try {
-        ymacs.getActiveBuffer().cmd("eval_file", ".ymacs");
+        ymacs.getActiveBuffer().cmd("eval_string", ymacsContents);
     } catch (ex) {
         console.log(ex);
     }
@@ -126,6 +129,19 @@ try {
 
     var optionsSubmenu = new DlVMenu({});
     optionsMenu.setMenu(optionsSubmenu);
+
+    // var item = new DlMenuItem({parent: optionsSubmenu, label: "Set indentation level".makeLabel()});
+    // item.addEventListener("onSelect", function () {
+    //     var buf = ymacs.getActiveBuffer(), newIndent;
+    //     newIndent = prompt("Indentation level for the current buffer: ", buf.getq("indent_level"));
+    //     if (newIndent != null)
+    //         newIndent = parseInt(newIndent, 10);
+    //     if (newIndent != null && !isNaN(newIndent)) {
+    //         buf.setq("indent_level", newIndent);
+    //         buf.signalInfo("Done setting indentation level to " + newIndent);
+    //     }
+    // });
+
 
     var item = new DlMenuItem({parent: optionsSubmenu, label: "Toggle line numbers".makeLabel()});
     item.addEventListener("onSelect", function () {
@@ -249,7 +265,7 @@ try {
 
     // show two frames initially
     // ymacs.getActiveFrame().hsplit();
-    ymacs.getActiveFrame().setStyle({fontSize: "18px"});
+    ymacs.getActiveFrame().setStyle({fontSize: "22px"});
 
     dlg.show(true);
     dlg.maximize(true);

@@ -666,7 +666,6 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
 
         buf.clearTransientMark();
         const ch = buf._rowColToPosition(rc.row, rc.col);
-        console.log(ch);
         buf.cmd("goto_char", ch);
         buf.callInteractively("keyboard_quit");
         if (CLICK_COUNT == 1) {

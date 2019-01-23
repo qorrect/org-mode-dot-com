@@ -115,7 +115,6 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         }
     };
 
-    P.HIDE_RING = [];
     P.last_key_display = '';
     P.lastIndexOfRegexp = function (str, re, caret, bound) {
         str = str.substring(0, caret);
@@ -390,35 +389,35 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         });
     };
 
-    P.setCodeV2 = function (code) {
-        // this.__code = code = code.replace(/\t/g, " ".x(this.getq("tab_width")));
-        this.__isDirty = false;
-        this.__code = code;
-        this.__size = code.length;
-        this.__undoQueue = [];
-        this.__undoPointer = 0;
-        this.__overlays = {};
-        this.markers.map("setPosition", 0, true, true);
-        this.code = code.split(/\n/);
-        this._textProperties.reset();
-        if (this.tokenizer) {
-            this.tokenizer.reset();
-        }
-        this.callHooks("onResetCode", this.code);
-        this.caretMarker.setPosition(0, false, true);
-        this.markMarker.setPosition(0, true);
-        this.forAllFrames(function (frame) {
-            frame.ensureCaretVisible();
-            frame.redrawModelineWithTimer();
-            btn = new DlButton({
-                parent: frame,
-                type: DlButton.TYPE.TWOSTATE,
-                label: "Try me"
-            });
-        });
-
-
-    };
+    // P.setCodeV2 = function (code) {
+    //     // this.__code = code = code.replace(/\t/g, " ".x(this.getq("tab_width")));
+    //     this.__isDirty = false;
+    //     this.__code = code;
+    //     this.__size = code.length;
+    //     this.__undoQueue = [];
+    //     this.__undoPointer = 0;
+    //     this.__overlays = {};
+    //     this.markers.map("setPosition", 0, true, true);
+    //     this.code = code.split(/\n/);
+    //     this._textProperties.reset();
+    //     if (this.tokenizer) {
+    //         this.tokenizer.reset();
+    //     }
+    //     this.callHooks("onResetCode", this.code);
+    //     this.caretMarker.setPosition(0, false, true);
+    //     this.markMarker.setPosition(0, true);
+    //     this.forAllFrames(function (frame) {
+    //         frame.ensureCaretVisible();
+    //         frame.redrawModelineWithTimer();
+    //         btn = new DlButton({
+    //             parent: frame,
+    //             type: DlButton.TYPE.TWOSTATE,
+    //             label: "Try me"
+    //         });
+    //     });
+    //
+    //
+    // };
     P.setTokenizer = function (tok) {
         if (this.tokenizer != null) {
             this.tokenizer.removeEventListener(this._tokenizerEvents);
@@ -552,7 +551,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.cmd = function (cmd) {
-        console.log(cmd + ' ' + Array.$(arguments, 1).toString());
+        // console.log(cmd + ' ' + Array.$(arguments, 1).toString());
 
         return this.COMMANDS[cmd].apply(this, Array.$(arguments, 1));
     };
@@ -886,31 +885,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             this.__dirtyLines[row] = true;
         }
     };
-    P._hideLine = function (lineText, row = -1) {
-        console.log('Hiding line=' + lineText);
-        const lines = document.getElementsByClassName('line')
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            console.log(line);
-            if (line.innerText === lineText) {
-                line.hidden = true;
-            }
-        }
 
-        if (row > 0) {
-            this.code.splice(row, 1);
-            this._textProperties.deleteLine(row);
-            this.__dirtyLines.splice(row, 1);
-        }
-    };
-    P._unhideLines = function () {
-        const lines = document.getElementsByClassName('line')
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            console.log(line);
-            line.hidden = false;
-        }
-    };
     P._deleteLine = function (row) {
         this.code.splice(row, 1);
         this._textProperties.deleteLine(row);
