@@ -16,11 +16,12 @@ DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
         "C-c C-c": "org_ctrl_c_ctrl_c",
         "[": "auto_insert_braces",
         "]": "auto_fix_braces",
-
+        "C-x C-s": "org_save_buffer",
         // User friendly keybindings
 
-        "C-c c": "kill_ring_save",
-        "C-c v": "yank",
+        "C-x c": "kill_ring_save",
+        "C-x v": "yank",
+
     };
 
 });
@@ -100,7 +101,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 const cache = HIDE_RING[res[1]];
                 const prefix = cache.length ? "\n" : "";
 
-                stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("(..." + res[1] + ")", ""));
+                stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("... (..." + res[1] + ")", ""));
                 stream.buffer.cmd("end_of_line");
                 stream.buffer._insertText(prefix + cache.join("\n"), stream.buffer.caretMarker.getPosition());
                 stream.buffer.cmd("end_of_line");
@@ -109,11 +110,10 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 const pos = Object.keys(HIDE_RING).length;
                 HIDE_RING[pos] = ensureList(HIDE_RING[pos]);
 
-                console.dir(stream);
                 let line = stream.lineText();
 
                 stream.buffer.cmd("end_of_line");
-                stream.buffer._replaceLine(stream.line, line + "(..." + pos + ")");
+                stream.buffer._replaceLine(stream.line, line + "... (..." + pos + ")");
 
                 let orgLevel = 0;
                 const match = line.match(HEADING_REGEX);
@@ -162,8 +162,12 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
             const currentIndent = currentLine.search(/\S/);
 
             // Start of line, go to existing indent
-            if (currentIndent === 0) {
-                return previousIndent ? previousIndent > 0 : INDENT_LEVEL();
+            if (currentIndent <= 0) {
+                let ret = previousIndent;
+                if (previousIndent <= 0) {
+                    ret = INDENT_LEVEL();
+                }
+                return ret;
             } else if (currentIndent === 2 * previousIndent ||
                 (currentIndent > previousIndent && (currentIndent % INDENT_LEVEL()) === 0)) {
                 return previousIndent;
@@ -208,6 +212,22 @@ Ymacs_Buffer.newCommands({
 
     }),
 
+    org_expand_line: Ymacs_Interactive(function () {
+        console.dir(this);
+        // const res = FOLDED_REGEX.exec(currentLine);
+        // if (res && HIDE_RING[res[1]]) {
+        //
+        //     const cache = HIDE_RING[res[1]];
+        //     const prefix = cache.length ? "\n" : "";
+        //
+        //     stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("... (..." + res[1] + ")", ""));
+        //     stream.buffer.cmd("end_of_line");
+        //     stream.buffer._insertText(prefix + cache.join("\n"), stream.buffer.caretMarker.getPosition());
+        //     stream.buffer.cmd("end_of_line");
+        //
+        // }
+    }),
+
     auto_fix_braces: Ymacs_Interactive(function () {
         const str = this.cmd("buffer_substring", this.point() - 5, this.point());
 
@@ -215,6 +235,14 @@ Ymacs_Buffer.newCommands({
             this.cmd("backward_char");
         } else this.cmd("insert", "]");
 
+
+    }),
+
+    org_save_buffer: Ymacs_Interactive(function () {
+
+        this.cmd("goto_line", 0);
+        this.cmd("org_expand_line");
+        this.cmd("save_buffer");
 
     }),
 });

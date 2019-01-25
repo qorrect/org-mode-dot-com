@@ -36,37 +36,41 @@ function print(obj) {
 
 
 try {
-    var dlg = new DlDialog({title: "Ymacs", resizable: false});
+    const dlg = new DlDialog({title: "Ymacs", resizable: false});
 
 
-    var markdown = new Ymacs_Buffer({name: "today.org"});
-    markdown.setCode(
-        "* Today \n" +
-        "** Work\n" +
-        "    - [ ] Automation\n" +
-        "    - [ ] Tickets\n" +
-        "*** Next Sprint \n" +
-        "    - [ ] Replace all truthys with falsys\n" +
-        "    - [ ] Scriggle that scriz\n" +
-        "** Home\n" +
-        "    - [ ] Play video games\n" +
-        "    - [ ] Exercise\n"
-    )
-    ;
+    const markdown = new Ymacs_Buffer({name: "today.org"});
+    const markdownContents = localStorage.getItem('today.org');
+    if (markdownContents) markdown.setCode(markdownContents);
+    else {
+        markdown.setCode(
+            "* Today \n" +
+            "** Work\n" +
+            "    - [ ] Automation\n" +
+            "    - [ ] Tickets\n" +
+            "*** Next Sprint \n" +
+            "    - [ ] Replace all truthys with falsys\n" +
+            "    - [ ] Scriggle that scriz\n" +
+            "** Home\n" +
+            "    - [ ] Play video games\n" +
+            "    - [ ] Exercise\n"
+        )
+        ;
+    }
     markdown.cmd("org_mode");
     // markdown.cmd("paren_match_mode");
 
-    var keys = new Ymacs_Buffer({name: ".ymacs"});
+    const keys = new Ymacs_Buffer({name: ".ymacs"});
     const ymacsContents = localStorage.getItem('.ymacs');
     if (ymacsContents) keys.setCode(ymacsContents);
 
     // keys.setCode('testing');
     keys.cmd("javascript_mode");
 
-    var layout = new DlLayout({parent: dlg});
+    const layout = new DlLayout({parent: dlg});
 
-    var empty = new Ymacs_Buffer({name: "empty"});
-    var ymacs = window.ymacs = new Ymacs({buffers: [markdown, keys]});
+    const empty = new Ymacs_Buffer({name: "empty"});
+    const ymacs = window.ymacs = new Ymacs({buffers: [markdown, keys]});
     ymacs.setColorTheme(["dark", "y"]);
 
     try {
@@ -75,10 +79,10 @@ try {
         console.log(ex);
     }
 
-    var menu = new DlHMenu({});
-    menu.setStyle({marginLeft: 0, marginRight: 0});
+    const mainMenu = new DlHMenu({});
+    mainMenu.setStyle({marginLeft: 0, marginRight: 0});
 
-    var item = new DlMenuItem({parent: menu, label: "Your Files".makeLabel()});
+    const yourFilesMenuItem = new DlMenuItem({parent: mainMenu, label: "Your Files".makeLabel()});
 
     var files = [
         "ymacs.js",
@@ -106,10 +110,37 @@ try {
         "ymacs-mode-markdown.js",
         "../app.js"
     ];
-    var submenu = new DlVMenu({});
-    item.setMenu(submenu);
+    const submenu = new DlVMenu({});
+    const newFileItem = new DlMenuItem({parent: submenu, label: "[+] New File".makeLabel()});
+    newFileItem.addEventListener("onSelect", function () {
+        alert('new file');
+    });
+
+
+    // const files = localStorage.getItem('files');
+
+    const todayItem = new DlMenuItem({parent: submenu, label: "today.org".makeLabel()});
+    todayItem.addEventListener("onSelect", function () {
+        const file = "today.org";
+        var buf = ymacs.getBuffer(file) || ymacs.createBuffer({name: file});
+        ymacs.switchToBuffer(buf);
+
+    });
+    const dotYmacsItem = new DlMenuItem({parent: submenu, label: ".ymacs".makeLabel()});
+    dotYmacsItem.addEventListener("onSelect", function () {
+        const file = ".ymacs";
+        var buf = ymacs.getBuffer(file) || ymacs.createBuffer({name: file});
+        ymacs.switchToBuffer(buf);
+
+    });
+    const ymacsSourceItem = new DlMenuItem({parent: submenu, label: "Ymacs Source".makeLabel()});
+
+    yourFilesMenuItem.setMenu(submenu);
+
+    const ymacsSourceItemsubmenu = new DlVMenu({});
+
     files.foreach(function (file) {
-        var item = new DlMenuItem({label: file, parent: submenu});
+        var item = new DlMenuItem({label: file, parent: ymacsSourceItemsubmenu});
         item.addEventListener("onSelect", function () {
             var request = new DlRPC({url: YMACS_SRC_PATH + file + "?killCache=" + new Date().getTime()});
             request.call({
@@ -123,36 +154,37 @@ try {
             });
         });
     });
-    menu.addFiller();
+    ymacsSourceItem.setMenu(ymacsSourceItemsubmenu);
+    mainMenu.addFiller();
 
-    const optionsMenu = new DlMenuItem({parent: menu, label: "Options".makeLabel()});
+    const optionsMenu = new DlMenuItem({parent: mainMenu, label: "Options".makeLabel()});
 
-    var optionsSubmenu = new DlVMenu({});
+    const optionsSubmenu = new DlVMenu({});
     optionsMenu.setMenu(optionsSubmenu);
 
-    // var item = new DlMenuItem({parent: optionsSubmenu, label: "Set indentation level".makeLabel()});
-    // item.addEventListener("onSelect", function () {
-    //     var buf = ymacs.getActiveBuffer(), newIndent;
-    //     newIndent = prompt("Indentation level for the current buffer: ", buf.getq("indent_level"));
-    //     if (newIndent != null)
-    //         newIndent = parseInt(newIndent, 10);
-    //     if (newIndent != null && !isNaN(newIndent)) {
-    //         buf.setq("indent_level", newIndent);
-    //         buf.signalInfo("Done setting indentation level to " + newIndent);
-    //     }
-    // });
+    const indentLevelItem = new DlMenuItem({parent: optionsSubmenu, label: "Set indentation level".makeLabel()});
+    indentLevelItem.addEventListener("onSelect", function () {
+        var buf = ymacs.getActiveBuffer(), newIndent;
+        newIndent = prompt("Indentation level for the current buffer: ", buf.getq("indent_level"));
+        if (newIndent != null)
+            newIndent = parseInt(newIndent, 10);
+        if (newIndent != null && !isNaN(newIndent)) {
+            buf.setq("indent_level", newIndent);
+            buf.signalInfo("Done setting indentation level to " + newIndent);
+        }
+    });
 
 
-    var item = new DlMenuItem({parent: optionsSubmenu, label: "Toggle line numbers".makeLabel()});
-    item.addEventListener("onSelect", function () {
+    const toggleLineMenuItem = new DlMenuItem({parent: optionsSubmenu, label: "Toggle line numbers".makeLabel()});
+    toggleLineMenuItem.addEventListener("onSelect", function () {
         ymacs.getActiveBuffer().cmd("toggle_line_numbers");
     });
 
     /* -----[ color theme ]----- */
 
-    var item = new DlMenuItem({parent: optionsSubmenu, label: "Color theme".makeLabel()});
-    var submenu = new DlVMenu({});
-    item.setMenu(submenu);
+    const colorThemesMenuItem = new DlMenuItem({parent: optionsSubmenu, label: "Color theme".makeLabel()});
+    const colorThemesubmenu = new DlVMenu({});
+    colorThemesMenuItem.setMenu(colorThemesubmenu);
 
     [
         "dark|y|Dark background (default)",
@@ -179,28 +211,28 @@ try {
         "light|standard|>Emacs standard (light)"
     ].foreach(function (theme) {
         if (theme == null) {
-            submenu.addSeparator();
+            colorThemesubmenu.addSeparator();
         } else {
             theme = theme.split(/\s*\|\s*/);
             var label = theme.pop();
             label = label.replace(/^>\s*/, "&nbsp;".x(4));
-            var item = new DlMenuItem({parent: submenu, label: label});
+            var item = new DlMenuItem({parent: colorThemesubmenu, label: label});
             item.addEventListener("onSelect", ymacs.setColorTheme.$(ymacs, theme));
         }
     });
 
     /* -----[ font ]----- */
 
-    var item = new DlMenuItem({parent: optionsSubmenu, label: "Font family".makeLabel()});
-    var submenu = new DlVMenu({});
-    item.setMenu(submenu);
+    const fontFamilyMenuItem = new DlMenuItem({parent: optionsSubmenu, label: "Font family".makeLabel()});
+    const fontFamilyMenuItemsubmenu = new DlVMenu({});
+    fontFamilyMenuItem.setMenu(fontFamilyMenuItemsubmenu);
 
-    item = new DlMenuItem({parent: submenu, label: "Default from ymacs.css"});
-    item.addEventListener("onSelect", function () {
+    const fontFamilyMenuitem = new DlMenuItem({parent: fontFamilyMenuItemsubmenu, label: "Default from ymacs.css"});
+    fontFamilyMenuitem.addEventListener("onSelect", function () {
         ymacs.getActiveFrame().setStyle({fontFamily: ""});
     });
 
-    submenu.addSeparator();
+    fontFamilyMenuItemsubmenu.addSeparator();
 
     [
         "Lucida Sans Typewriter",
@@ -213,7 +245,10 @@ try {
         "Times New Roman"
 
     ].foreach(function (font) {
-        item = new DlMenuItem({parent: submenu, label: "<span style='font-family:" + font + "'>" + font + "</span>"});
+        let item = new DlMenuItem({
+            parent: fontFamilyMenuItemsubmenu,
+            label: "<span style='font-family:" + font + "'>" + font + "</span>"
+        });
         item.addEventListener("onSelect", function () {
             ymacs.getActiveFrame().setStyle({fontFamily: font});
         });
@@ -223,16 +258,16 @@ try {
 
     /* -----[ font size ]----- */
 
-    var item = new DlMenuItem({parent: optionsSubmenu, label: "Font size".makeLabel()});
-    var submenu = new DlVMenu({});
-    item.setMenu(submenu);
+    const fontSizeMenuitem = new DlMenuItem({parent: optionsSubmenu, label: "Font size".makeLabel()});
+    const fontSizeMenuitemsubmenu = new DlVMenu({});
+    fontSizeMenuitem.setMenu(fontSizeMenuitemsubmenu);
 
-    item = new DlMenuItem({parent: submenu, label: "Default from ymacs.css"});
-    item.addEventListener("onSelect", function () {
+    const fontMenuitem = new DlMenuItem({parent: fontSizeMenuitemsubmenu, label: "Default from ymacs.css"});
+    fontMenuitem.addEventListener("onSelect", function () {
         ymacs.getActiveFrame().setStyle({fontSize: ""});
     });
 
-    submenu.addSeparator();
+    fontSizeMenuitemsubmenu.addSeparator();
 
     [
         "11px",
@@ -245,19 +280,22 @@ try {
         "24px"
 
     ].foreach(function (font) {
-        item = new DlMenuItem({parent: submenu, label: "<span style='font-size:" + font + "'>" + font + "</span>"});
+        let item = new DlMenuItem({
+            parent: fontSizeMenuitemsubmenu,
+            label: "<span style='font-size:" + font + "'>" + font + "</span>"
+        });
         item.addEventListener("onSelect", function () {
             ymacs.getActiveFrame().setStyle({fontSize: font});
         });
     });
 
 
-    item = new DlMenuItem({parent: optionsSubmenu, label: "About"});
-    item.addEventListener("onSelect", function () {
+    const aboutMenuitem = new DlMenuItem({parent: optionsSubmenu, label: "About"});
+    aboutMenuitem.addEventListener("onSelect", function () {
         alert('About org-mode online.')
     });
 
-    layout.packWidget(menu, {pos: "top"});
+    layout.packWidget(mainMenu, {pos: "top"});
     layout.packWidget(ymacs, {pos: "bottom", fill: "*"});
 
     dlg._focusedWidget = ymacs;
@@ -271,7 +309,7 @@ try {
     dlg.maximize(true);
 
 } catch (ex) {
-    console.log(ex);
+    // console.log(ex);
 }
 
 DynarchDomUtils.trash(document.getElementById("x-loading"));

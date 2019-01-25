@@ -495,7 +495,24 @@ Ymacs_Buffer.newCommands({
     }),
 
     goto_char: Ymacs_Interactive("NGoto char: ", function (pos) {
-        return this._repositionCaret(pos);
+        const ret = this._repositionCaret(pos);
+        // this.deleteOverlay("mark-highlight")
+        //
+        // if ( self.ymacs) {
+        //     if ( self.ymacs.getActiveBuffer().getHighlightMarker()) {
+        //     var rc = self.ymacs.getActiveBuffer().getHighlightMarker().getRowCol();
+        //     if ( rc) {
+        //         var pos2 = self.ymacs.getActiveBuffer()._positionToRowCol(pos);
+        //
+        //         this.setOverlay("mark-highlight", {
+        //             line1: rc.row, line2: pos2.row,
+        //             col1: rc.col, col2: pos2.col
+        //         });
+        //     }
+        // }
+        this.whenYmacs('getActiveBuffer')
+       return ret;
+
     }),
 
     goto_line: Ymacs_Interactive("NGoto line: ", function (row) {
@@ -526,7 +543,9 @@ Ymacs_Buffer.newCommands({
         return this._insertText(Array.$(arguments).join(""));
     }),
 
-    keyboard_quit: Ymacs_Interactive("^p", Function.noop),
+    keyboard_quit: Ymacs_Interactive("^p", function () {
+        self.ymacs.getActiveBuffer().cancelHighlightMarker();
+    }),
 
     buffer_substring: function (begin, end) {
         if (arguments.length == 0) {
@@ -566,8 +585,9 @@ Ymacs_Buffer.newCommands({
     kill_ring_save: Ymacs_Interactive("r", function (begin, end) {
         // this.cmd("exchange_point_and_mark");
         // setTimeout(() => this.cmd("exchange_point_and_mark"), 700);
-        var pos1 = self.ymacs.getBuffer("today.org")._positionToRowCol(begin);
-        var pos2 = self.ymacs.getBuffer("today.org")._positionToRowCol(end);
+
+        var pos1 = self.ymacs.getActiveBuffer()._positionToRowCol(begin);
+        var pos2 = self.ymacs.getActiveBuffer()._positionToRowCol(end);
 
         this.setOverlay("mark-highlight", {
             line1: pos1.row, line2: pos2.row,
@@ -615,6 +635,7 @@ Ymacs_Buffer.newCommands({
         if (this.currentCommand == "set_mark_command")
             this.signalInfo("Mark set", null, 1000);
         this.markMarker.setPosition(x);
+        this.setHighlightMarker(x);
     }),
 
     exchange_point_and_mark: Ymacs_Interactive("^", function () {
@@ -817,6 +838,12 @@ Ymacs_Buffer.newCommands({
             this.signalError("No further undo information");
         }
     }),
+    // redo: Ymacs_Interactive_X(function () {
+    //     this._placeRedoBoundary();
+    //     if (!this._playbackRedo()) {
+    //         this.signalError("No further redo information");
+    //     }
+    // }),
 
     center_line: Ymacs_Interactive("p", function (n) {
         if (n == null) n = 1;
@@ -995,7 +1022,7 @@ Ymacs_Buffer.newCommands({
                     code += buffer.name + "\t\t\t" + (buffer.modes.join(',') || 'undefined') + "\t\t\tLocal File\n";
                 }
             });
-            buffer.setCodeV2(code);
+            buffer.setCode(code);
 
             ymacs.switchToBuffer(buffer);
         });

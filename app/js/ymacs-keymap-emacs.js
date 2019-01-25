@@ -131,7 +131,7 @@ DEFINE_SINGLETON("Ymacs_Keymap_Emacs", Ymacs_Keymap, function (D, P) {
         "S-C-ARROW_DOWN": "forward_paragraph_mark",
         "S-C-ARROW_UP": "backward_paragraph_mark",
         "S-HOME": "beginning_of_indentation_or_line_mark",
-        "S-C-a": "beginning_of_line_mark",
+        "S-C-a": "mark_whole_buffer",
         "S-END && S-C-e": "end_of_line_mark",
         "S-C-HOME": "beginning_of_buffer_mark",
         "S-C-END": "end_of_buffer_mark",

@@ -217,6 +217,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         this.markers = [];
         this.caretMarker = this.createMarker(0, false, "point");
         this.markMarker = this.createMarker(0, true, "mark");
+        this._highlightMarker = null;
+
         this.matchData = [];
         this.previousCommand = null;
         this.currentCommand = null;
@@ -258,6 +260,18 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     // Since we don't have real dynamic scope in JS, we store the
     // values in a hash and using the withVariables method we can
     // assign temporary values to them and execute a function.
+
+    P.getHighlightMarker = function () {
+        return this._highlightMarker;
+    };
+
+    P.setHighlightMarker = function (pos) {
+        this._highlightMarker = this.createMarker(pos, true, "highlight");
+    };
+
+    P.cancelHighlightMarker = function () {
+        this._highlightMarker = null;
+    };
 
     P.withVariables = function (vars, cont) {
         var saved = {}, i, ret;
@@ -389,35 +403,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         });
     };
 
-    // P.setCodeV2 = function (code) {
-    //     // this.__code = code = code.replace(/\t/g, " ".x(this.getq("tab_width")));
-    //     this.__isDirty = false;
-    //     this.__code = code;
-    //     this.__size = code.length;
-    //     this.__undoQueue = [];
-    //     this.__undoPointer = 0;
-    //     this.__overlays = {};
-    //     this.markers.map("setPosition", 0, true, true);
-    //     this.code = code.split(/\n/);
-    //     this._textProperties.reset();
-    //     if (this.tokenizer) {
-    //         this.tokenizer.reset();
-    //     }
-    //     this.callHooks("onResetCode", this.code);
-    //     this.caretMarker.setPosition(0, false, true);
-    //     this.markMarker.setPosition(0, true);
-    //     this.forAllFrames(function (frame) {
-    //         frame.ensureCaretVisible();
-    //         frame.redrawModelineWithTimer();
-    //         btn = new DlButton({
-    //             parent: frame,
-    //             type: DlButton.TYPE.TWOSTATE,
-    //             label: "Try me"
-    //         });
-    //     });
-    //
-    //
-    // };
+
     P.setTokenizer = function (tok) {
         if (this.tokenizer != null) {
             this.tokenizer.removeEventListener(this._tokenizerEvents);
@@ -789,7 +775,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             " ", percent, " of ", this.getCodeSize().formatBytes(2).toLowerCase(), " ",
             "(", rc.row + 1, ",", rc.col, ") ",
             " (" + this.modes.toString() + ") ",
-            (this.last_key_display || "  C-h for help  ")
+            (this.last_key_display || "  C-x h for help  ")
         );
         var custom = this.getq("modeline_custom_handler");
         if (custom) {
@@ -838,6 +824,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             last.markers = m;
         }
     };
+
+    
 
     P._playbackUndo = function () {
         var q = this.__undoQueue;
