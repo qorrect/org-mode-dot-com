@@ -7,7 +7,7 @@ const HEADING_REGEX = /(\*)+/;
 const FOLDED_REGEX = /\(...(\d+)\)/;
 
 // Our memory hungry hide ring
-const HIDE_RING = {};
+const FOLDED_RING = {};
 
 DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
@@ -96,9 +96,9 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
         // If its on an org-heading
         if (currentLine && currentLine.match(/^\*/)) {
             const res = FOLDED_REGEX.exec(currentLine);
-            if (res && HIDE_RING[res[1]]) {
+            if (res && FOLDED_RING[res[1]]) {
 
-                const cache = HIDE_RING[res[1]];
+                const cache = FOLDED_RING[res[1]];
                 const prefix = cache.length ? "\n" : "";
 
                 stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("... (..." + res[1] + ")", ""));
@@ -107,8 +107,8 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                 stream.buffer.cmd("end_of_line");
 
             } else {
-                const pos = Object.keys(HIDE_RING).length;
-                HIDE_RING[pos] = ensureList(HIDE_RING[pos]);
+                const pos = Object.keys(FOLDED_RING).length;
+                FOLDED_RING[pos] = ensureList(FOLDED_RING[pos]);
 
                 let line = stream.lineText();
 
@@ -135,7 +135,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                             stream = originalStream;
                             if (stream && stream.lineText) {
                                 line = stream.lineText();
-                                safePush(HIDE_RING, pos, line);
+                                safePush(FOLDED_RING, pos, line);
                                 stream.buffer._deleteLine(stream.line);
                                 found = true;
                                 line = stream.lineText();
@@ -143,7 +143,7 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
                         }
                     } else {
 
-                        safePush(HIDE_RING, pos, line);
+                        safePush(FOLDED_RING, pos, line);
                         stream.buffer._deleteLine(stream.line);
                         found = true;
                         line = stream.lineText();
@@ -240,9 +240,14 @@ Ymacs_Buffer.newCommands({
 
     org_save_buffer: Ymacs_Interactive(function () {
 
-        this.cmd("goto_line", 0);
-        this.cmd("org_expand_line");
-        this.cmd("save_buffer");
+        const pos = this.caretMarker.getPosition();
+        let code = this.getCode();
+        const keys = Object.keys(FOLDED_RING).sort();
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            code = code.replace(`... (...${key})`, '\n' + FOLDED_RING[key].join('\n'));
+        }
+        localStorage.setItem(this.name, code);
 
     }),
 });
