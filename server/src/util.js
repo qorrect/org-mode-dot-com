@@ -3,7 +3,7 @@ const auth = "Basic " + new Buffer('').toString("base64");
 
 async function getAccessToken(code) {
 
-    var options = {
+    const options = {
         uri: 'https://api.dropbox.com/1/oauth2/token?code=' + code + '&grant_type=authorization_code&redirect_uri=http://localhost:8081/authed',
         method: 'POST',
         headers: {
@@ -11,7 +11,6 @@ async function getAccessToken(code) {
         },
         json: true
     };
-
 
     return rp(options);
 }
