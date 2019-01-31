@@ -35,24 +35,24 @@
 
 Ymacs_Buffer.newCommands({
 
-    get_region: function() {
+    get_region: function () {
         return this.getRegion();
     },
 
-    figure_out_mode: function(code) {
+    figure_out_mode: function (code) {
         if (!code)
             code = this.getCode();
         var lines = code.split(/\n/);
         if (lines.length > 4)
             lines.splice(2, lines.length - 4);
-        return lines.foreach(function(line, m){
+        return lines.foreach(function (line, m) {
             if ((m = /-\*-\s*(.*?)\s*-\*-/i.exec(line))) {
                 $RETURN(m[1]);
             }
         });
     },
 
-    mode_from_name: function(name) {
+    mode_from_name: function (name) {
 
         if (!name)
             name = this.name;
@@ -65,19 +65,20 @@ Ymacs_Buffer.newCommands({
         switch (ext) {
 
             case ".css":
-            return "css";
+                return "css";
 
             case ".js":
-            return "javascript";
+                return "javascript";
 
-            case ".lisp": case ".scm":
-            return "lisp";
+            case ".lisp":
+            case ".scm":
+                return "lisp";
         }
 
         return null;
     },
 
-    set_buffer_mode: function(mode) {
+    set_buffer_mode: function (mode) {
         if (!mode)
             mode = this.cmd("figure_out_mode") || this.cmd("mode_from_name");
         if (mode) {
@@ -89,8 +90,8 @@ Ymacs_Buffer.newCommands({
         }
     },
 
-    cperl_lineup: Ymacs_Interactive("r", function(begin, end){
-        this.cmd("save_excursion", function(){
+    cperl_lineup: Ymacs_Interactive("r", function (begin, end) {
+        this.cmd("save_excursion", function () {
             var rcend = this._positionToRowCol(end), max = 0, lines = [];
             this.cmd("goto_char", begin);
             this.cmd("forward_whitespace", true);
@@ -104,20 +105,20 @@ Ymacs_Buffer.newCommands({
                 if (pos >= 0) {
                     if (pos > max)
                         max = pos;
-                    lines.push([ this._rowcol.row, pos ]);
+                    lines.push([this._rowcol.row, pos]);
                 }
                 if (!this.cmd("forward_line"))
                     break;
             }
             ++max;
-            lines.foreach(function(l){
+            lines.foreach(function (l) {
                 this.cmd("goto_char", this._rowColToPosition(l[0], l[1]));
                 this.cmd("insert", " ".x(max - l[1]));
             }, this);
         });
     }),
 
-    htmlize_region: Ymacs_Interactive("r\nP", function(begin, end, lineNum) {
+    htmlize_region: Ymacs_Interactive("r\nP", function (begin, end, lineNum) {
         this.tokenizer.finishParsing();
         var row = this._positionToRowCol(begin).row;
         var html = String.buffer();
@@ -141,18 +142,18 @@ Ymacs_Buffer.newCommands({
         tmp.cmd("xml_mode", true);
     }),
 
-    execute_extended_command: Ymacs_Interactive("^CM-x ", function(cmd) {
+    execute_extended_command: Ymacs_Interactive("^CM-x ", function (cmd) {
         this.callInteractively(cmd);
     }),
 
-    set_variable: Ymacs_Interactive("vSet variable: \nsTo value: ", function(variable, value) {
+    set_variable: Ymacs_Interactive("vSet variable: \nsTo value: ", function (variable, value) {
         var tmp = parseFloat(value);
         if (!isNaN(tmp))
             value = tmp;
         this.setq(variable, value);
     }),
 
-    eval_string: Ymacs_Interactive("^MEval string: ", function(code){
+    eval_string: Ymacs_Interactive("^MEval string: ", function (code) {
         try {
             var variables = [
                 this,      // buffer
@@ -161,39 +162,39 @@ Ymacs_Buffer.newCommands({
             code = new Function("buffer", "ymacs", code);
             code.apply(this, variables);
             this.clearTransientMark();
-        } catch(ex) {
+        } catch (ex) {
             this.signalError(ex.type + ": " + ex.message);
             if (window.console)
                 console.log(ex);
         }
     }),
 
-    eval_region: Ymacs_Interactive("^r", function(begin, end) {
+    eval_region: Ymacs_Interactive("^r", function (begin, end) {
         this.cmd("eval_string", this.cmd("buffer_substring", begin, end));
     }),
 
-    eval_buffer: Ymacs_Interactive(function(){
+    eval_buffer: Ymacs_Interactive(function () {
         this.cmd("eval_string", this.getCode());
     }),
 
-    toggle_line_numbers: Ymacs_Interactive("^", function(){
+    toggle_line_numbers: Ymacs_Interactive("^", function () {
         this.whenActiveFrame("toggleLineNumbers");
     }),
 
-    save_file: Ymacs_Interactive("FWrite file: ", function(name){
+    save_file: Ymacs_Interactive("FWrite file: ", function (name) {
         this.ymacs.ls_setFileContents(name, this.getCode());
         this.signalInfo("Saved in local storage");
     }),
 
-    load_file: Ymacs_Interactive("fFind file: ", function(name){
+    load_file: Ymacs_Interactive("fFind file: ", function (name) {
         var code = this.ymacs.ls_getFileContents(name);
-        var buffer = this.ymacs.createBuffer({ name: name });
+        var buffer = this.ymacs.createBuffer({name: name});
         buffer.setCode(code);
         buffer.cmd("set_buffer_mode");
         buffer.cmd("switch_to_buffer", name);
     }),
 
-    find_file: Ymacs_Interactive("FFind file: ", function(name) {
+    find_file: Ymacs_Interactive("FFind file: ", function (name) {
         var self = this;
         name = self.ymacs.fs_normalizePath(name);
         self.ymacs.fs_fileType(name, function (type) {
@@ -225,7 +226,7 @@ Ymacs_Buffer.newCommands({
                             });
                         }
                     } else {
-                        buffer = self.ymacs.createBuffer({ name: name, stamp: stamp });
+                        buffer = self.ymacs.createBuffer({name: name, stamp: stamp});
                         if (code == null)
                             self.signalInfo("New file");
                         find_file();
@@ -235,7 +236,7 @@ Ymacs_Buffer.newCommands({
         });
     }),
 
-    write_file: Ymacs_Interactive("FWrite file: ", function(name){
+    write_file: Ymacs_Interactive("FWrite file: ", function (name) {
         var self = this;
 
         function write_file() {
@@ -243,7 +244,7 @@ Ymacs_Buffer.newCommands({
                 self.cmd("rename_buffer", name);
                 self.dirty(false);
                 self.stamp = stamp; // refresh stamp
-                self.signalInfo("Wrote "+name);
+                self.signalInfo("Wrote " + name);
             });
         }
 
@@ -251,7 +252,7 @@ Ymacs_Buffer.newCommands({
         if (!buffer)
             write_file();
         else {
-            var msg = "A buffer is visiting "+name+"; proceed?";
+            var msg = "A buffer is visiting " + name + "; proceed?";
             buffer.cmd("minibuffer_yn", msg, function (yes) {
                 if (yes) {
                     self.ymacs.killBuffer(buffer);
@@ -262,7 +263,8 @@ Ymacs_Buffer.newCommands({
     }),
 
     save_some_buffers: function () {
-        this.cmd("save_some_buffers_with_continuation", true, function () { });
+        this.cmd("save_some_buffers_with_continuation", true, function () {
+        });
     },
 
     save_some_buffers_with_continuation: function (ask, cont) {
@@ -283,8 +285,10 @@ Ymacs_Buffer.newCommands({
 
         var self = this;
         self.dirty(false);
-        localStorage.setItem(self.name,self.getCode());
-        cont(true);
+        DAO.put(self.name, self.getCode()).then(() => {
+            cont(true);
+        })
+        // localStorage.setItem(self.name,self.getCode());
         //
         // function did_save(stamp) {
         //     self.dirty(false);
@@ -330,20 +334,20 @@ Ymacs_Buffer.newCommands({
         if (self.dirty())
             self.cmd("save_buffer_with_continuation", false, function (saved) {
                 if (saved)
-                    self.signalInfo("Wrote "+self.name);
+                    self.signalInfo("Wrote " + self.name);
             });
         else
             self.signalInfo("No changes need to be saved");
     }),
 
-    delete_file: Ymacs_Interactive("fDelete file: ", function(name){
+    delete_file: Ymacs_Interactive("fDelete file: ", function (name) {
         var self = this;
         self.ymacs.fs_deleteFile(name, function () {
-            self.signalInfo("Deleted "+name);
+            self.signalInfo("Deleted " + name);
         });
     }),
 
-    eval_file: Ymacs_Interactive("fEval file: ", function(name){
+    eval_file: Ymacs_Interactive("fEval file: ", function (name) {
         var self = this;
         self.ymacs.fs_getFileContents(name, false, function (code, stamp) {
             self.cmd("eval_string", code);

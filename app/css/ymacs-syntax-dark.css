@@ -359,6 +359,7 @@
     background-color: #bbb;
     color: #000;
     border-top: 1px solid #fff;
+    font-size: .8em;
 }
 
 .Ymacs-Theme-dark .Ymacs-line-numbers .Ymacs-frame-content div.line:before {

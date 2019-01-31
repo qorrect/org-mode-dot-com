@@ -1,0 +1,1 @@
+let DAO = new LocalStorageDAO();

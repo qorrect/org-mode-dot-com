@@ -2,6 +2,7 @@
 // @require ymacs-tokenizer.js
 // @require lib/lodash.js
 // @require lib/async.js
+// @require js/dao/index.js
 
 const HEADING_REGEX = /(\*)+/;
 const FOLDED_REGEX = /\(...(\d+)\)/;
@@ -17,6 +18,7 @@ DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
         "[": "auto_insert_braces",
         "]": "auto_fix_braces",
         "C-x C-s": "org_save_buffer",
+        "C-+": "org_expand_buffer",
         // User friendly keybindings
 
         "C-x c": "kill_ring_save",
@@ -197,7 +199,17 @@ Ymacs_Buffer.newMode("org_mode", function () {
 });
 
 
+function expandAllFolds(code, folded_ring) {
+    const keys = Object.keys(folded_ring).sort();
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        code = code.replace(`... (...${key})`, '\n' + folded_ring[key].join('\n'));
+    }
+    return code;
+}
+
 Ymacs_Buffer.newCommands({
+
 
     org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
         this.cmd("org_toggle_check");
@@ -238,16 +250,21 @@ Ymacs_Buffer.newCommands({
 
     }),
 
+    org_expand_buffer: Ymacs_Interactive(function () {
+        const pos = this.caretMarker.getPosition();
+
+        const code = this.getCode();
+        this.setCode(expandAllFolds(code, FOLDED_RING));
+        this.cmd('goto_char', pos);
+
+    }),
+
     org_save_buffer: Ymacs_Interactive(function () {
 
-        const pos = this.caretMarker.getPosition();
-        let code = this.getCode();
-        const keys = Object.keys(FOLDED_RING).sort();
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-            code = code.replace(`... (...${key})`, '\n' + FOLDED_RING[key].join('\n'));
-        }
-        localStorage.setItem(this.name, code);
+        const code = this.getCode();
+        DAO.put(this.name, expandAllFolds(code, FOLDED_RING)).then( () => {
+            this.dirty(false);
+        });
 
     }),
 });
