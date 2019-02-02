@@ -14,6 +14,7 @@
 
 */
 
+
 var desktop = new DlDesktop({});
 desktop.fullScreen();
 
@@ -35,11 +36,38 @@ function print(obj) {
 };
 
 
+async function createOrOpen(ymacs, file) {
+    
+    const buffer = ymacs.getBuffer(file);
+    if (buffer) {
+        ymacs.switchToBuffer(buffer);
+    } else {
+        const newBuffer = ymacs.createBuffer({name: file});
+        const contents = await DAO.get(file);
+        newBuffer.setCode(contents || '');
+        ymacs.switchToBuffer(newBuffer);
+    }
+}
+
+// TODO:  Make org modes register file extension types , or if they do already use those
+function determineMode(filename) {
+    const idx = filename.lastIndexOf('.');
+    if (idx > 0) {
+        const ext = filename.substr(idx + 1).toLowerCase();
+        if (ext === "js" || ext === "json") return "javascript_mode";
+        if (ext === "org") return "org_mode";
+    }
+    return "";
+}
+
 try {
 
     async function main() {
-        const dlg = new DlDialog({title: "Ymacs", resizable: false});
 
+
+        const mainMenu = new DlHMenu({});
+        mainMenu.setStyle({marginLeft: 0, marginRight: 0});
+        const dlg = new DlDialog({title: "Ymacs", resizable: false});
 
         const markdown = new Ymacs_Buffer({name: "today.org"});
         const markdownContents = await DAO.get('today.org');
@@ -64,7 +92,7 @@ try {
         const keys = new Ymacs_Buffer({name: ".ymacs"});
         let ymacsContents = await DAO.get('.ymacs');
         if (!ymacsContents) {
-            ymacsContents = "// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \nymacs.getActiveFrame().setStyle({fontFamily: 'Ubuntu Mono',fontSize: '25px'});\n";
+            ymacsContents = "// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font your set in the Options menu\n// ymacs.getActiveFrame().setStyle({fontFamily: 'Ubuntu Mono',fontSize: '25px'});\n";
         }
         keys.setCode(ymacsContents);
 
@@ -77,23 +105,6 @@ try {
         const ymacs = window.ymacs = new Ymacs({buffers: [markdown, keys]});
         ymacs.setColorTheme(["dark", "y"]);
 
-        try {
-            console.log(ymacsContents);
-            const code = new Function("buffer", "ymacs", ymacsContents);
-            var variables = [
-                keys,      // buffer
-                ymacs // ymacs
-            ];
-            const ret = code.apply(this, variables);
-            console.log(ret);
-
-            ymacs.getActiveBuffer().cmd("eval_string", ymacsContents);
-        } catch (ex) {
-            console.log(ex);
-        }
-
-        const mainMenu = new DlHMenu({});
-        mainMenu.setStyle({marginLeft: 0, marginRight: 0});
 
         const yourFilesMenuItem = new DlMenuItem({parent: mainMenu, label: "Your Files".makeLabel()});
 
@@ -140,7 +151,7 @@ try {
                 ymacs.switchToBuffer(buffer);
             } else {
                 const newBuffer = ymacs.createBuffer({name: file});
-                newBuffer.setCode(await DAO.get(file) || []);
+                newBuffer.setCode(await DAO.get(file) || '');
                 newBuffer.cmd("org_mode");
                 ymacs.switchToBuffer(newBuffer);
 
@@ -159,6 +170,32 @@ try {
             }
 
         });
+
+
+        let ymacsFilelist = (await DAO.get(Keys.FILE_LIST)) || '';
+        ymacsFilelist = ymacsFilelist.split(',');
+        if (ymacsFilelist) {
+            ymacsFilelist = _.isArray(ymacsFilelist) ? ymacsFilelist : [ymacsFilelist];
+            ymacsFilelist.forEach(async file => {
+                let buffer = new Ymacs_Buffer({name: file});
+                const bufferContent = await DAO.get(file);
+                if (bufferContent) {
+                    buffer.setCode(bufferContent);
+                }
+                const mode = determineMode(file);
+                if (mode) buffer.cmd(mode);
+
+
+                let menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
+                menuItem.addEventListener("onSelect", async function () {
+                    await createOrOpen(ymacs, file);
+                });
+            });
+        } else {
+            await DAO.put(Keys.FILE_LIST, []);
+        }
+
+
         const ymacsSourceItem = new DlMenuItem({parent: submenu, label: "Ymacs Source".makeLabel()});
 
         yourFilesMenuItem.setMenu(submenu);
@@ -341,13 +378,34 @@ try {
 
         // show two frames initially
         // ymacs.getActiveFrame().hsplit();
-        const fontSize = await DAO.get(Config.FONT_SIZE);
+        const fontSize = (await DAO.get(Config.FONT_SIZE)) || "25px";
         ymacs.getActiveFrame().setStyle({fontSize});
-        const fontFamily = DAO.get(Config.FONT_FAMILY);
+        const fontFamily = (await DAO.get(Config.FONT_FAMILY)) || "Ubuntu Mono";
         ymacs.getActiveFrame().setStyle({fontFamily});
 
+
+        try {
+            console.log(ymacsContents);
+            const code = new Function("buffer", "ymacs", ymacsContents);
+            var variables = [
+                keys,      // buffer
+                ymacs // ymacs
+            ];
+            const ret = code.apply(this, variables);
+            console.log(ret);
+
+            ymacs.getActiveBuffer().cmd("eval_string", ymacsContents);
+        } catch (ex) {
+            console.log(ex);
+        }
+
+
         dlg.show(true);
-        dlg.maximize(true);
+
+        try {
+            dlg.maximize(true);
+        } catch (e) {
+        }
     }
 
 

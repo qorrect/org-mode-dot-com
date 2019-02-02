@@ -33,6 +33,8 @@
 
 // @require ymacs-buffer.js
 
+// @require"./lib/lodash";
+
 Ymacs_Buffer.newCommands({
 
     get_region: function () {
@@ -227,8 +229,15 @@ Ymacs_Buffer.newCommands({
                         }
                     } else {
                         buffer = self.ymacs.createBuffer({name: name, stamp: stamp});
-                        if (code == null)
+                        if (code == null) {
                             self.signalInfo("New file");
+                            DAO.get(Keys.FILE_LIST).then((_files) => {
+                                let files = _files || '';
+                                files = files.split(',');
+                                files.push(name);
+                                DAO.put(Keys.FILE_LIST, ensureUnique(files).join(','));
+                            });
+                        }
                         find_file();
                     }
                 });

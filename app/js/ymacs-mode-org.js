@@ -212,7 +212,17 @@ Ymacs_Buffer.newCommands({
 
 
     org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
-        this.cmd("org_toggle_check");
+        this.cmd('beginning_of_line');
+        const begin = this._rowColToPosition(this._rowcol.row, 0);
+        var rc = this._rowcol;
+        const end = this._rowColToPosition(rc.row, this.code[rc.row].length);
+
+        const line = this._bufferSubstring(begin, end);
+        const new_line = line.includes('[ ]') ? line.replace("[ ]", "[X]") : line.replace("[X]", "[ ]");
+        this._replaceLine(rc.row, new_line);
+        this._recordChange(2, begin, line.length, line);
+        this._recordChange(1, begin, new_line.length, new_line);
+        this._updateMarkers(begin, line.length);
     }),
 
     org_ctrl_c_c: Ymacs_Interactive(function () {
@@ -262,9 +272,14 @@ Ymacs_Buffer.newCommands({
     org_save_buffer: Ymacs_Interactive(function () {
 
         const code = this.getCode();
-        DAO.put(this.name, expandAllFolds(code, FOLDED_RING)).then( () => {
+        DAO.put(this.name, expandAllFolds(code, FOLDED_RING)).then(() => {
+            // window.Q = this.__undoQueue;
+            // DAO.put(this.name + '_undoring', this.__undoQueue.map(o => JSON.stringify(o))).then(() => {
             this.dirty(false);
+
+            // })
         });
 
     }),
+
 });

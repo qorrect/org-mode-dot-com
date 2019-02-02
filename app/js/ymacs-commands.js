@@ -280,22 +280,7 @@ Ymacs_Buffer.newCommands({
         var ret = this.matchData = rx.exec(code);
 
     },
-    org_toggle_check: function () {
-        this.cmd('beginning_of_line');
 
-        const begin = this._rowColToPosition(this._rowcol.row, 0);
-        var rc = this._rowcol;
-        const end = this._rowColToPosition(rc.row, this.code[rc.row].length);
-
-        const line = this._bufferSubstring(begin, end);
-        const new_line = line.includes('[ ]') ? line.replace("[ ]", "[X]") : line.replace("[X]", "[ ]");
-        this._replaceLine(rc.row, new_line);
-        this._recordChange(2, begin, line.length, line);
-        this._recordChange(1, begin, new_line.length, new_line);
-        this._updateMarkers(begin, line.length);
-
-
-    },
 
     looking_at: function (rx) {
         var pos = rx.lastIndex = this.point();
