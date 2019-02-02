@@ -37,7 +37,7 @@ function print(obj) {
 
 
 async function createOrOpen(ymacs, file) {
-    
+
     const buffer = ymacs.getBuffer(file);
     if (buffer) {
         ymacs.switchToBuffer(buffer);
@@ -46,6 +46,8 @@ async function createOrOpen(ymacs, file) {
         const contents = await DAO.get(file);
         newBuffer.setCode(contents || '');
         ymacs.switchToBuffer(newBuffer);
+        const mode = determineMode(file);
+        if (mode) newBuffer.cmd(mode);
     }
 }
 
@@ -137,8 +139,33 @@ try {
         const submenu = new DlVMenu({});
         const newFileItem = new DlMenuItem({parent: submenu, label: "[+] New File".makeLabel()});
         newFileItem.addEventListener("onSelect", function () {
-            alert('new file');
+            ymacs.getActiveBuffer().cmd('execute_extended_command', 'find_file');
         });
+
+        let ymacsFilelist = (await DAO.get(Keys.FILE_LIST)) || '';
+        ymacsFilelist = ymacsFilelist.split(',');
+        if (ymacsFilelist) {
+            ymacsFilelist = _.isArray(ymacsFilelist) ? ymacsFilelist : [ymacsFilelist];
+            ymacsFilelist.forEach(async file => {
+                if (file) {
+                    let buffer = new Ymacs_Buffer({name: file});
+                    const bufferContent = await DAO.get(file);
+                    if (bufferContent) {
+                        buffer.setCode(bufferContent);
+                    }
+                    const mode = determineMode(file);
+                    if (mode) buffer.cmd(mode);
+
+
+                    let menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
+                    menuItem.addEventListener("onSelect", async function () {
+                        await createOrOpen(ymacs, file);
+                    });
+                }
+            });
+        } else {
+            await DAO.put(Keys.FILE_LIST, []);
+        }
 
 
         // const files = localStorage.getItem('files');
@@ -170,30 +197,6 @@ try {
             }
 
         });
-
-
-        let ymacsFilelist = (await DAO.get(Keys.FILE_LIST)) || '';
-        ymacsFilelist = ymacsFilelist.split(',');
-        if (ymacsFilelist) {
-            ymacsFilelist = _.isArray(ymacsFilelist) ? ymacsFilelist : [ymacsFilelist];
-            ymacsFilelist.forEach(async file => {
-                let buffer = new Ymacs_Buffer({name: file});
-                const bufferContent = await DAO.get(file);
-                if (bufferContent) {
-                    buffer.setCode(bufferContent);
-                }
-                const mode = determineMode(file);
-                if (mode) buffer.cmd(mode);
-
-
-                let menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
-                menuItem.addEventListener("onSelect", async function () {
-                    await createOrOpen(ymacs, file);
-                });
-            });
-        } else {
-            await DAO.put(Keys.FILE_LIST, []);
-        }
 
 
         const ymacsSourceItem = new DlMenuItem({parent: submenu, label: "Ymacs Source".makeLabel()});
