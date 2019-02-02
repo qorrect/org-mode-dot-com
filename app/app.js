@@ -56,7 +56,7 @@ function determineMode(filename) {
     const idx = filename.lastIndexOf('.');
     if (idx > 0) {
         const ext = filename.substr(idx + 1).toLowerCase();
-        if (ext === "js" || ext === "json") return "javascript_mode";
+        if (ext === "js" || ext === "json") return "javascript_dl_mode";
         if (ext === "org") return "org_mode";
     }
     return "";
