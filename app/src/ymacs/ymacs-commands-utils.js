@@ -212,8 +212,8 @@ Ymacs_Buffer.newCommands({
                         buffer.dirty(false);
                         buffer.cmd("set_buffer_mode");
                         buffer.cmd("switch_to_buffer", name);
-                        const mode = determineMode(name);
-                        if (mode) buffer.cmd(mode);
+                        buffer.maybeSetMode(name);
+
                     }
 
                     if (buffer) {
@@ -231,8 +231,7 @@ Ymacs_Buffer.newCommands({
                         }
                     } else {
                         buffer = self.ymacs.createBuffer({name: name, stamp: stamp});
-                        const mode = determineMode(name);
-                        if (mode) buffer.cmd(mode);
+                        buffer.maybeSetMode(name);
                         if (code == null) {
                             self.signalInfo("New file");
                             DAO.get(Keys.FILE_LIST).then((_files) => {

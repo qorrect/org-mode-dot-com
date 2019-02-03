@@ -200,8 +200,8 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
             const contents = await DAO.get(file);
             newBuffer.setCode(contents || '');
             ymacs.switchToBuffer(newBuffer);
-            const mode = determineMode(file);
-            if (mode) newBuffer.cmd(mode);
+            newBuffer.maybeSetMode(file);
+
         }
     };
 

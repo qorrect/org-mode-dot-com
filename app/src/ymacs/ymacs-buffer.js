@@ -261,6 +261,21 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     // values in a hash and using the withVariables method we can
     // assign temporary values to them and execute a function.
 
+    P.maybeSetMode = function (filename) {
+        let ret = '';
+        const idx = filename.lastIndexOf('.');
+        if (idx > 0) {
+            const ext = filename.substr(idx + 1).toLowerCase();
+            if (ext === "js" || ext === "json") ret = "javascript_dl_mode";
+            if (ext === "org") ret = "org_mode";
+            if (ext === "xml") ret = "xml_mode";
+        }
+
+        if (ret) {
+            this.cmd(ret);
+        }
+    };
+
     P.getHighlightMarker = function () {
         return this._highlightMarker;
     };
@@ -825,7 +840,6 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         }
     };
 
-    
 
     P._playbackUndo = function () {
         var q = this.__undoQueue;
