@@ -1,3 +1,4 @@
+/* eslint-disable no-invalid-this,no-param-reassign,prefer-rest-params,no-prototype-builtins,null,no-constant-condition */
 //> This file is part of Ymacs, an Emacs-like editor for the Web
 //> http://www.ymacs.org/
 //>
@@ -31,25 +32,25 @@
 //> ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 //> THE POSSIBILITY OF SUCH DAMAGE.
 
-DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
+DEFINE_CLASS('Ymacs', DlLayout, (D, P, DOM) => {
 
     D.DEFAULT_EVENTS = [
-        "onBufferSwitch",
-        "onCreateBuffer",
-        "onDeleteBuffer"
+        'onBufferSwitch',
+        'onCreateBuffer',
+        'onDeleteBuffer'
     ];
 
     D.DEFAULT_ARGS = {
-        buffers: ["buffers", null],
-        frames: ["frames", null],
+        buffers: ['buffers', null],
+        frames: ['frames', null],
 
         // default options
-        cf_lineNumbers: ["lineNumbers", false],
-        cf_frameStyle: ["frameStyle", null],
-        cf_blinkCursor: ["blinkCursor", true],
+        cf_lineNumbers: ['lineNumbers', false],
+        cf_frameStyle: ['frameStyle', null],
+        cf_blinkCursor: ['blinkCursor', true],
 
         // override in DlWidget
-        _focusable: ["focusable", true]
+        _focusable: ['focusable', true]
     };
 
     D.FIXARGS = function (args) {
@@ -95,23 +96,23 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
         /* -----[ minibuffer ]----- */
         this.minibuffer = this.createBuffer({hidden: true, isMinibuffer: true});
-        this.minibuffer.cmd("minibuffer_mode");
+        this.minibuffer.cmd('minibuffer_mode');
         this.minibuffer_frame = this.createFrame({
             isMinibuffer: true,
             buffer: this.minibuffer,
             hidden: true,
             highlightCurrentLine: false,
-            className: "Ymacs_Minibuffer"
+            className: 'Ymacs_Minibuffer'
         });
 
         /* -----[ main content ]----- */
         if (this.buffers.length == 0)
             this.createBuffer();
 
-        var frame = this.createFrame({buffer: this.buffers[0]});
+        const frame = this.createFrame({buffer: this.buffers[0]});
 
-        this.packWidget(this.minibuffer_frame, {pos: "bottom"});
-        this.packWidget(frame, {pos: "top", fill: "*"});
+        this.packWidget(this.minibuffer_frame, {pos: 'bottom'});
+        this.packWidget(frame, {pos: 'top', fill: '*'});
 
         // this.__activeFrameEvents = {
         //         // onPointChange: this._on_activeFramePointChange.$(this)
@@ -122,10 +123,10 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P._addBufferListeners = function (buf) {
-        var self = this;
-        buf.addEventListener("onDestroy", function () {
-            var fr = self.getActiveFrame();
-            self.getBufferFrames(buf).foreach(function (f) {
+        const self = this;
+        buf.addEventListener('onDestroy', () => {
+            const fr = self.getActiveFrame();
+            self.getBufferFrames(buf).foreach((f) => {
                 if (f !== fr) {
                     self.deleteFrame(f);
                 }
@@ -137,20 +138,20 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P.pushToKillRing = function (text, prepend) {
-        prepend ? this.killRing.unshift(text)
-            : this.killRing.push(text);
+        if (prepend) this.killRing.unshift(text);
+        else this.killRing.push(text);
     };
 
     P.killRingToMaster = function () {
         if (this.killRing.length && (this.killMasterOfRings.length == 0 ||
-            this.killMasterOfRings.peek().join("") != this.killRing.join("")))
+            this.killMasterOfRings.peek().join('') != this.killRing.join('')))
             this.killMasterOfRings.push(this.killRing);
         this.killRing = [];
 
     };
 
     P.killRingText = function () {
-        return this.killRing.join("");
+        return this.killRing.join('');
     };
 
     P.rotateKillRing = function (push) {
@@ -166,28 +167,26 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
     P.getBuffer = function (buf) {
         if (!(buf instanceof Ymacs_Buffer)) {
-            buf = this.buffers.grep_first(function (b) {
-                return b.name == buf;
-            });
+            buf = this.buffers.grep_first((b) => b.name == buf);
         }
         return buf;
     };
 
-    P.killBuffer = function (buf) {
-        buf = this.getBuffer(buf);
-        this.callHooks("onDeleteBuffer", buf);
+    P.killBuffer = function (_buf) {
+        const buf = this.getBuffer(_buf);
+        this.callHooks('onDeleteBuffer', buf);
         buf.destroy();
     };
 
-    P.renameBuffer = function (buf, name) {
-        buf = this.getBuffer(buf);
+    P.renameBuffer = function (_buf, name) {
+        const buf = this.getBuffer(_buf);
         buf.name = name;
-        buf.callHooks("onProgressChange");
+        buf.callHooks('onProgressChange');
     };
 
     P._do_switchToBuffer = function (buf) {
         this.getActiveFrame().setBuffer(buf);
-        this.callHooks("onBufferSwitch", buf);
+        this.callHooks('onBufferSwitch', buf);
     };
 
     P.createOrOpen = async function (file) {
@@ -206,7 +205,8 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P.switchToBuffer = function (maybeName) {
-        var buf = this.getBuffer(maybeName), a = this.buffers;
+        let buf = this.getBuffer(maybeName);
+        const a = this.buffers;
         if (!buf) {
             // create new buffer
             buf = this.createBuffer({name: maybeName});
@@ -218,79 +218,78 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P.nextHiddenBuffer = function (cur) {
-        var a = this.buffers.grep(function (buf) {
+        const a = this.buffers.grep((buf) => {
             if (buf === cur) return false;
-            var hidden = true;
-            buf.forAllFrames(function () {
-                hidden = false
+            let hidden = true;
+            buf.forAllFrames(() => {
+                hidden = false;
             });
             return hidden;
         });
         if (a.length > 0) {
-            var buf = a[0];
+            const buf = a[0];
             this.buffers.remove(buf);
             this.buffers.push(buf);
             this._do_switchToBuffer(buf);
         } else {
-            this.switchToBuffer("*scratch*");
+            this.switchToBuffer('*scratch*');
         }
     };
 
     P.switchToNextBuffer = function () {
-        var a = this.buffers;
+        const a = this.buffers;
         if (a.length > 1) {
-            var buf = a.shift();
+            const buf = a.shift();
             a.push(buf);
             this._do_switchToBuffer(a[0]);
         }
     };
 
     P.switchToPreviousBuffer = function () {
-        var a = this.buffers;
+        const a = this.buffers;
         if (a.length > 1) {
-            var buf = a.pop();
+            const buf = a.pop();
             a.unshift(buf);
             this._do_switchToBuffer(buf);
         }
     };
 
     P.getNextBuffer = function (buf, n) {
-        if (n == null) n = 1;
-        var a = this.buffers;
+        if (n === null) n = 1;
+        const a = this.buffers;
         return a[a.rotateIndex(a.find(buf) + n)];
     };
 
     P.getPrevBuffer = function (buf, n) {
-        if (n == null) n = 1;
-        var a = this.buffers;
+        if (n === null) n = 1;
+        const a = this.buffers;
         return a[a.rotateIndex(a.find(buf) - n)];
     };
 
     P.getBufferFrames = function (buf) {
         buf = this.getBuffer(buf);
-        return this.frames.grep(function (f) {
-            return f.buffer === buf;
-        });
+        return this.frames.grep((f) => f.buffer === buf);
     };
 
     P.createBuffer = function (args) {
         if (!args) args = {};
         Object.merge(args, {ymacs: this});
-        var buf = new Ymacs_Buffer(args);
+        const buf = new Ymacs_Buffer(args);
         this._addBufferListeners(buf);
         if (!args.hidden)
             this.buffers.push(buf);
-        this.callHooks("onCreateBuffer", buf);
+        this.callHooks('onCreateBuffer', buf);
         return buf;
     };
 
     P.createFrame = function (args) {
         if (!args) args = {};
         Object.merge(args, {ymacs: this});
-        var frame = new Ymacs_Frame(args);
+        const frame = new Ymacs_Frame(args);
         if (!args.hidden)
             this.frames.unshift(frame);
-        frame.addEventListener("onDestroy", function (frame) {
+        // eslint-disable-next-line no-shadow
+        frame.addEventListener('onDestroy', function (frame) {
             this.frames.remove(frame);
         }.$(this, frame));
         frame.setStyle(this.cf_frameStyle);
@@ -301,17 +300,17 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
         style = this.cf_frameStyle = reset
             ? Object.makeCopy(style)
             : Object.merge(this.cf_frameStyle, style);
-        [this.minibuffer_frame].concat(this.frames).foreach(function (frame) {
+        [this.minibuffer_frame].concat(this.frames).foreach((frame) => {
             frame.setStyle(style);
-            frame.setStyle("height", "");
+            frame.setStyle('height', '');
         });
-        this.minibuffer_frame.getOverlaysContainer().style.height = "";
+        this.minibuffer_frame.getOverlaysContainer().style.height = '';
         this.doLayout();
     };
 
     P.keepOnlyFrame = function (frame) {
         if (this.frames.length > 1) {
-            var p = frame.parent;
+            let p = frame.parent;
             while (p.parent != this)
                 p = p.parent;
             this.replaceWidget(p, frame);
@@ -323,14 +322,13 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
     P.deleteFrame = function (frame) {
         if (this.frames.length > 1) {
-            var p = frame.parent, other = p.children().grep_first(function (f) {
-                return f instanceof DlLayout || f instanceof Ymacs_Frame && f !== frame;
-            });
+            const p = frame.parent;
+            let other = p.children().grep_first((f) => f instanceof DlLayout || f instanceof Ymacs_Frame && f !== frame);
             if (p._resizeBar) p._resizeBar._widget = other;
             p.parent.replaceWidget(p, other);
             p.destroy();
             try {
-                DOM.walk(other.getElement(), function (el) {
+                DOM.walk(other.getElement(), (el) => {
                     el = DlWidget.getFromElement(el);
                     if (el && el instanceof Ymacs_Frame)
                         throw el;
@@ -350,8 +348,8 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P.listBuffers = function () {
-        this.setMinibuffer("This\nIs\nA\nList\nOf\nFiles");
-    }
+        this.setMinibuffer('This\nIs\nA\nList\nOf\nFiles');
+    };
 
     P.focus = function () {
         D.BASE.focus.apply(this, arguments);
@@ -364,9 +362,9 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
     P.setActiveFrame = function (frame, nofocus) {
         if (!frame.isMinibuffer) {
-            var old = this.getActiveFrame();
+            const old = this.getActiveFrame();
             if (old) {
-                old.delClass("Ymacs_Frame-active");
+                old.delClass('Ymacs_Frame-active');
             }
             this.frames.remove(frame);
             this.frames.push(frame);
@@ -381,7 +379,7 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P.getActiveBuffer = function () {
-        var frame = this.getActiveFrame();
+        const frame = this.getActiveFrame();
         return frame ? frame.buffer : this.buffers.peek();
     };
 
@@ -389,53 +387,53 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
         this.delClass(/Ymacs-Theme-[^\s]*/g);
         if (!(themeId instanceof Array))
             themeId = [themeId];
-        themeId.foreach(function (themeId) {
-            this.addClass("Ymacs-Theme-" + themeId);
+        themeId.foreach(function (t) {
+            this.addClass('Ymacs-Theme-' + t);
         }, this);
     };
 
     P.getFrameInDirection = function (dir, pos, frame) {
         if (!frame)
             frame = this.getActiveFrame();
-        var caret = frame.getCaretElement();
+        const caret = frame.getCaretElement();
         if (!pos)
             pos = DOM.getPos(caret);
         if (!pos.sz)
             pos.sz = DOM.getOuterSize(caret);
-        var byx = this.frames.mergeSort(function (a, b) {
-            return a.getPos().x - b.getPos().x
-        });
-        var byy = this.frames.mergeSort(function (a, b) {
-            return a.getPos().y - b.getPos().y
-        });
-        return this["_get_frameInDir_" + dir](byx, byy, pos, frame);
+        const byx = this.frames.mergeSort((a, b) =>
+            a.getPos().x - b.getPos().x
+        );
+        const byy = this.frames.mergeSort((a, b) =>
+            a.getPos().y - b.getPos().y
+        );
+        return this['_get_frameInDir_' + dir](byx, byy, pos, frame);
     };
 
     function selectClosestFrameX(byx, pos) {
         if (byx.length > 0) {
-            var x = byx.peek().getPos().x, a = [byx.pop()];
+            const x = byx.peek().getPos().x, a = [byx.pop()];
             while (byx.length > 0 && byx.peek().getPos().x == x)
                 a.push(byx.pop());
-            return a.minElement(function (f) {
-                return Math.abs(pos.y - f.getPos().y - f.getSize().y / 2);
-            });
+            return a.minElement((f) =>
+                Math.abs(pos.y - f.getPos().y - f.getSize().y / 2)
+            );
         }
-    };
+    }
 
     function selectClosestFrameY(byy, pos) {
         if (byy.length > 0) {
-            var y = byy.peek().getPos().y, a = [byy.pop()];
-            while (byy.length > 0 && byy.peek().getPos().y == y)
+            const y = byy.peek().getPos().y, a = [byy.pop()];
+            while (byy.length > 0 && byy.peek().getPos().y === y)
                 a.push(byy.pop());
-            return a.minElement(function (f) {
-                return Math.abs(pos.x - f.getPos().x - f.getSize().x / 2);
-            });
+            return a.minElement((f) =>
+                Math.abs(pos.x - f.getPos().x - f.getSize().x / 2)
+            );
         }
-    };
+    }
 
     P._get_frameInDir_left = function (byx, byy, pos, frame) {
-        byx = byx.grep(function (f) {
-            var p = f.getPos(), s = f.getSize();
+        byx = byx.grep((f) => {
+            const p = f.getPos(), s = f.getSize();
             return (f !== frame) && (p.x < pos.x) && (p.y - pos.sz.y <= pos.y) && (p.y + s.y > pos.y);
         });
         return selectClosestFrameX(byx, pos);
@@ -443,16 +441,16 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
     P._get_frameInDir_right = function (byx, byy, pos, frame) {
         byx.reverse();
-        byx = byx.grep(function (f) {
-            var p = f.getPos(), s = f.getSize();
+        byx = byx.grep((f) => {
+            const p = f.getPos(), s = f.getSize();
             return (f !== frame) && (p.x > pos.x) && (p.y - pos.sz.y <= pos.y) && (p.y + s.y > pos.y);
         });
         return selectClosestFrameX(byx, pos);
     };
 
     P._get_frameInDir_up = function (byx, byy, pos, frame) {
-        byy = byy.grep(function (f) {
-            var p = f.getPos(), s = f.getSize();
+        byy = byy.grep((f) => {
+            const p = f.getPos(), s = f.getSize();
             return (f !== frame) && (p.y < pos.y) && (p.x - pos.sz.x <= pos.x) && (p.x + s.x > pos.x);
         });
         return selectClosestFrameY(byy, pos);
@@ -460,8 +458,8 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
     P._get_frameInDir_down = function (byx, byy, pos, frame) {
         byy.reverse();
-        byy = byy.grep(function (f) {
-            var p = f.getPos(), s = f.getSize();
+        byy = byy.grep((f) => {
+            const p = f.getPos(), s = f.getSize();
             return (f !== frame) && (p.y > pos.y) && (p.x - pos.sz.x <= pos.x) && (p.x + s.x > pos.x);
         });
         return selectClosestFrameY(byy, pos);
@@ -471,52 +469,53 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
 
     function ensureLocalStorage() {
         if (!(window.localStorage && window.localStorage.getItem))
-            throw new Ymacs_Exception("Local storage facility not available in this browser");
-    };
+            throw new Ymacs_Exception('Local storage facility not available in this browser');
+    }
 
     P.ls_get = function () {
         ensureLocalStorage();
-        return DlJSON.decode(localStorage.getItem(".ymacs") || "{}", true);
+        return DlJSON.decode(localStorage.getItem('.ymacs') || '{}', true);
     };
 
     P.ls_set = function (src) {
         ensureLocalStorage();
-        localStorage.setItem(".ymacs", DlJSON.encode(src));
+        localStorage.setItem('.ymacs', DlJSON.encode(src));
     };
 
     P.ls_getFileContents = function (name, nothrow) {
-        var info = this.ls_getFileDirectory(name), other = info.other, code;
-        if (other.length == 1) {
+        const info = this.ls_getFileDirectory(name), other = info.other;
+        let code = '';
+        if (other.length === 1) {
             code = info.dir[other[0]];
         }
-        if (code == null && !nothrow) {
-            throw new Ymacs_Exception("File not found");
+        if (code === null && !nothrow) {
+            throw new Ymacs_Exception('File not found');
         }
         return code;
     };
 
     P.ls_setFileContents = function (name, content) {
-        var files = this.ls_getFileDirectory(name, "file");
+        const files = this.ls_getFileDirectory(name, 'file');
         files.dir[files.other[0]] = content;
         this.ls_set(files.store);
     };
 
     P.ls_getFileDirectory = function (name, create) {
-        var store, dir = store = this.ls_get(), back = [];
-        name = name.replace(/^[~\x2f]+/, "").split(/\x2f+/);
-        var path = [], other = [];
+        let store, dir = store = this.ls_get(), back = [];
+        name = name.replace(/^[~\x2f]+/, '').split(/\x2f+/);
+        let path = [], other = [];
         while (name.length > 0) {
-            var part = name.shift();
-            if (part == ".") continue;
-            if (part == "..") {
+            const part = name.shift();
+            if (part == '.') continue;
+            if (part == '..') {
                 path.pop();
                 dir = back.pop();
-            } else if (part == "~") {
+            } else if (part == '~') {
                 path = [];
                 other = [];
                 back = [];
                 dir = store;
-            } else if (dir.hasOwnProperty(part) && (typeof dir[part] != "string")) {
+            } else if (dir.hasOwnProperty(part) && (typeof dir[part] != 'string')) {
                 back.push(dir);
                 dir = dir[part];
                 path.push(part);
@@ -525,45 +524,45 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
             }
         }
         if (create) {
-            var n = create == "file" ? 1 : 0;
+            const n = create == 'file' ? 1 : 0;
             while (other.length > n) {
                 dir = dir[other.shift()] = {};
             }
             this.ls_set(store);
         }
         return {
-            store: store,
-            dir: dir,
-            path: path,
-            other: other,
-            full: path.concat(other).join("/")
+            store,
+            dir,
+            path,
+            other,
+            full: path.concat(other).join('/')
         };
     };
 
     P.ls_deleteFile = function (name) {
-        var info = this.ls_getFileDirectory(name);
-        delete info.dir[info.other.join("/")];
+        const info = this.ls_getFileDirectory(name);
+        delete info.dir[info.other.join('/')];
         this.ls_set(info.store);
     };
 
     /* -----[ filesystem operations ]----- */
 
     P.fs_normalizePath = function (path) {
-        path = path.replace(/^[~\x2f]+/, "").split(/\x2f+/);
-        var ret = [];
+        path = path.replace(/^[~\x2f]+/, '').split(/\x2f+/);
+        let ret = [];
         while (path.length > 0) {
-            var x = path.shift();
-            if (x != ".") {
-                if (x == "..") {
+            const x = path.shift();
+            if (x !== '.') {
+                if (x === '..') {
                     ret.pop();
-                } else if (x == "~") {
+                } else if (x === '~') {
                     ret = [];
                 } else {
                     ret.push(x);
                 }
             }
         }
-        return ret.join("/");
+        return ret.join('/');
     };
 
     P.fs_fileType = function (name, cont) {
@@ -576,12 +575,12 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P.fs_getFileContents = function (name, nothrow, cont) {
-        var code = this.ls_getFileContents(name, nothrow);
+        const code = this.ls_getFileContents(name, nothrow);
         cont(code, code); // second parameter is file stamp, on a real fs it should be last modification time
     };
 
     P.fs_setFileContents = function (name, content, stamp, cont) {
-        if (stamp && (this.ls_getFileContents(name, true) || "") != stamp) {
+        if (stamp && (this.ls_getFileContents(name, true) || '') != stamp) {
             cont(null); // did not change file because stamp is wrong
         } else {
             this.ls_setFileContents(name, content);
@@ -590,18 +589,18 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
     };
 
     P.fs_getDirectory = function (dirname, cont) {
-        var info = this.ls_getFileDirectory(dirname, false);
-        dirname = info.path.join("/"); // normalized
+        const info = this.ls_getFileDirectory(dirname, false);
+        dirname = info.path.join('/'); // normalized
         if (info) {
-            var files = {};
-            for (var f in info.dir) {
+            const files = {};
+            for (const f in info.dir) {
                 if (Object.HOP(info.dir, f)) {
                     files[f] = {
                         name: f,
-                        path: dirname + "/" + f,
-                        type: (typeof info.dir[f] == "string"
-                            ? "regular"
-                            : "directory")
+                        path: dirname + '/' + f,
+                        type: (typeof info.dir[f] == 'string'
+                            ? 'regular'
+                            : 'directory')
                     };
                 }
             }
@@ -666,7 +665,7 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
                 this.__running_macro = null;
                 return;
             }
-            var ev = this.__running_macro[this.__macro_step];
+            const ev = this.__running_macro[this.__macro_step];
             this.processKeyEvent(ev, ev.wasKeypress);
             this.__macro_step++;
         }
@@ -679,16 +678,16 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
         this.__running_macro = macro;
         this.__macro_step = 0;
         this.__macro_times = times;
-        var self = this;
-        setTimeout(function () {
+        const self = this;
+        setTimeout(() => {
             self.stepMacro();
         }, 0);
         return true;
     };
 
     P.processKeyEvent = function (ev, press) {
-        var frame = this.__input_frame;
-        var buffer = frame.buffer;
+        const frame = this.__input_frame;
+        const buffer = frame.buffer;
 
         ev.wasKeypress = press;
         if (!ev._keyCode)
@@ -703,7 +702,7 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
             return buffer._handleKeyEvent(ev);
         } else {
             if (!is_gecko) {
-                var ki = window.KEYBOARD_INSANITY, code = ev.keyCode || ev._keyCode;
+                const ki = window.KEYBOARD_INSANITY, code = ev.keyCode || ev._keyCode;
                 if (code == 0 || code in ki.modifiers)
                     return false;
                 if ((code in ki.letters || code in ki.digits || code in ki.symbols) && !(ev.ctrlKey || ev.altKey)) {

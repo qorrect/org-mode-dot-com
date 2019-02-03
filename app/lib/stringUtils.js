@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const lowerAlphaChars = 'abcdefghijklmnopqrstuvwxyz';
 const upperAlphaChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const specialChars = '!@$%^*';
@@ -18,12 +19,6 @@ function randomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
 
-function stripUserFromEmail(str) {
-  const idx = str.indexOf('@');
-  if (idx !== -1) {
-    return str.substr(0, idx);
-  }
-}
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
