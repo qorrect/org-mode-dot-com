@@ -190,6 +190,21 @@ DEFINE_CLASS("Ymacs", DlLayout, function (D, P, DOM) {
         this.callHooks("onBufferSwitch", buf);
     };
 
+    P.createOrOpen = async function (file) {
+        const ymacs = this;
+        const buffer = ymacs.getBuffer(file);
+        if (buffer) {
+            ymacs.switchToBuffer(buffer);
+        } else {
+            const newBuffer = ymacs.createBuffer({name: file});
+            const contents = await DAO.get(file);
+            newBuffer.setCode(contents || '');
+            ymacs.switchToBuffer(newBuffer);
+            const mode = determineMode(file);
+            if (mode) newBuffer.cmd(mode);
+        }
+    };
+
     P.switchToBuffer = function (maybeName) {
         var buf = this.getBuffer(maybeName), a = this.buffers;
         if (!buf) {

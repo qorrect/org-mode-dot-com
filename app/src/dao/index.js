@@ -1,0 +1,1 @@
+const DAO = new LocalStorageDAO();

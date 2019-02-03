@@ -28,8 +28,6 @@ DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
 
 });
 
-DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap_OrgMode().constructor, function (D, P) {
-});
 
 function safePush(obj, label, element) {
     if (obj[label.toString()] !== undefined) {

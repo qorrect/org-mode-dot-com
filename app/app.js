@@ -1,66 +1,15 @@
 // This has become the org-mode-dot-com app , Charlie Manning Sanders 1/11/2019
 
-// ORIGINAL COMMENTS
+class Application {
 
-/*
+    async main() {
 
-  Note that this file is just an example.  It should not be treated as
-  part of Ymacs itself.  Ymacs is just an editing platform and as such
-  it has no menus, no toolbar etc.  These can be easily added using
-  other DynarchLIB widgets, as this file demonstrates.
+    }
+}
 
-  If a collection of useful menus/toolbars will emerge, a new compound
-  widget will be defined.
-
-*/
-
-
-var desktop = new DlDesktop({});
+const desktop = new DlDesktop({});
 desktop.fullScreen();
 
-function print(obj) {
-    let a = [], i;
-    for (i in obj) {
-        var val = obj[i];
-        if (val instanceof Function)
-            val = val.toString();
-        else
-            val = DlJSON.encode(val);
-        a.push(DlJSON.encode(i) + " : " + val);
-    }
-    return a.map(function (line) {
-        return line.replace(/^/mg, function (s) {
-            return "        ";
-        });
-    }).join("\n");
-};
-
-
-async function createOrOpen(ymacs, file) {
-
-    const buffer = ymacs.getBuffer(file);
-    if (buffer) {
-        ymacs.switchToBuffer(buffer);
-    } else {
-        const newBuffer = ymacs.createBuffer({name: file});
-        const contents = await DAO.get(file);
-        newBuffer.setCode(contents || '');
-        ymacs.switchToBuffer(newBuffer);
-        const mode = determineMode(file);
-        if (mode) newBuffer.cmd(mode);
-    }
-}
-
-// TODO:  Make org modes register file extension types , or if they do already use those
-function determineMode(filename) {
-    const idx = filename.lastIndexOf('.');
-    if (idx > 0) {
-        const ext = filename.substr(idx + 1).toLowerCase();
-        if (ext === "js" || ext === "json") return "javascript_dl_mode";
-        if (ext === "org") return "org_mode";
-    }
-    return "";
-}
 
 try {
 
@@ -159,7 +108,7 @@ try {
 
                     let menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
                     menuItem.addEventListener("onSelect", async function () {
-                        await createOrOpen(ymacs, file);
+                        await ymacs.createOrOpen(file);
                     });
                 }
             });
