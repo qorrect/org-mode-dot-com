@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 //> This file is part of Ymacs, an Emacs-like editor for the Web
 //> http://www.ymacs.org/
 //>
@@ -33,37 +34,37 @@
 
 // @require ymacs-interactive.js
 
-DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
+DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
 
     D.DEFAULT_EVENTS = [
-        "onLineChange",
-        "onInsertLine",
-        "onDeleteLine",
-        "onPointChange",
-        "onResetCode",
-        "onMessage",
-        "onOverwriteMode",
-        "onOverlayChange",
-        "onOverlayDelete",
-        "beforeInteractiveCommand",
-        "afterInteractiveCommand",
-        "beforeRedraw",
-        "afterRedraw",
-        "finishedEvent",
-        "onProgressChange",
-        "onTextInsert",
-        "onTextDelete"
+        'onLineChange',
+        'onInsertLine',
+        'onDeleteLine',
+        'onPointChange',
+        'onResetCode',
+        'onMessage',
+        'onOverwriteMode',
+        'onOverlayChange',
+        'onOverlayDelete',
+        'beforeInteractiveCommand',
+        'afterInteractiveCommand',
+        'beforeRedraw',
+        'afterRedraw',
+        'finishedEvent',
+        'onProgressChange',
+        'onTextInsert',
+        'onTextDelete'
     ];
 
     D.DEFAULT_ARGS = {
-        name: ["name", "*scratch*"],
-        _code: ["code", null],
-        ymacs: ["ymacs", null],
-        tokenizer: ["tokenizer", null],
-        isMinibuffer: ["isMinibuffer", false]
+        name: ['name', '*scratch*'],
+        _code: ['code', null],
+        ymacs: ['ymacs', null],
+        tokenizer: ['tokenizer', null],
+        isMinibuffer: ['isMinibuffer', false]
     };
 
-    var GLOBAL_VARS = {
+    const GLOBAL_VARS = {
         case_fold_search: true,
         line_movement_requested_col: 0,
         fill_column: 78,
@@ -77,7 +78,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     function setq(key, val) {
-        if (typeof key == "string") {
+        if (typeof key == 'string') {
             if (val === undefined)
                 delete this[key];
             else
@@ -86,8 +87,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
                 val.ymacsCommand = key;
             return val;
         } else {
-            var changed = {};
-            for (var i in key) {
+            const changed = {};
+            for (const i in key) {
                 changed[i] = this[i];
                 setq.call(this, i, key[i]);
             }
@@ -95,7 +96,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         }
     };
 
-    var MAX_UNDO_RECORDS = 50000; // XXX: should we not limit?
+    const MAX_UNDO_RECORDS = 50000; // XXX: should we not limit?
 
     function MRK(x) {
         return x instanceof Ymacs_Marker ? x.getPosition() : x;
@@ -103,15 +104,15 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
 
     function TEST_UNICODE_WORD_CHAR(c) {
         if (c) {
-            var code = c.charCodeAt(0);
+            const code = c.charCodeAt(0);
             return (code >= 48 && code <= 57) || c.toUpperCase() != c.toLowerCase();
         }
     };
 
     function TEST_DABBREV_WORD_CHAR(c) {
         if (c) {
-            var code = c.charCodeAt(0);
-            return (code >= 48 && code <= 57) || c == "_" || c.toUpperCase() != c.toLowerCase();
+            const code = c.charCodeAt(0);
+            return (code >= 48 && code <= 57) || c == '_' || c.toUpperCase() != c.toLowerCase();
         }
     };
 
@@ -120,9 +121,9 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         str = str.substring(0, caret);
         re = Ymacs_Regexp.search_backward(re);
         re.lastIndex = bound || 0;
-        var m = re.exec(str);
+        const m = re.exec(str);
         if (m) {
-            var a = Array.$(m, 2);
+            const a = Array.$(m, 2);
             a.index = m.index + m[1].length;
             a.after = m.index + m[0].length;
             a[0] = str.substring(a.index, a.after);
@@ -139,9 +140,9 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
 
     D.replaceCommands = P.replaceCommands = function (cmds) {
         this.COMMANDS = Object.makeCopy(this.COMMANDS);
-        var replacements = {};
+        const replacements = {};
         Object.foreach(cmds, function (newcmd, oldcmd) {
-            if (typeof newcmd == "string") newcmd = this[newcmd];
+            if (typeof newcmd == 'string') newcmd = this[newcmd];
             replacements[oldcmd] = newcmd;
         }, this.COMMANDS);
         return this.newCommands(replacements);
@@ -149,11 +150,11 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
 
 
     D.newMode = P.newMode = function (name, activate) {
-        var modevar = "*" + name + "*", hookvar = modevar + "hooks";
+        const modevar = '*' + name + '*', hookvar = modevar + 'hooks';
         this.currentMode = name;
         D.setGlobal(hookvar, []);
-        this.COMMANDS[name] = Ymacs_Interactive("P", function (force) {
-            var status = this.getq(modevar);
+        this.COMMANDS[name] = Ymacs_Interactive('P', function (force) {
+            const status = this.getq(modevar);
             if (status) {
                 // currently active
                 if (force !== true) {
@@ -171,7 +172,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             } else {
                 // inactive
                 if (force !== false) {
-                    var off = activate.apply(this, arguments);
+                    const off = activate.apply(this, arguments);
                     if (!(off instanceof Function))
                         off = true;
                     this.setq(modevar, off);
@@ -186,22 +187,22 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     D.addModeHook = P.addModeHook = function (name, func) {
-        if (typeof func == "string")
+        if (typeof func == 'string')
             func = this.COMMANDS[func];
-        var hookvar = "*" + name + "*hooks";
+        const hookvar = '*' + name + '*hooks';
         this.getq(hookvar).pushUnique(func);
     };
 
     D.removeModeHook = P.removeModeHook = function (name, func) {
-        if (typeof func == "string")
+        if (typeof func == 'string')
             func = this.COMMANDS[func];
-        var hookvar = "*" + name + "*hooks";
+        const hookvar = '*' + name + '*hooks';
         this.getq(hookvar).remove(func);
     };
 
     D.FIXARGS = function (args) {
         if (args.code == null)
-            args.code = "";
+            args.code = '';
     };
 
     D.CONSTRUCT = function () {
@@ -215,8 +216,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         this.__overlays = {};
 
         this.markers = [];
-        this.caretMarker = this.createMarker(0, false, "point");
-        this.markMarker = this.createMarker(0, true, "mark");
+        this.caretMarker = this.createMarker(0, false, 'point');
+        this.markMarker = this.createMarker(0, true, 'mark');
         this._highlightMarker = null;
 
         this.matchData = [];
@@ -233,22 +234,22 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             this._rowcol = this.caretMarker.getRowCol();
             // XXX: this shouldn't be needed
             if (this.__preventUpdates == 0) {
-                this.callHooks("onPointChange", this._rowcol, this.point());
+                this.callHooks('onPointChange', this._rowcol, this.point());
             }
         });
 
         this._tokenizerEvents = {
-            "onFoundToken": this._on_tokenizerFoundToken.$(this)
+            'onFoundToken': this._on_tokenizerFoundToken.$(this)
         };
 
         this._textProperties = new Ymacs_Text_Properties({buffer: this});
-        this._textProperties.addEventListener("onChange", this._on_textPropertiesChange.$(this));
+        this._textProperties.addEventListener('onChange', this._on_textPropertiesChange.$(this));
 
         this.keymap = [];
         this.pushKeymap(this.makeDefaultKeymap());
         this.setCode(this._code);
         this._lastCommandWasKill = 0;
-        delete this["_code"];
+        delete this['_code'];
     };
 
     /* -----[ dynamic variables ]----- */
@@ -266,9 +267,9 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         const idx = filename.lastIndexOf('.');
         if (idx > 0) {
             const ext = filename.substr(idx + 1).toLowerCase();
-            if (ext === "js" || ext === "json") ret = "javascript_dl_mode";
-            if (ext === "org") ret = "org_mode";
-            if (ext === "xml") ret = "xml_mode";
+            if (ext === 'js' || ext === 'json') ret = 'javascript_dl_mode';
+            if (ext === 'org') ret = 'org_mode';
+            if (ext === 'xml') ret = 'xml_mode';
         }
 
         if (ret) {
@@ -281,7 +282,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.setHighlightMarker = function (pos) {
-        this._highlightMarker = this.createMarker(pos, true, "highlight");
+        this._highlightMarker = this.createMarker(pos, true, 'highlight');
     };
 
     P.cancelHighlightMarker = function () {
@@ -289,7 +290,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.withVariables = function (vars, cont) {
-        var saved = {}, i, ret;
+        let saved = {}, i, ret;
         for (i in vars) {
             saved[i] = this.variables[i];
             this.variables[i] = vars[i];
@@ -310,7 +311,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.withCommands = function (cmds, cont) {
-        var saved = this.COMMANDS;
+        const saved = this.COMMANDS;
         this.COMMANDS = Object.makeCopy(saved);
         Object.merge(this.COMMANDS, cmds);
         try {
@@ -367,11 +368,11 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     P.signalError = function (text, html, timeout) {
         // Terminates a running macro
         this.ymacs.indicateError();
-        this.callHooks("onMessage", "error", text, html, timeout);
+        this.callHooks('onMessage', 'error', text, html, timeout);
     };
 
     P.signalInfo = function (text, html, timeout) {
-        this.callHooks("onMessage", "info", text, html, timeout);
+        this.callHooks('onMessage', 'info', text, html, timeout);
     };
 
     P.createMarker = function (pos, before, name) {
@@ -403,13 +404,13 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         this.__undoQueue = [];
         this.__undoPointer = 0;
         this.__overlays = {};
-        this.markers.map("setPosition", 0, true, true);
+        this.markers.map('setPosition', 0, true, true);
         this.code = code.split(/\n/);
         this._textProperties.reset();
         if (this.tokenizer) {
             this.tokenizer.reset();
         }
-        this.callHooks("onResetCode", this.code);
+        this.callHooks('onResetCode', this.code);
         this.caretMarker.setPosition(0, false, true);
         this.markMarker.setPosition(0, true);
         this.forAllFrames(function (frame) {
@@ -428,18 +429,18 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             tok.addEventListener(this._tokenizerEvents);
         } else {
             this._textProperties.reset();
-            this.callHooks("onResetCode", this.code);
+            this.callHooks('onResetCode', this.code);
         }
     };
 
     P.getCode = function () {
-        return this.__code || (this.__code = this.code.join("\n"));
+        return this.__code || (this.__code = this.code.join('\n'));
     };
 
     P.getCodeSize = function () {
         if (this.__size)
             return this.__size;
-        var i = this.code.length, size = i > 0 ? -1 : 0;
+        let i = this.code.length, size = i > 0 ? -1 : 0;
         while (--i >= 0)
             size += this.code[i].length + 1;
         return this.__size = size;
@@ -452,12 +453,12 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.charAtRowCol = function (row, col) {
-        var n = this.code.length;
+        let n = this.code.length;
         if (row >= n--)
             return null;
-        var line = this.code[row];
+        const line = this.code[row];
         if (col == line.length)
-            return row == n && line.charAt(col) || "\n";
+            return row == n && line.charAt(col) || '\n';
         return line.charAt(col);
     };
 
@@ -469,14 +470,14 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             if (point < 0)
                 point += this.point();
         }
-        var rc = this._positionToRowCol(point);
+        const rc = this._positionToRowCol(point);
         return this.charAtRowCol(rc.row, rc.col);
     };
 
     P.callInteractively = function (func, args, finalArgs) {
         if (!args)
             args = []; // make IE happy
-        var cmd;
+        let cmd;
         if (!(func instanceof Function)) {
             cmd = func;
             func = this.COMMANDS[func];
@@ -494,17 +495,17 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         this.currentCommand = cmd;
         if (this.previousCommand != cmd) {
             this.sameCommandCount(0);
-            if (cmd != "undo") {
+            if (cmd != 'undo') {
                 this._placeUndoBoundary();
             }
-        } else if (cmd != "self_insert_command" || this.sameCommandCount() % 20 == 0) {
-            if (cmd != "undo") {
+        } else if (cmd != 'self_insert_command' || this.sameCommandCount() % 20 == 0) {
+            if (cmd != 'undo') {
                 this._placeUndoBoundary();
             }
         }
         this.preventUpdates();
         try {
-            this.callHooks("beforeInteractiveCommand", cmd, func);
+            this.callHooks('beforeInteractiveCommand', cmd, func);
             if (!func.ymacsMarkExtend)
                 this.clearTransientMark();
             return func.apply(this, args);
@@ -515,11 +516,11 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
                 throw ex;
             }
         } finally {
-            if (cmd != "undo") {
+            if (cmd != 'undo') {
                 this.__undoPointer = this.__undoQueue.length;
             }
             this.resumeUpdates();
-            this.callHooks("afterInteractiveCommand", cmd, func);
+            this.callHooks('afterInteractiveCommand', cmd, func);
             this.previousCommand = cmd;
             this.sameCommandCount(+1);
         }
@@ -528,8 +529,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     P.resetOverwriteMode = function (om) {
         if (arguments.length == 0)
             om = this.overwriteMode;
-        this.callHooks("onOverwriteMode", this.overwriteMode = !om);
-        this.signalInfo(om ? "Insert mode" : "Overwrite mode");
+        this.callHooks('onOverwriteMode', this.overwriteMode = !om);
+        this.signalInfo(om ? 'Insert mode' : 'Overwrite mode');
     };
 
     P.getMinibuffer = function () {
@@ -547,7 +548,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     P.setMinibuffer = function (text) {
         this.whenMinibuffer(function (mb) {
             mb.setCode(text);
-            mb.cmd("end_of_buffer");
+            mb.cmd('end_of_buffer');
         });
     };
 
@@ -564,19 +565,19 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     P.createDialog = function (args) {
         if (!args.parent) {
             args.parent = this.getActiveFrame() && this.getActiveFrame().getParentDialog();
-            if (!("noShadows" in args)) {
+            if (!('noShadows' in args)) {
                 args.noShadows = true;
             }
         }
-        var dlg = new DlDialog(args);
+        const dlg = new DlDialog(args);
         this.whenActiveFrame(function (frame) {
-            dlg.addEventListener("onDestroy", frame.focus.clearingTimeout(0, frame));
+            dlg.addEventListener('onDestroy', frame.focus.clearingTimeout(0, frame));
         });
         return dlg;
     };
 
     P.getActiveFrame = function () {
-        return this.whenYmacs("getActiveFrame");
+        return this.whenYmacs('getActiveFrame');
     };
 
     // This function receives a string and a continuation.  If
@@ -606,11 +607,11 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
 
     // XXX: this is way too ugly.
     P.whenActiveFrame = function () {
-        var fr = this.getActiveFrame(); // miserable hack
+        const fr = this.getActiveFrame(); // miserable hack
         if (fr.buffer === this) {
             this.activeFrame = fr;
-            var a = Array.$(arguments);
-            a.unshift("activeFrame");
+            const a = Array.$(arguments);
+            a.unshift('activeFrame');
             return this.when.apply(this, a);
         } else {
             this.activeFrame = null;
@@ -623,8 +624,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.whenYmacs = function () {
-        var a = Array.$(arguments);
-        a.unshift("ymacs");
+        const a = Array.$(arguments);
+        a.unshift('ymacs');
         return this.when.apply(this, a);
     };
 
@@ -654,7 +655,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         begin = MRK(begin);
         end = MRK(end);
         if (end < begin) {
-            var tmp = begin;
+            const tmp = begin;
             begin = end;
             end = tmp;
         }
@@ -662,14 +663,14 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.redrawDirtyLines = function () {
-        this.callHooks("beforeRedraw");
+        this.callHooks('beforeRedraw');
         this.__dirtyLines.foreach(function (draw, row) {
             if (draw) {
-                this.callHooks("onLineChange", row);
+                this.callHooks('onLineChange', row);
             }
         }, this);
         this.__dirtyLines = [];
-        this.callHooks("afterRedraw");
+        this.callHooks('afterRedraw');
     };
 
     P.getOverlays = function () {
@@ -681,7 +682,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.setOverlay = function (name, props) {
-        var ov = this.__overlays[name], isNew = !ov, tmp;
+        let ov = this.__overlays[name], isNew = !ov, tmp;
         if (isNew)
             ov = this.__overlays[name] = props;
         else
@@ -699,16 +700,16 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             ov.col2 = ov.col1;
             ov.col1 = tmp;
         }
-        this.callHooks("onOverlayChange", name, ov, isNew);
+        this.callHooks('onOverlayChange', name, ov, isNew);
     };
 
     P.deleteOverlay = function (name) {
         delete this.__overlays[name];
-        this.callHooks("onOverlayDelete", name);
+        this.callHooks('onOverlayDelete', name);
     };
 
     P.ensureTransientMark = function () {
-        var rc = this._rowcol, tm;
+        let rc = this._rowcol, tm;
         if (!this.transientMarker) {
             this.transientMarker = this.createMarker();
             this.markMarker.setPosition(this.point());
@@ -716,7 +717,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         }
         if (!tm)
             tm = this.transientMarker.getRowCol();
-        this.setOverlay("selection", {
+        this.setOverlay('selection', {
             line1: tm.row,
             col1: tm.col,
             line2: rc.row,
@@ -728,7 +729,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         if (this.transientMarker) {
             this.transientMarker.destroy();
             this.transientMarker = null;
-            this.deleteOverlay("selection");
+            this.deleteOverlay('selection');
         }
     };
 
@@ -741,14 +742,14 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         }
     };
 
-    var $sameCommandCount = 0;
+    let $sameCommandCount = 0;
     P.sameCommandCount = function (diff) {
         if (diff == null) return $sameCommandCount;
         if (diff == 0) return $sameCommandCount = 0;
         return $sameCommandCount += diff;
     };
 
-    var $lastKeyEvent;
+    let $lastKeyEvent;
     P.interactiveEvent = function (ev) {
         if (arguments.length == 0)
             return $lastKeyEvent;
@@ -756,17 +757,17 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P.getPrefixArg = function (noDiscard) {
-        var ret = this.getq("universal_prefix");
+        const ret = this.getq('universal_prefix');
         if (!noDiscard) {
-            this.setq("universal_prefix", undefined);
+            this.setq('universal_prefix', undefined);
             if (!this.isMinibuffer)
-                this.setMinibuffer("");
+                this.setMinibuffer('');
         }
         return ret;
     };
 
     P.setPrefixArg = function (val) {
-        return this.setq("universal_prefix", val);
+        return this.setq('universal_prefix', val);
     };
 
     P.updateProgress = function (name, val) {
@@ -774,35 +775,35 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             delete this.progress[name];
         else
             this.progress[name] = val;
-        this.callHooks("onProgressChange");
+        this.callHooks('onProgressChange');
     };
 
     P.updateModeline = function () {
-        this.callHooks("onProgressChange");
+        this.callHooks('onProgressChange');
     };
 
     P.renderModelineContent = function (rc, percent) {
-        var ml = String.buffer(
-            this.__isDirty ? "**" : "--",
-            " <b>",
+        const ml = String.buffer(
+            this.__isDirty ? '**' : '--',
+            ' <b>',
             this.name.htmlEscape(),
-            "</b>",
-            " ", percent, " of ", this.getCodeSize().formatBytes(2).toLowerCase(), " ",
-            "(", rc.row + 1, ",", rc.col, ") ",
-            " (" + this.modes.toString() + ") ",
-            (this.last_key_display || "  C-x h for help  ")
+            '</b>',
+            ' ', percent, ' of ', this.getCodeSize().formatBytes(2).toLowerCase(), ' ',
+            '(', rc.row + 1, ',', rc.col, ') ',
+            ' (' + this.modes.toString() + ') ',
+            (this.last_key_display || '  C-x h for help  ')
         );
-        var custom = this.getq("modeline_custom_handler");
+        let custom = this.getq('modeline_custom_handler');
         if (custom) {
             custom = custom.call(this, this, rc);
-            if (custom) ml("[", custom, "] ");
+            if (custom) ml('[', custom, '] ');
         }
-        var pr = [];
-        for (var i in this.progress) {
-            pr.push(i + ": " + this.progress[i]);
+        const pr = [];
+        for (const i in this.progress) {
+            pr.push(i + ': ' + this.progress[i]);
         }
         if (pr.length > 0) {
-            ml("{", pr.join(", "), "}");
+            ml('{', pr.join(', '), '}');
         }
         return ml.get();
     };
@@ -813,7 +814,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
 
     P._recordChange = function (type, pos, len, text) {
         if (len > 0) {
-            var q = this.__undoQueue;
+            const q = this.__undoQueue;
             q.push({
                 type: type,
                 pos: pos,
@@ -828,11 +829,11 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P._placeUndoBoundary = function () {
-        var q = this.__undoQueue;
-        var m = this.markers.map(function (m) {
+        const q = this.__undoQueue;
+        const m = this.markers.map(function (m) {
             return [m, m.getPosition()];
         });
-        var last = q.peek();
+        const last = q.peek();
         if (!last || last.type != 3) {
             q.push({type: 3, markers: m});
         } else {
@@ -842,10 +843,10 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
 
 
     P._playbackUndo = function () {
-        var q = this.__undoQueue;
+        const q = this.__undoQueue;
         if (q.length == 0) return false;
         ++this.__undoInProgress;
-        var didit = false, action;
+        let didit = false, action;
         while (--this.__undoPointer >= 0) {
             action = q[this.__undoPointer];
             if (action.type == 3) { // boundary
@@ -857,7 +858,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
                 break;
             }
             didit = true;
-            var pos = action.pos;
+            const pos = action.pos;
             switch (action.type) {
                 case 1: // insert
                     this._deleteText(pos, pos + action.len);
@@ -878,7 +879,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         this.code[row] = text;
         this._textProperties.replaceLine(row, text);
         if (this.__preventUpdates == 0) {
-            this.callHooks("onLineChange", row);
+            this.callHooks('onLineChange', row);
         } else {
             this.__dirtyLines[row] = true;
         }
@@ -894,7 +895,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         if (this.tokenizer)
             this.tokenizer.quickDeleteLine(row);
         this.__dirtyLines.splice(row, 1);
-        this.callHooks("onDeleteLine", row);
+        this.callHooks('onDeleteLine', row);
     };
 
     P._insertLine = function (row, text) {
@@ -902,8 +903,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         this._textProperties.insertLine(row);
         if (this.tokenizer)
             this.tokenizer.quickInsertLine(row);
-        var drawIt = this.__preventUpdates == 0;
-        this.callHooks("onInsertLine", row, drawIt);
+        const drawIt = this.__preventUpdates == 0;
+        this.callHooks('onInsertLine', row, drawIt);
         if (!drawIt) {
             if (this.__dirtyLines.length <= row)
                 this.__dirtyLines[row] = true;
@@ -921,7 +922,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         // *** UNDO RECORDING
         if (this.__preventUndo == 0)
             this._recordChange(1, pos, text.length);
-        var rc = pos == this.point() ? this._rowcol : this._positionToRowCol(pos),
+        const rc = pos == this.point() ? this._rowcol : this._positionToRowCol(pos),
             i = rc.row;
         if (/^\n+$/.test(text) && rc.col == 0) {
             // handle this case separately, since it's so
@@ -929,10 +930,10 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             // default algorithm messes up colorization
             // for a fraction of a second, flashing badly.
             text.length.times(function (j) {
-                this._insertLine(i + j, "");
+                this._insertLine(i + j, '');
             }, this);
         } else {
-            var lines = text.split("\n"), ln = this.code[i], rest = ln.substr(rc.col);
+            const lines = text.split('\n'), ln = this.code[i], rest = ln.substr(rc.col);
             if (lines.length > 1) {
                 this._replaceLine(i, ln.substr(0, rc.col) + lines.shift());
                 lines.foreach(function (text) {
@@ -944,7 +945,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             }
         }
         this._updateMarkers(pos, text.length);
-        this.callHooks("onTextInsert", pos, text);
+        this.callHooks('onTextInsert', pos, text);
     };
 
     P._deleteText = function (begin, end) {
@@ -953,16 +954,16 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         if (begin == end)
             return;
         if (end < begin) {
-            var tmp = begin;
+            const tmp = begin;
             begin = end;
             end = tmp;
         }
         // *** UNDO RECORDING
         if (this.__preventUndo == 0)
             this._recordChange(2, begin, end - begin, this._bufferSubstring(begin, end));
-        var brc = this._positionToRowCol(begin),
+        const brc = this._positionToRowCol(begin),
             erc = this._positionToRowCol(end);
-        var line = this.code[brc.row];
+        let line = this.code[brc.row];
         if (brc.row == erc.row) {
             // same line, that's easy
             line = line.substr(0, brc.col) + line.substr(erc.col);
@@ -976,7 +977,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
             (erc.row - brc.row).times(this._deleteLine.$(this, line));
         }
         this._updateMarkers(begin, begin - end, begin);
-        this.callHooks("onTextDelete", begin, end);
+        this.callHooks('onTextDelete', begin, end);
     };
 
     P._replaceText = function (begin, end, text) {
@@ -986,30 +987,30 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
 
     P._swapAreas = function (a) {
         a = a.map(MRK).mergeSort();
-        var b1 = a[0];
-        var e1 = a[1];
-        var b2 = a[2];
-        var e2 = a[3];
-        var t1 = this._bufferSubstring(b1, e1);
-        var t2 = this._bufferSubstring(b2, e2);
+        const b1 = a[0];
+        const e1 = a[1];
+        const b2 = a[2];
+        const e2 = a[3];
+        const t1 = this._bufferSubstring(b1, e1);
+        const t2 = this._bufferSubstring(b2, e2);
         this._replaceText(b2, e2, t1);
         this._replaceText(b1, e1, t2);
         return e2;
     };
 
     P._bufferSubstring = function (begin, end) {
-        if (begin == null) begin = this.point();
+        if (begin === null) begin = this.point();
         else begin = MRK(begin);
 
-        if (end == null) end = this.getCodeSize();
+        if (end === null) end = this.getCodeSize();
         else end = MRK(end);
 
         if (end < begin) {
-            var tmp = begin;
+            const tmp = begin;
             begin = end;
             end = tmp;
         }
-        // var brc = this._positionToRowCol(begin),
+        // const brc = this._positionToRowCol(begin),
         //     erc = this._positionToRowCol(end);
         // if (brc.row == erc.row) {
         //         return this.code[brc.row].substring(brc.col, erc.col);
@@ -1023,7 +1024,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     P._killingAction = function (p1, p2, prepend, noDelete) {
         p1 = MRK(p1);
         p2 = MRK(p2);
-        var text = this._bufferSubstring(p1, p2);
+        const text = this._bufferSubstring(p1, p2);
         this._saveKilledText(text, prepend);
         if (!noDelete)
             this._deleteText(p1, p2);
@@ -1038,9 +1039,9 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P._positionToRowCol = function (pos) {
-        var line = 0, a = this.code, n = a.length;
+        let line = 0, a = this.code, n = a.length;
         while (pos > 0 && line < n) {
-            var len = a[line].length;
+            const len = a[line].length;
             if (len >= pos)
                 break;
             pos -= len + 1; // one for the newline
@@ -1050,7 +1051,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P._rowColToPosition = function (row, col) {
-        var pos = 0, a = this.code, i = Math.min(row, a.length - 1), n = i;
+        let pos = 0, a = this.code, i = Math.min(row, a.length - 1), n = i;
         if (i < 0)
             return 0;
         while (--i >= 0)
@@ -1065,8 +1066,8 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P._repositionCaret = function (pos) {
-        var p = this.caretMarker.getPosition();
-        if (pos == null)
+        const p = this.caretMarker.getPosition();
+        if (pos === null)
             pos = p;
         pos = MRK(pos);
         pos = this._boundPosition(pos);
@@ -1078,7 +1079,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         this.__size = null;
         this.__code = null;
         // if (this.__undoInProgress == 0) {
-        this.markers.map("editorChange", offset, delta, min || 0);
+        this.markers.map('editorChange', offset, delta, min || 0);
         // }
         if (this.tokenizer) {
             this.tokenizer.quickUpdate(Math.min(offset, offset + delta));
@@ -1086,7 +1087,7 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P._saveExcursion = function (cont, markerBefore) {
-        var tmp = this.createMarker(null, markerBefore);
+        const tmp = this.createMarker(null, markerBefore);
         ++this.__savingExcursion;
         try {
             return cont.call(this);
@@ -1107,29 +1108,29 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
     };
 
     P._handleKeyEvent = function (ev) {
-        var handled = false;
+        let handled = false;
         this.interactiveEvent(ev);
-        var lcwk = this._lastCommandWasKill;
+        const lcwk = this._lastCommandWasKill;
 
         if (this.__nextIsMeta)
             ev.altKey = true;
         this.__nextIsMeta = false;
 
-        var key = Ymacs_Keymap.unparseKey(ev);
-        var cc = this.currentKeys;
-        var foundPrefix = false;
+        const key = Ymacs_Keymap.unparseKey(ev);
+        const cc = this.currentKeys;
+        const foundPrefix = false;
         cc.push(key);
-        this.last_key_display = cc.join(" ");
+        this.last_key_display = cc.join(' ');
 
         this.keymap.r_foreach(function (km) {
-            var h = km.getHandler(cc)
-            if (h) this.last_key_display = this.last_key_display + " " + h.toString().substr(0, h.toString().length - 1)
+            const h = km.getHandler(cc);
+            if (h) this.last_key_display = this.last_key_display + ' ' + h.toString().substr(0, h.toString().length - 1);
             if (h instanceof Array) {
                 this.callInteractively(h[0], h[1]);
                 handled = true;
             } else if (h) {
                 handled = foundPrefix = true;
-            } else if (key === "ESCAPE") {
+            } else if (key === 'ESCAPE') {
                 this.__nextIsMeta = true;
                 handled = true;
             } else if (km.defaultHandler && cc.length == 1) {
@@ -1142,41 +1143,41 @@ DEFINE_CLASS("Ymacs_Buffer", DlEventProxy, function (D, P) {
         if (!foundPrefix) {
             if (!handled) {
                 if (cc.length > 1) {
-                    this.signalError(cc.join(" ").bold() + " is undefined", true);
+                    this.signalError(cc.join(' ').bold() + ' is undefined', true);
                     handled = true;
                 }
             }
             cc.splice(0, cc.length);
         }
 
-        if (this._lastCommandWasKill == lcwk && typeof handled != "object" && !this.__nextIsMeta) {
+        if (this._lastCommandWasKill == lcwk && typeof handled != 'object' && !this.__nextIsMeta) {
             // selecting a prefix keymap shouldn't clear the killRing
             this._lastCommandWasKill = 0;
         }
 
-        this.callHooks("finishedEvent", handled);
+        this.callHooks('finishedEvent', handled);
         this.interactiveEvent(null);
         return handled;
     };
 
     P._on_tokenizerFoundToken = function (row, c1, c2, what) {
         if (what) {
-            this._textProperties.addLineProps(row, c1, c2, "css", what);
+            this._textProperties.addLineProps(row, c1, c2, 'css', what);
         } else {
-            this._textProperties.removeLineProps(row, c1, c2, "css");
+            this._textProperties.removeLineProps(row, c1, c2, 'css');
         }
     };
 
     P._on_textPropertiesChange = function (row) {
         if (this.__preventUpdates == 0) {
-            this.callHooks("onLineChange", row);
+            this.callHooks('onLineChange', row);
         } else {
             this.__dirtyLines[row] = true;
         }
     };
 
     P.formatLineHTML = function (row, caret) {
-        var rc = this._rowcol;
+        let rc = this._rowcol;
         if (caret instanceof Ymacs_Marker)
             rc = caret.getRowCol();
         caret = row == rc.row ? rc.col : null;
