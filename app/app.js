@@ -159,7 +159,6 @@ class Application {
                 });
             });
             ymacsSourceItem.setMenu(ymacsSourceItemsubmenu);
-            mainMenu.addFiller();
 
             const optionsMenu = new DlMenuItem({parent: mainMenu, label: 'Options'.makeLabel()});
 
@@ -197,7 +196,7 @@ class Application {
             colorThemesMenuItem.setMenu(colorThemesubmenu);
 
             [
-                'dark|y|Dark background (default)',
+                'dark|y|Reset to default',
                 'dark|mishoo|>Mishoo\'s Emacs theme',
                 'dark|billw|>Billw',
                 'dark|charcoal-black|>Charcoal black',
@@ -237,7 +236,7 @@ class Application {
             const fontFamilyMenuItemsubmenu = new DlVMenu({});
             fontFamilyMenuItem.setMenu(fontFamilyMenuItemsubmenu);
 
-            const fontFamilyMenuitem = new DlMenuItem({parent: fontFamilyMenuItemsubmenu, label: 'Reset to theme'});
+            const fontFamilyMenuitem = new DlMenuItem({parent: fontFamilyMenuItemsubmenu, label: 'Reset to default'});
             fontFamilyMenuitem.addEventListener('onSelect', async () => {
                 await DAO.del(Config.FONT_FAMILY);
                 ymacs.getActiveFrame().setStyle({fontFamily: ''});
@@ -329,6 +328,7 @@ class Application {
             ymacs.getActiveFrame().setStyle({fontSize});
             const fontFamily = (await DAO.get(Config.FONT_FAMILY)) || 'Ubuntu Mono';
             ymacs.getActiveFrame().setStyle({fontFamily});
+            mainMenu.addFiller();
 
 
             try {
@@ -349,6 +349,8 @@ class Application {
             dlg.show(true);
 
             try {
+                // dlg.setPos(0,0);
+                // dlg.makeResizable();
                 dlg.maximize(true);
                 // eslint-disable-next-line no-empty
             } catch (e) {
