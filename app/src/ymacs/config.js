@@ -6,6 +6,8 @@ const Config = {
 };
 
 const Keys = {
-    FILE_LIST: 'ymacs_filelist'
+    FILE_LIST: 'ymacs_filelist',
+    FOLDED_MARKER: 'folded-marker',
+    NEWLINE: '\n'
 
 };

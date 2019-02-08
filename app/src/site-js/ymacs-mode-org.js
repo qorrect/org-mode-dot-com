@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 //>
 // @require ymacs-tokenizer.js
 // @require lib/lodash.js
@@ -5,24 +6,24 @@
 // @require js/dao/index.js
 
 const HEADING_REGEX = /(\*)+/;
-const FOLDED_REGEX = /\(...(\d+)\)/;
-
+const FOLDED_REGEX = /\.\.\./;
+const FOLDED_STR = '...';
 // Our memory hungry hide ring
 const FOLDED_RING = {};
 
-DEFINE_SINGLETON("Ymacs_Keymap_OrgMode", Ymacs_Keymap, function (D, P) {
+DEFINE_SINGLETON('Ymacs_Keymap_OrgMode', Ymacs_Keymap, (D) => {
 
     D.KEYS = {
 
-        "C-c C-c": "org_ctrl_c_ctrl_c",
-        "[": "auto_insert_braces",
-        "]": "auto_fix_braces",
-        "C-x C-s": "org_save_buffer",
-        "C-+": "org_expand_buffer",
+        'C-c C-c': 'org_ctrl_c_ctrl_c',
+        '[': 'auto_insert_braces',
+        ']': 'auto_fix_braces',
+        'C-x C-s': 'org_save_buffer',
+        'C-+': 'org_expand_buffer',
         // User friendly keybindings
 
-        "C-x c": "kill_ring_save",
-        "C-x v": "yank",
+        'C-x c': 'kill_ring_save',
+        'C-x v': 'yank',
 
     };
 
@@ -37,124 +38,199 @@ function safePush(obj, label, element) {
     }
 }
 
-Ymacs_Tokenizer.define("org", function (stream, tok) {
+Ymacs_Tokenizer.define('org', (stream, tok) => {
 
-    var PARSER = {next: next, copy: copy, indentation: indentation};
+    const PARSER = {next, copy, indentation};
 
     function copy() {
-        var context = restore.context = {};
+        restore.context = {};
 
         function restore() {
             return PARSER;
-        };
+        }
+
         return restore;
-    };
+    }
 
     function foundToken(c1, c2, type) {
         tok.onToken(stream.line, c1, c2, type);
-    };
+    }
 
     function next() {
         stream.checkStop();
-        var tmp;
+        let tmp;
 
         // If its a line heading
         if (stream.col === 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
-            const isFolded = stream.lineText().match(FOLDED_REGEX);
 
-            if (isFolded) {
-                foundToken(0, stream.col = stream.lineLength() - isFolded[0].length, "org-heading-" + tmp[0].length);
-            } else {
-                foundToken(0, stream.col = stream.lineLength(), "org-heading-" + tmp[0].length);
-            }
+            foundToken(0, stream.col = stream.lineLength(), 'org-heading-' + tmp[0].length);
+
         }
         // If its folded
-        else if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
-
-            const line = stream.lineText();
-            let orgLevel = 0;
-            const match = line.match(HEADING_REGEX);
-            if (match) orgLevel = match[0].length;
-
-            foundToken(stream.col, stream.col += tmp[0].length, "org-folded-" + orgLevel);
-
-        }
+        // else if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
+        //
+        //     const line = stream.lineText();
+        //     let orgLevel = 0;
+        //     const match = line.match(HEADING_REGEX);
+        //     if (match) orgLevel = match[0].length;
+        //
+        //     foundToken(stream.col, stream.col += tmp[0].length, 'org-folded-' + orgLevel);
+        //
+        // }
         // If nothing was found than just increment the column
         else {
             foundToken(stream.col, ++stream.col, null);
         }
-    };
+    }
 
     function indentation() {
         return _do_indent(stream);
     }
 
-    function _do_indent(stream) {
-        const currentLine = stream.lineText();
-        const previousLine = stream.lineText(stream.line - 1);
+    function _do_indent(local_stream) {
+        const currentLineNumber = local_stream.line;
+        const currentLine = local_stream.lineText();
+        const previousLine = local_stream.lineText(local_stream.line - 1);
+        console.log('currentLineNumber=' + currentLineNumber);
 
+        console.log('MARKERS');
+        console.log(local_stream.buffer.markers);
+        local_stream.buffer.markers.forEach(marker => console.log(`Rowcol=${JSON.stringify(marker.getRowCol())}`));
         // If its on an org-heading
         if (currentLine && currentLine.match(/^\*/)) {
-            const res = FOLDED_REGEX.exec(currentLine);
-            if (res && FOLDED_RING[res[1]]) {
 
-                const cache = FOLDED_RING[res[1]];
-                const prefix = cache.length ? "\n" : "";
+            const found = local_stream.buffer.markers.filter(marker => marker.name === Keys.FOLDED_MARKER).some(marker => {
+                const markerLine = marker.getRowCol().row;
 
-                stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("... (..." + res[1] + ")", ""));
-                stream.buffer.cmd("end_of_line");
-                stream.buffer._insertText(prefix + cache.join("\n"), stream.buffer.caretMarker.getPosition());
-                stream.buffer.cmd("end_of_line");
+                if (markerLine == currentLineNumber) {
+                    const code = FOLDED_RING[marker.id];
+                    const insertString = '\n' + code.join(Keys.NEWLINE);
+                    // const pos = local_stream.buffer.caretMarker.getPosition();
+                    const position = marker.getPosition();
+                    local_stream.buffer._insertText(insertString, position);
+                    _.remove(local_stream.buffer.markers, (mark) => mark.id === marker.id);
+                    return true;
+                }
+                return false;
 
-            } else {
-                const pos = Object.keys(FOLDED_RING).length;
-                FOLDED_RING[pos] = ensureList(FOLDED_RING[pos]);
+            });
+            if (!found) {
+                let line = local_stream.lineText();
 
-                let line = stream.lineText();
+                local_stream.buffer.cmd('end_of_line');
+                // local_stream.buffer._replaceLine(local_stream.line, line + FOLDED_STR);
+                const foldedMarker = local_stream.buffer.createMarker(local_stream.buffer.caretMarker.getPosition(), true, Keys.FOLDED_MARKER);
+                // local_stream.buffer.markers.push(foldedMarker);
 
-                stream.buffer.cmd("end_of_line");
-                stream.buffer._replaceLine(stream.line, line + "... (..." + pos + ")");
+                const id = foldedMarker.id;
+                //     const pos = Object.keys(FOLDED_RING).length;
+                FOLDED_RING[id] = ensureList(FOLDED_RING[id]);
+                //
+
+                local_stream.buffer.cmd('end_of_line');
+                // local_stream.buffer._replaceLine(local_stream.line, line + FOLDED_STR);
 
                 let orgLevel = 0;
                 const match = line.match(HEADING_REGEX);
                 if (match) orgLevel = match[0].length;
 
-                stream.nextLine();
-                line = stream.lineText();
+                local_stream.nextLine();
+                line = local_stream.lineText();
 
                 while (line) {
+                    // while (line) {
 
-                    let isAHeadingMatch = line.match(HEADING_REGEX);
-                    let found = false;
+                    const isAHeadingMatch = line.match(HEADING_REGEX);
+                    let isFound = false;
                     if (isAHeadingMatch) {
                         if (isAHeadingMatch[0].length <= orgLevel) break;
                         if (line.match(FOLDED_REGEX)) break;
                         else {
-                            const originalStream = _.clone(stream);
-                            _do_indent(stream);
-                            stream = originalStream;
-                            if (stream && stream.lineText) {
-                                line = stream.lineText();
-                                safePush(FOLDED_RING, pos, line);
-                                stream.buffer._deleteLine(stream.line);
-                                found = true;
-                                line = stream.lineText();
-                            } else break;
+                            break;
                         }
                     } else {
+                        // alert('update markers');
 
-                        safePush(FOLDED_RING, pos, line);
-                        stream.buffer._deleteLine(stream.line);
-                        found = true;
-                        line = stream.lineText();
+                        safePush(FOLDED_RING, id, line);
+                        local_stream.buffer._deleteLine(local_stream.line);
+                        local_stream.buffer._updateMarkers(local_stream.buffer.caretMarker.getPosition(), -line.length, 0, Keys.FOLDED_MARKER);
+                        console.log('updating markers');
+                        isFound = true;
+                        line = local_stream.lineText();
 
                     }
-                    if (!found) {
-                        stream.nextLine();
-                        line = stream.lineText();
+                    if (!isFound) {
+                        local_stream.nextLine();
+                        line = local_stream.lineText();
                     }
                 }
+
+
             }
+            //
+
+            // }
+            // const res = FOLDED_REGEX.exec(currentLine);
+            // if (res && FOLDED_RING[res[1]]) {
+            //
+            //     const cache = FOLDED_RING[res[1]];
+            //     const prefix = cache.length ? '\n' : '';
+            //
+            //     local_stream.buffer._replaceLine(local_stream.buffer._rowcol.row, currentLine.toString().replace('... (...' + res[1] + ')', ''));
+            //     local_stream.buffer.cmd('end_of_line');
+            //     local_stream.buffer._insertText(prefix + cache.join('\n'), local_stream.buffer.caretMarker.getPosition());
+            //     local_stream.buffer.cmd('end_of_line');
+            //
+            // } else {
+            //     const pos = Object.keys(FOLDED_RING).length;
+            //     FOLDED_RING[pos] = ensureList(FOLDED_RING[pos]);
+            //
+            //     let line = local_stream.lineText();
+            //
+            //     local_stream.buffer.cmd('end_of_line');
+            //     local_stream.buffer._replaceLine(local_stream.line, line + '... (...' + pos + ')');
+            //
+            //     let orgLevel = 0;
+            //     const match = line.match(HEADING_REGEX);
+            //     if (match) orgLevel = match[0].length;
+            //
+            //     local_stream.nextLine();
+            //     line = local_stream.lineText();
+            //
+            //     while (line) {
+            //
+            //         const isAHeadingMatch = line.match(HEADING_REGEX);
+            //         let found = false;
+            //         if (isAHeadingMatch) {
+            //             if (isAHeadingMatch[0].length <= orgLevel) break;
+            //             if (line.match(FOLDED_REGEX)) break;
+            //             else {
+            //                 const originalStream = _.clone(local_stream);
+            //                 _do_indent(local_stream);
+            //                 local_stream = originalStream;
+            //                 if (local_stream && local_stream.lineText) {
+            //                     line = local_stream.lineText();
+            //                     safePush(FOLDED_RING, pos, line);
+            //                     local_stream.buffer._deleteLine(local_stream.line);
+            //                     found = true;
+            //                     line = local_stream.lineText();
+            //                 } else break;
+            //             }
+            //         } else {
+            //
+            //             safePush(FOLDED_RING, pos, line);
+            //             local_stream.buffer._deleteLine(local_stream.line);
+            //             found = true;
+            //             line = local_stream.lineText();
+            //
+            //         }
+            //         if (!found) {
+            //             local_stream.nextLine();
+            //             line = local_stream.lineText();
+            //         }
+            //     }
+            // }
+
         } else {
 
             let previousIndent = previousLine.search(/\S/);
@@ -176,18 +252,18 @@ Ymacs_Tokenizer.define("org", function (stream, tok) {
     }
 
     function INDENT_LEVEL() {
-        return stream.buffer.getq("indent_level");
-    };
+        return stream.buffer.getq('indent_level');
+    }
 
 
     return PARSER;
 
 });
 
-Ymacs_Buffer.newMode("org_mode", function () {
+Ymacs_Buffer.newMode('org_mode', function () {
 
-    var tok = this.tokenizer;
-    this.setTokenizer(new Ymacs_Tokenizer({buffer: this, type: "org"}));
+    const tok = this.tokenizer;
+    this.setTokenizer(new Ymacs_Tokenizer({buffer: this, type: 'org'}));
     this.pushKeymap(Ymacs_Keymap_OrgMode());
 
     return function () {
@@ -198,11 +274,12 @@ Ymacs_Buffer.newMode("org_mode", function () {
 
 
 function expandAllFolds(code, folded_ring) {
-    const keys = Object.keys(folded_ring).sort();
-    for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        code = code.replace(`... (...${key})`, '\n' + folded_ring[key].join('\n'));
-    }
+    alert('implement this');
+    // const keys = Object.keys(folded_ring).sort();
+    // for (let i = 0; i < keys.length; i++) {
+    //     const key = keys[i];
+    //     code = code.replace(`... (...${key})`, '\n' + folded_ring[key].join('\n'));
+    // }
     return code;
 }
 
@@ -212,11 +289,11 @@ Ymacs_Buffer.newCommands({
     org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
         this.cmd('beginning_of_line');
         const begin = this._rowColToPosition(this._rowcol.row, 0);
-        var rc = this._rowcol;
+        const rc = this._rowcol;
         const end = this._rowColToPosition(rc.row, this.code[rc.row].length);
 
         const line = this._bufferSubstring(begin, end);
-        const new_line = line.includes('[ ]') ? line.replace("[ ]", "[X]") : line.replace("[X]", "[ ]");
+        const new_line = line.includes('[ ]') ? line.replace('[ ]', '[X]') : line.replace('[X]', '[ ]');
         this._replaceLine(rc.row, new_line);
         this._recordChange(2, begin, line.length, line);
         this._recordChange(1, begin, new_line.length, new_line);
@@ -224,11 +301,11 @@ Ymacs_Buffer.newCommands({
     }),
 
     org_ctrl_c_c: Ymacs_Interactive(function () {
-        this.cmd("kill_ring_save");
+        this.cmd('kill_ring_save');
     }),
 
     auto_insert_braces: Ymacs_Interactive(function () {
-        this.cmd("insert", "[ ] ");
+        this.cmd('insert', '[ ] ');
 
     }),
 
@@ -249,11 +326,11 @@ Ymacs_Buffer.newCommands({
     }),
 
     auto_fix_braces: Ymacs_Interactive(function () {
-        const str = this.cmd("buffer_substring", this.point() - 5, this.point());
+        const str = this.cmd('buffer_substring', this.point() - 5, this.point());
 
         if (str === '[ ]  ') {
-            this.cmd("backward_char");
-        } else this.cmd("insert", "]");
+            this.cmd('backward_char');
+        } else this.cmd('insert', ']');
 
 
     }),

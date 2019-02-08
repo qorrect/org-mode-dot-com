@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+/* eslint-disable no-param-reassign,no-invalid-this */
 //> This file is part of Ymacs, an Emacs-like editor for the Web
 //> http://www.ymacs.org/
 //>
@@ -290,7 +290,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
     };
 
     P.withVariables = function (vars, cont) {
-        let saved = {}, i, ret;
+        let saved = {}, i;
         for (i in vars) {
             saved[i] = this.variables[i];
             this.variables[i] = vars[i];
@@ -451,6 +451,10 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
             row = this._rowcol.row;
         return this.code[row];
     };
+    P.getLineNumber = function () {
+        return this._rowcol.row;
+    };
+
 
     P.charAtRowCol = function (row, col) {
         let n = this.code.length;
@@ -922,8 +926,8 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
         // *** UNDO RECORDING
         if (this.__preventUndo == 0)
             this._recordChange(1, pos, text.length);
-        const rc = pos == this.point() ? this._rowcol : this._positionToRowCol(pos),
-            i = rc.row;
+        const rc = pos == this.point() ? this._rowcol : this._positionToRowCol(pos);
+        let i = rc.row;
         if (/^\n+$/.test(text) && rc.col == 0) {
             // handle this case separately, since it's so
             // frequently used (ENTER pressed) and the
@@ -936,8 +940,8 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
             const lines = text.split('\n'), ln = this.code[i], rest = ln.substr(rc.col);
             if (lines.length > 1) {
                 this._replaceLine(i, ln.substr(0, rc.col) + lines.shift());
-                lines.foreach(function (text) {
-                    this._insertLine(++i, text);
+                lines.foreach(function (line) {
+                    this._insertLine(++i, line);
                 }, this);
                 this._replaceLine(i, this.code[i] + rest);
             } else {
@@ -1075,11 +1079,13 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
         return pos != p;
     };
 
-    P._updateMarkers = function (offset, delta, min) {
+    P._updateMarkers = function (offset, delta, min, label = null) {
         this.__size = null;
         this.__code = null;
         // if (this.__undoInProgress == 0) {
-        this.markers.map('editorChange', offset, delta, min || 0);
+        if (label === null)
+            this.markers.map('editorChange', offset, delta, min || 0);
+        else this.markers.filter(marker => marker.name === label).map('editorChange', offset, delta, min || 0);
         // }
         if (this.tokenizer) {
             this.tokenizer.quickUpdate(Math.min(offset, offset + delta));
@@ -1118,7 +1124,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
 
         const key = Ymacs_Keymap.unparseKey(ev);
         const cc = this.currentKeys;
-        const foundPrefix = false;
+        let foundPrefix = false;
         cc.push(key);
         this.last_key_display = cc.join(' ');
 

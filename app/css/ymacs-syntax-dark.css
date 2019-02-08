@@ -197,12 +197,7 @@
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
 
-.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-1 {
-    font-size: 1% !important;
-    color: #262626;
-    font-weight: bold;
-    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
-}
+
 
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-2 {
     color: #a6e22e;
@@ -210,19 +205,20 @@
     font-size: 125%;
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
-
+/*
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-1 {
+    font-size: 1% !important;
+    color: #262626;
+    font-weight: bold;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-2 {
     color: #262626;
     font-weight: bold;
     font-size: 1%;
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
-.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-3 {
-    color: #66d9ef;
-    font-weight: bold;
-    font-size: 125%;
-    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
-}
+
 
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-3 {
     color: #262626;
@@ -232,25 +228,10 @@
 }
 
 
-.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-4 {
-    color: #e6db74;
-    font-weight: bold;
-    font-size: 125%;
-    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
-}
-
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-4 {
     color: #262626;
     font-weight: bold;
     font-size: 1%;
-    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
-}
-
-
-.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-5 {
-    color: #96ded3;
-    font-weight: bold;
-    font-size: 125%;
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
 
@@ -262,18 +243,42 @@
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
 
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-6 {
+    color: #262626;
+    font-weight: bold;
+    font-size: 1%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+*/
 
-.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-6 {
-    color: orange;
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-3 {
+    color: #66d9ef;
     font-weight: bold;
     font-size: 125%;
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
 
-.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-6 {
-    color: #262626;
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-4 {
+    color: #e6db74;
     font-weight: bold;
-    font-size: 1%;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-5 {
+    color: #96ded3;
+    font-weight: bold;
+    font-size: 125%;
+    font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
+}
+
+
+
+.Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-6 {
+    color: orange;
+    font-weight: bold;
+    font-size: 125%;
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
 

@@ -121,6 +121,7 @@ class Application {
 
                 }
 
+
             });
             const dotYmacsItem = new DlMenuItem({parent: submenu, label: '.ymacs'.makeLabel()});
             dotYmacsItem.addEventListener('onSelect', () => {
@@ -331,7 +332,6 @@ class Application {
 
 
             try {
-                console.log(ymacsContents);
                 const code = new Function('buffer', 'ymacs', ymacsContents);
                 const variables = [
                     keys,      // buffer

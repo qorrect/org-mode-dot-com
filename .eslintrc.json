@@ -16,7 +16,7 @@
         "no-eq-null": 2,
         "no-implicit-globals": 2,
         "no-implied-eval": 2,
-        "no-invalid-this": 2,
+        "no-invalid-this": 1,
         "no-return-assign": 2,
         "no-return-await": 2,
         "no-script-url": 2,

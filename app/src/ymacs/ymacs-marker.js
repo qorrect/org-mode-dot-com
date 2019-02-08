@@ -37,28 +37,33 @@
    automatically maintained as text is inserted or
    removed ]----- */
 
-DEFINE_CLASS("Ymacs_Marker", null, function(D, P){
+DEFINE_CLASS('Ymacs_Marker', null, (D, P) => {
 
     D.DEFAULT_ARGS = {
-        position : [ "pos"    , null ],
-        editor   : [ "editor" , null ],
-        before   : [ "before" , false ],
-        name     : [ "name"   , null ]
+        position: ['pos', null],
+        editor: ['editor', null],
+        before: ['before', false],
+        name: ['name', null],
+        id: ['id', null]
     };
 
-    D.CONSTRUCT = function() {
+    D.CONSTRUCT = function () {
         this.editor.markers.push(this);
         this.rowcol = null;
         this.onChange = [];
+        if ( this.id === null) this.id = StringUtils.randomString();
     };
 
-    P.destroy = function() {
+    P.destroy = function () {
         this.editor.markers.remove(this);
         this.editor = null;
     };
 
-    P.editorChange = function(pos, diff, min) {
-        var p = this.position;
+    P.editorChange = function (pos, diff, min) {
+        console.log('here ' + this.name + '   ::   this is broken the markers arent updating try indenting them out of seequence to see the broken behavior');
+        console.log(arguments);
+        // console.trace();
+        let p = this.position;
         if (this.before)
             --p;
         if (diff != 0 && pos <= p) {
@@ -70,16 +75,16 @@ DEFINE_CLASS("Ymacs_Marker", null, function(D, P){
         }
     };
 
-    P.callHooks = function(a, arg) {
+    P.callHooks = function (a, arg) {
         for (var i = a.length; --i >= 0;)
             a[i].call(this.editor, arg);
     };
 
-    P.getPosition = function() {
+    P.getPosition = function () {
         return this.position;
     };
 
-    P.setPosition = function(pos, noHooks, force) {
+    P.setPosition = function (pos, noHooks, force) {
         if (force || this.position != pos) {
             this.rowcol = null;
             this.position = pos;
@@ -88,16 +93,16 @@ DEFINE_CLASS("Ymacs_Marker", null, function(D, P){
         }
     };
 
-    P.getRowCol = function() {
+    P.getRowCol = function () {
         return this.rowcol || (this.rowcol = this.editor._positionToRowCol(this.position));
     };
 
-    P.updateMarkers = function(delta) {
+    P.updateMarkers = function (delta) {
         this.editor._updateMarkers(this.getPosition(), delta);
     };
 
-    P.swap = function(other, noHooks, force) {
-        var tmp = this.getPosition();
+    P.swap = function (other, noHooks, force) {
+        const tmp = this.getPosition();
         this.setPosition(other.getPosition(), noHooks, force);
         other.setPosition(tmp, noHooks, force);
     };
