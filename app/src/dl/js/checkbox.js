@@ -33,7 +33,7 @@
 
 // @require button.js
 
-DEFINE_CLASS('DlCheckbox', DlAbstractButton, function (D, P) {
+DEFINE_CLASS('DlCheckbox', DlAbstractButton, (D, P) => {
 
     D.DEFAULT_ARGS = {
         _classes: ['classes', {
