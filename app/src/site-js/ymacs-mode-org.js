@@ -24,6 +24,7 @@ DEFINE_SINGLETON('Ymacs_Keymap_OrgMode', Ymacs_Keymap, (D) => {
 
         'C-x c': 'kill_ring_save',
         'C-x v': 'yank',
+        '.': 'org_test'
 
     };
 
@@ -356,5 +357,42 @@ Ymacs_Buffer.newCommands({
         });
 
     }),
+
+    org_test: Ymacs_Interactive(function () {
+        const frame = this.getActiveFrame();
+        console.log('HEY WHAT THE ');
+
+
+        const menu = new DlVMenu({});
+        ['One', 'Two'].foreach((item, index) => {
+            let data = item;
+            if (typeof item != 'string') {
+                data = item.completion;
+                item = item.label;
+            }
+            new DlMenuItem({parent: menu, label: item.htmlEscape(), data, name: index})
+                .addEventListener('onMouseEnter', () => {
+
+                });
+        });
+
+        const popup = Ymacs_Completion_Popup.get();
+        popup.popup({
+            timeout: 0,
+            content: menu,
+            align: {
+                prefer: 'Tr',
+                fallX1: '_r',
+                fallX2: '_L',
+                fallY1: 'B_',
+                fallY2: 'T_'
+            },
+            anchor: frame.getCaretElement(),
+            widget: frame,
+            isContext: true
+        });
+
+    }),
+
 
 });

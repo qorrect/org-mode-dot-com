@@ -159,6 +159,7 @@ class Application {
                 });
             });
             ymacsSourceItem.setMenu(ymacsSourceItemsubmenu);
+            mainMenu.addFiller();
 
             const optionsMenu = new DlMenuItem({parent: mainMenu, label: 'Options'.makeLabel()});
 
@@ -328,7 +329,6 @@ class Application {
             ymacs.getActiveFrame().setStyle({fontSize});
             const fontFamily = (await DAO.get(Config.FONT_FAMILY)) || 'Ubuntu Mono';
             ymacs.getActiveFrame().setStyle({fontFamily});
-            mainMenu.addFiller();
 
 
             try {

@@ -34,47 +34,48 @@
 // @require ymacs-buffer.js
 // @require ymacs-keymap.js
 
-Ymacs_Buffer.newMode("minibuffer_mode", function(){
+Ymacs_Buffer.newMode('minibuffer_mode', function () {
     var marker = this.createMarker(0, true);
     var changed_vars = this.setq({
         minibuffer_end_marker: marker
     });
     var keymap = Ymacs_Keymap_Minibuffer();
     this.pushKeymap(keymap);
-    return function() {
+    return function () {
         this.setq(changed_vars);
         marker.destroy();
         this.popKeymap(keymap);
     };
 });
 
-(function(){
+(function () {
 
     var $popupActive = false;
     var $menu = null, $item = null;
+
     function popupCompletionMenu(frame, list) {
         var self = this;        // minibuffer
         if ($menu)
             $menu.destroy();
         $menu = new DlVMenu({});
-        list.foreach(function(item, index){
+        list.foreach(function (item, index) {
             var data = item;
-            if (typeof item != "string") {
+            if (typeof item != 'string') {
                 data = item.completion;
                 item = item.label;
             }
-            new DlMenuItem({ parent: $menu, label: item.htmlEscape(), data: data, name: index })
-                .addEventListener("onMouseEnter", function(){
+            new DlMenuItem({parent: $menu, label: item.htmlEscape(), data: data, name: index})
+                .addEventListener('onMouseEnter', function () {
                     if ($item != index) {
                         if ($item != null) {
-                            $menu.children($item).callHooks("onMouseLeave");
+                            $menu.children($item).callHooks('onMouseLeave');
                         }
                         $item = index;
                     }
                 });
         });
         $menu.addEventListener({
-            onSelect: function(index, item){
+            onSelect: function (index, item) {
                 $item = index;
                 handle_enter.call(self);
             }
@@ -84,15 +85,15 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
             timeout: 0,
             content: $menu,
             align: {
-		prefer: "Tr",
-		fallX1: "_r",
-		fallX2: "_L",
-		fallY1: "B_",
-		fallY2: "T_"
-	    },
+                prefer: 'Tr',
+                fallX1: '_r',
+                fallX2: '_L',
+                fallY1: 'B_',
+                fallY2: 'T_'
+            },
             anchor: frame.getCaretElement(),
             widget: frame,
-            onHide: function() {
+            onHide: function () {
                 $popupActive = false;
                 self.popKeymap(KEYMAP_POPUP_ACTIVE);
                 // $menu.destroy();
@@ -108,18 +109,18 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
     };
 
     function read_with_continuation(completions, cont, validate) {
-        this.whenMinibuffer(function(mb){
+        this.whenMinibuffer(function (mb) {
             var changed_vars = mb.setq({
                 completion_list: completions,
-                minibuffer_validation: function(what, cont2){
+                minibuffer_validation: function (what, cont2) {
                     if (what == null)
-                        what = mb.cmd("minibuffer_contents");
+                        what = mb.cmd('minibuffer_contents');
                     if (validate)
                         validate.call(this, mb, what, cont2);
                     else
                         cont2(true); // accept anything by default
                 }.$(this),
-                minibuffer_continuation: function(what){
+                minibuffer_continuation: function (what) {
                     mb.setq(changed_vars);
                     if (cont)
                         cont.call(this, what);
@@ -131,17 +132,17 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
     function filename_completion(mb, str, re, cont) {
 
         var self = this;
-        var lastslash = str.lastIndexOf("/");
-        var dir = str.slice(0, lastslash+1);
-        var partial = str.slice(lastslash+1);
+        var lastslash = str.lastIndexOf('/');
+        var dir = str.slice(0, lastslash + 1);
+        var partial = str.slice(lastslash + 1);
         self.ymacs.fs_getDirectory(dir, function (files) {
 
             function add_trailing_slash_to_dir(name) {
-                return (files[name].type == "directory") ? name+"/" : name;
+                return (files[name].type == 'directory') ? name + '/' : name;
             }
 
             if (!files) {
-                mb.signalError("Not found");
+                mb.signalError('Not found');
                 cont(null);
             } else {
                 var completions = [];
@@ -155,13 +156,13 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
                 } else {
                     var prefix = completions.common_prefix();
                     if (prefix != partial) {
-                        mb.cmd("minibuffer_replace_input", dir+prefix);
+                        mb.cmd('minibuffer_replace_input', dir + prefix);
                         cont(null);
                     } else if (completions.length == 1) {
                         cont([str]);
                     } else {
-                        completions = completions.map(function(name){
-                            return {label: name, completion: dir+name};
+                        completions = completions.map(function (name) {
+                            return {label: name, completion: dir + name};
                         });
                         popupCompletionMenu.call(mb, self.getMinibufferFrame(), completions);
                         cont(null);
@@ -173,110 +174,110 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
 
     Ymacs_Buffer.newCommands({
 
-        minibuffer_prompt: function(prompt, nofocus) {
-            this.whenMinibuffer(function(mb){
+        minibuffer_prompt: function (prompt, nofocus) {
+            this.whenMinibuffer(function (mb) {
                 var f = this.getMinibufferFrame();
                 this.ymacs.setInputFrame(f);
-                mb.setCode("");
-                mb.cmd("prevent_undo", function(){
-                    mb.cmd("insert", prompt);
+                mb.setCode('');
+                mb.cmd('prevent_undo', function () {
+                    mb.cmd('insert', prompt);
                 });
-                mb.getq("minibuffer_end_marker").setPosition(mb.point());
-                mb._textProperties.addLineProps(0, 0, mb.point(), "css", "minibuffer-prompt");
+                mb.getq('minibuffer_end_marker').setPosition(mb.point());
+                mb._textProperties.addLineProps(0, 0, mb.point(), 'css', 'minibuffer-prompt');
                 f._redrawCaret(true);
                 if (!nofocus)
                     f.focus();
             });
         },
 
-        minibuffer_yn: function(prompt, cont) {
-            this.cmd("minibuffer_prompt", prompt + " (yes or no) ");
-            this.cmd("minibuffer_read_yn", function (text) {
-                cont(text == "yes");
+        minibuffer_yn: function (prompt, cont) {
+            this.cmd('minibuffer_prompt', prompt + ' (yes or no) ');
+            this.cmd('minibuffer_read_yn', function (text) {
+                cont(text == 'yes');
             });
         },
 
-        minibuffer_read_yn: function(cont) {
-            read_with_continuation.call(this, [ "yes", "no" ], cont, function(mb, text, cont2){
-                if (text == "yes" || text == "no")
+        minibuffer_read_yn: function (cont) {
+            read_with_continuation.call(this, ['yes', 'no'], cont, function (mb, text, cont2) {
+                if (text == 'yes' || text == 'no')
                     cont2(true);
                 else
-                    mb.signalError("Please enter yes or no");
+                    mb.signalError('Please enter yes or no');
             });
         },
 
-        minibuffer_read_number: function(cont) {
-            read_with_continuation.call(this, null, cont, function(mb, text, cont2){
+        minibuffer_read_number: function (cont) {
+            read_with_continuation.call(this, null, cont, function (mb, text, cont2) {
                 var n = parseInt(text, 10);
                 if (isNaN(n))
-                    mb.signalError("Please enter a number");
+                    mb.signalError('Please enter a number');
                 cont2(!isNaN(n));
             });
         },
 
-        minibuffer_read_command: function(cont) {
-            var commandNames = Array.hashKeys(this.COMMANDS).grep(function(cmd){
+        minibuffer_read_command: function (cont) {
+            var commandNames = Array.hashKeys(this.COMMANDS).grep(function (cmd) {
                 return this.COMMANDS[cmd].ymacsInteractive;
             }, this).sort();
-            read_with_continuation.call(this, commandNames, cont, function(mb, name, cont2){
+            read_with_continuation.call(this, commandNames, cont, function (mb, name, cont2) {
                 var cmd = this.COMMANDS[name],
-                ret = cmd && cmd.ymacsInteractive;
+                    ret = cmd && cmd.ymacsInteractive;
                 if (!ret) {
-                    mb.signalError("No such command: " + name);
+                    mb.signalError('No such command: ' + name);
                 }
                 cont2(ret);
             });
         },
 
-        minibuffer_read_function: function(cont) {
+        minibuffer_read_function: function (cont) {
             var commandNames = Array.hashKeys(this.COMMANDS).sort();
-            read_with_continuation.call(this, commandNames, cont, function(mb, name, cont2){
+            read_with_continuation.call(this, commandNames, cont, function (mb, name, cont2) {
                 var cmd = this.COMMANDS[name],
-                ret = !!cmd;
+                    ret = !!cmd;
                 if (!ret)
-                    mb.signalError("No such function: " + name);
+                    mb.signalError('No such function: ' + name);
                 cont2(ret);
             });
         },
 
-        minibuffer_read_buffer: function(cont) {
-            this.whenYmacs(function(ymacs){
-                var bufferNames = ymacs.buffers.map("name");
+        minibuffer_read_buffer: function (cont) {
+            this.whenYmacs(function (ymacs) {
+                var bufferNames = ymacs.buffers.map('name');
                 bufferNames.push(bufferNames.shift());
                 read_with_continuation.call(this, bufferNames, cont);
                 //handle_tab.call(this);
             });
         },
 
-        minibuffer_read_string: function(completions, cont) {
+        minibuffer_read_string: function (completions, cont) {
             read_with_continuation.call(this, completions, cont);
         },
 
-        minibuffer_read_variable: function(cont) {
+        minibuffer_read_variable: function (cont) {
             var tmp = this.globalVariables;
             Object.merge(tmp, this.variables);
-            var completions = Array.hashKeys(tmp).grep(function(name){
+            var completions = Array.hashKeys(tmp).grep(function (name) {
                 return !/^\*/.test(name);
             }).sort();
             read_with_continuation.call(this, completions, cont
-                                        // XXX: seems like a good idea, but it doesn't work
-                                        // XXX: need to refactor the signalInfo stuff.  It doesn't show up
-                                        //      currently because the buffer frame is not active, or something...
-                                        // , function(mb, name){
-                                        //         var val = this.getq(name);
-                                        //         mb.signalInfo("Current value of " + name + ": " + val);
-                                        //         return true;
-                                        // }
-                                       );
+                // XXX: seems like a good idea, but it doesn't work
+                // XXX: need to refactor the signalInfo stuff.  It doesn't show up
+                //      currently because the buffer frame is not active, or something...
+                // , function(mb, name){
+                //         var val = this.getq(name);
+                //         mb.signalInfo("Current value of " + name + ": " + val);
+                //         return true;
+                // }
+            );
         },
 
-        minibuffer_read_existing_file: function(cont) {
+        minibuffer_read_existing_file: function (cont) {
             var self = this;
-            self.cmd("minibuffer_replace_input_by_current_dir", function () {
-                read_with_continuation.call(self, filename_completion, cont, function(mb, name, cont2){
+            self.cmd('minibuffer_replace_input_by_current_dir', function () {
+                read_with_continuation.call(self, filename_completion, cont, function (mb, name, cont2) {
                     self.ymacs.fs_fileType(name, function (type) {
                         if (type == null) {
-                            mb.signalError("No such file: " + name);
+                            mb.signalError('No such file: ' + name);
                             cont2(false);
                         } else {
                             cont2(true);
@@ -286,118 +287,113 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
             });
         },
 
-        minibuffer_read_file: function(cont) {
+        minibuffer_read_file: function (cont) {
             var self = this;
-            self.cmd("minibuffer_replace_input_by_current_dir", function () {
+            self.cmd('minibuffer_replace_input_by_current_dir', function () {
                 read_with_continuation.call(self, filename_completion, cont);
             });
         },
 
-        minibuffer_read_file_or_directory: function(cont) {
+        minibuffer_read_file_or_directory: function (cont) {
             var self = this;
-            self.cmd("minibuffer_replace_input_by_current_dir", function () {
+            self.cmd('minibuffer_replace_input_by_current_dir', function () {
                 read_with_continuation.call(self, filename_completion, cont);
             });
         },
 
-        minibuffer_read_directory: function(cont) {
+        minibuffer_read_directory: function (cont) {
             var self = this;
-            self.cmd("minibuffer_replace_input_by_current_dir", function () {
+            self.cmd('minibuffer_replace_input_by_current_dir', function () {
                 read_with_continuation.call(self, filename_completion, cont);
             });
         },
 
-        minibuffer_prompt_end: function() {
-            return this.whenMinibuffer(function(mb){
-                return mb.getq("minibuffer_end_marker").getPosition();
+        minibuffer_prompt_end: function () {
+            return this.whenMinibuffer(function (mb) {
+                return mb.getq('minibuffer_end_marker').getPosition();
             });
         },
 
-        minibuffer_contents: function() {
-            return this.whenMinibuffer(function(mb){
-                return mb._bufferSubstring(mb.getq("minibuffer_end_marker"));
+        minibuffer_contents: function () {
+            return this.whenMinibuffer(function (mb) {
+                return mb._bufferSubstring(mb.getq('minibuffer_end_marker'));
             });
         },
 
-        minibuffer_replace_input: function(value) {
-            this.whenMinibuffer(function(mb){
-                mb._replaceText(mb.getq("minibuffer_end_marker"), mb.getCodeSize(), value);
+        minibuffer_replace_input: function (value) {
+            this.whenMinibuffer(function (mb) {
+                mb._replaceText(mb.getq('minibuffer_end_marker'), mb.getCodeSize(), value);
                 this.getMinibufferFrame()._redrawCaret(true);
             });
         },
 
         minibuffer_replace_input_by_current_dir: function (cont) {
-            this.whenYmacs(function(ymacs){
+            this.whenYmacs(function (ymacs) {
                 var self = this;
                 var name = ymacs.getActiveBuffer().name;
-                var dir = name.slice(0, name.lastIndexOf("/")+1);
+                var dir = name.slice(0, name.lastIndexOf('/') + 1);
                 ymacs.fs_remapDir(dir, function (dir) {
-                    self.cmd("minibuffer_replace_input", dir);
+                    self.cmd('minibuffer_replace_input', dir);
                     cont();
                 });
             });
         },
 
-        minibuffer_complete: function() {
+        minibuffer_complete: function () {
             var self = this;
-            self.whenMinibuffer(function(mb){
+            self.whenMinibuffer(function (mb) {
 
                 function complete(a) {
                     if (!a || a.length == 0) {
-                        mb.signalError("No completions");
-                    }
-                    else {
+                        mb.signalError('No completions');
+                    } else {
                         var prefix = a.common_prefix();
                         if (prefix != str) {
-                            mb.cmd("minibuffer_replace_input", prefix);
-                        }
-                        else if (a.length == 1) {
-                            mb.signalError("Sole completion");
-                        }
-                        else {
+                            mb.cmd('minibuffer_replace_input', prefix);
+                        } else if (a.length == 1) {
+                            mb.signalError('Sole completion');
+                        } else {
                             popupCompletionMenu.call(mb, self.getMinibufferFrame(), a);
                         }
                     }
                 }
 
-                var a = mb.getq("completion_list"),
-                str = mb.cmd("minibuffer_contents"),
-                re = str.replace(/([\[\]\(\)\{\}\.\*\+\?\|\\])/g, "\\$1").replace(/([_-])/g, "[^_-]*[_-]");
-                re = new RegExp("^" + re, "i");
+                var a = mb.getq('completion_list'),
+                    str = mb.cmd('minibuffer_contents'),
+                    re = str.replace(/([\[\]\(\)\{\}\.\*\+\?\|\\])/g, '\\$1').replace(/([_-])/g, '[^_-]*[_-]');
+                re = new RegExp('^' + re, 'i');
                 if (a instanceof Function) {
                     a.call(self, mb, str, re, function (a) {
                         if (a)
                             complete(a);
                     });
-                }
-                else if (a && a.length > 0) {
-                    a = a.grep(function(cmd){
+                } else if (a && a.length > 0) {
+                    a = a.grep(function (cmd) {
                         return re.test(cmd);
                     });
                     complete(a);
-                }
-                else
+                } else
                     complete(a);
             });
         },
 
-        minibuffer_complete_and_exit: function() {
+        minibuffer_complete_and_exit: function () {
             var self = this;
-            self.whenMinibuffer(function(mb){
-                mb.getq("minibuffer_validation").call(mb, null, function (valid) {
+            self.whenMinibuffer(function (mb) {
+                mb.getq('minibuffer_validation').call(mb, null, function (valid) {
                     if (valid)
-                        mb.cmd("minibuffer_keyboard_quit", self.getq("minibuffer_continuation"));
+                        mb.cmd('minibuffer_keyboard_quit', self.getq('minibuffer_continuation'));
                 });
             });
         },
 
-        minibuffer_keyboard_quit: function(cont) {
-            this.whenMinibuffer(function(mb){
-                var text = this.cmd("minibuffer_contents");
-                mb.setCode("");
+        minibuffer_keyboard_quit: function (cont) {
+            this.whenMinibuffer(function (mb) {
+                var text = this.cmd('minibuffer_contents');
+                mb.setCode('');
                 this.ymacs.setInputFrame(this.ymacs.getActiveFrame());
                 this.ymacs.getActiveFrame().focus();
-                (function(text){
+                (function (text) {
                     if (cont)
                         cont.call(this, text);
                     this.getPrefixArg();
@@ -411,54 +407,54 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
     function handle_completion(how) {
         var old_item = $item, w;
         switch (how) {
-          case "next":
-            if ($item == null)
-                $item = -1;
-            $item = $menu.children().rotateIndex(++$item);
-            break;
-          case "prev":
-            if ($item == null)
-                $item = 0;
-            $item = $menu.children().rotateIndex(--$item);
-            break;
+            case 'next':
+                if ($item == null)
+                    $item = -1;
+                $item = $menu.children().rotateIndex(++$item);
+                break;
+            case 'prev':
+                if ($item == null)
+                    $item = 0;
+                $item = $menu.children().rotateIndex(--$item);
+                break;
         }
         if (old_item != null) {
             w = $menu.children(old_item);
-	    w.callHooks("onMouseLeave");
+            w.callHooks('onMouseLeave');
         }
         old_item = $item;
         w = $menu.children($item);
-	w.callHooks("onMouseEnter");
+        w.callHooks('onMouseEnter');
     };
 
     function handle_arrow_down() {
         if ($popupActive) {
-            return handle_completion.call(this, "next");
+            return handle_completion.call(this, 'next');
         }
     };
 
     function handle_arrow_up() {
         if ($popupActive) {
-            return handle_completion.call(this, "prev");
+            return handle_completion.call(this, 'prev');
         }
     };
 
     function handle_enter() {
         if ($popupActive) {
             if ($item != null) {
-                this.cmd("minibuffer_replace_input", $menu.children()[$item].userData);
+                this.cmd('minibuffer_replace_input', $menu.children()[$item].userData);
                 DlPopup.clearAllPopups();
             } else {
-                this.signalError("Select something...");
+                this.signalError('Select something...');
             }
         } else {
-            this.cmd("minibuffer_complete_and_exit");
+            this.cmd('minibuffer_complete_and_exit');
         }
     };
 
     function handle_tab() {
         if (!$popupActive)
-            this.cmd("minibuffer_complete");
+            this.cmd('minibuffer_complete');
         else
             handle_arrow_down.call(this);
     };
@@ -468,45 +464,45 @@ Ymacs_Buffer.newMode("minibuffer_mode", function(){
     };
 
     function handle_home() {
-        this.cmd("goto_char", this.getq("minibuffer_end_marker"));
+        this.cmd('goto_char', this.getq('minibuffer_end_marker'));
     };
 
     function handle_home_mark() {
         this.ensureTransientMark();
-        this.cmd("goto_char", this.getq("minibuffer_end_marker"));
+        this.cmd('goto_char', this.getq('minibuffer_end_marker'));
         this.ensureTransientMark();
     };
 
     var DEFAULT_KEYS = {
-        "TAB"                                : handle_tab,
-        "ENTER"                              : handle_enter,
-        "HOME && C-a"                        : handle_home,
-        "S-HOME && S-C-a"                    : Ymacs_Interactive("^", handle_home_mark)
+        'TAB': handle_tab,
+        'ENTER': handle_enter,
+        'HOME && C-a': handle_home,
+        'S-HOME && S-C-a': Ymacs_Interactive('^', handle_home_mark)
     };
 
-    DEFINE_SINGLETON("Ymacs_Keymap_Minibuffer", Ymacs_Keymap, function(D, P){
+    DEFINE_SINGLETON('Ymacs_Keymap_Minibuffer', Ymacs_Keymap, function (D, P) {
         D.KEYS = Object.merge({
-            "C-g && ESCAPE" : "minibuffer_keyboard_quit"
+            'C-g && ESCAPE': 'minibuffer_keyboard_quit'
         }, DEFAULT_KEYS);
     });
 
-    var KEYMAP_POPUP_ACTIVE = DEFINE_CLASS(null, Ymacs_Keymap, function(D, P){
+    var KEYMAP_POPUP_ACTIVE = DEFINE_CLASS(null, Ymacs_Keymap, function (D, P) {
         D.KEYS = Object.merge({
-            "S-TAB"                                   : handle_s_tab,
-            "ARROW_DOWN && ARROW_RIGHT && C-n && C-f" : handle_arrow_down,
-            "ARROW_UP && ARROW_LEFT && C-p && C-b"    : handle_arrow_up,
-            "ESCAPE"                                  : function() {
+            'S-TAB': handle_s_tab,
+            'ARROW_DOWN && ARROW_RIGHT && C-n && C-f': handle_arrow_down,
+            'ARROW_UP && ARROW_LEFT && C-p && C-b': handle_arrow_up,
+            'ESCAPE': function () {
                 DlPopup.clearAllPopups();
             }
         }, DEFAULT_KEYS);
-        P.defaultHandler = [ function() {
+        P.defaultHandler = [function () {
             DlPopup.clearAllPopups();
             return false; // say it's not handled though
-        } ];
+        }];
     });
 
     KEYMAP_POPUP_ACTIVE = new KEYMAP_POPUP_ACTIVE();
 
 })();
 
-DEFINE_CLASS("Ymacs_Completion_Popup", DlCompletionPopup);
+DEFINE_CLASS('Ymacs_Completion_Popup', DlCompletionPopup);
