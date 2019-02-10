@@ -894,11 +894,13 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
     };
 
     P._deleteLine = function (row) {
+        console.log('Warning: _deleteLine doesnt update markers')
         this.code.splice(row, 1);
         this._textProperties.deleteLine(row);
         if (this.tokenizer)
             this.tokenizer.quickDeleteLine(row);
         this.__dirtyLines.splice(row, 1);
+
         this.callHooks('onDeleteLine', row);
     };
 

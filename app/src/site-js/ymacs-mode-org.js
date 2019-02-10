@@ -7,7 +7,6 @@
 
 const HEADING_REGEX = /(\*)+/;
 const FOLDED_REGEX = /\.\.\./;
-const FOLDED_STR = '...';
 // Our memory hungry hide ring
 const FOLDED_RING = {};
 
@@ -93,17 +92,17 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
         const currentLine = local_stream.lineText();
         const previousLine = local_stream.lineText(local_stream.line - 1);
         console.log('currentLineNumber=' + currentLineNumber);
-
         console.log('MARKERS');
-        console.log(local_stream.buffer.markers);
+        const markers = window.MARKERS = local_stream.buffer.markers;
         local_stream.buffer.markers.forEach(marker => console.log(`Rowcol=${JSON.stringify(marker.getRowCol())}`));
         // If its on an org-heading
         if (currentLine && currentLine.match(/^\*/)) {
 
+            // If there is a marker on this line then expand the fold
             const found = local_stream.buffer.markers.filter(marker => marker.name === Keys.FOLDED_MARKER).some(marker => {
                 const markerLine = marker.getRowCol().row;
 
-                if (markerLine == currentLineNumber) {
+                if (markerLine === currentLineNumber) {
                     const code = FOLDED_RING[marker.id];
                     const insertString = '\n' + code.join(Keys.NEWLINE);
                     // const pos = local_stream.buffer.caretMarker.getPosition();
@@ -115,6 +114,7 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
                 return false;
 
             });
+            // Else , collapse the fold
             if (!found) {
                 let line = local_stream.lineText();
 
@@ -150,12 +150,13 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
                             break;
                         }
                     } else {
-                        // alert('update markers');
 
                         safePush(FOLDED_RING, id, line);
-                        local_stream.buffer._deleteLine(local_stream.line);
-                        local_stream.buffer._updateMarkers(local_stream.buffer.caretMarker.getPosition(), -line.length, 0, Keys.FOLDED_MARKER);
-                        console.log('updating markers');
+                        local_stream.buffer.cmd('forward_line');
+                        const {begin, end} = getBeginAndEndOfCurrentLine.call(local_stream.buffer);
+                        local_stream.buffer._deleteText(begin, end);
+                        local_stream.buffer.cmd('backward_delete_char');
+
                         isFound = true;
                         line = local_stream.lineText();
 
@@ -274,14 +275,12 @@ Ymacs_Buffer.newMode('org_mode', function () {
 });
 
 
-function expandAllFolds(code, folded_ring) {
-    alert('implement this');
-    // const keys = Object.keys(folded_ring).sort();
-    // for (let i = 0; i < keys.length; i++) {
-    //     const key = keys[i];
-    //     code = code.replace(`... (...${key})`, '\n' + folded_ring[key].join('\n'));
-    // }
-    return code;
+function getBeginAndEndOfCurrentLine() {
+    this.cmd('beginning_of_line');
+    const begin = this._rowColToPosition(this._rowcol.row, 0);
+    const rc = this._rowcol;
+    const end = this._rowColToPosition(rc.row, this.code[rc.row].length);
+    return {begin, rc, end};
 }
 
 (function () {
@@ -299,7 +298,7 @@ function expandAllFolds(code, folded_ring) {
             'S-TAB': handle_s_tab,
             'ARROW_DOWN && ARROW_RIGHT && C-n && C-f': handle_arrow_down,
             'ARROW_UP && ARROW_LEFT && C-p && C-b': handle_arrow_up,
-            'ESCAPE': function () {
+            'ESCAPE'() {
                 DlPopup.clearAllPopups();
             }
         }, DEFAULT_MENU_KEYS);
@@ -313,20 +312,20 @@ function expandAllFolds(code, folded_ring) {
 
 
     function popupCompletionMenu(frame, list) {
-        var self = this;        // minibuffer
+        const self = this;        // minibuffer
         if ($menu)
             $menu.destroy();
         $menu = new DlVMenu({});
-        list.foreach(function (item, index) {
-            var data = item;
+        list.foreach((item, index) => {
+            let data = item;
             if (typeof item != 'string') {
                 data = item.completion;
                 item = item.label;
             }
-            new DlMenuItem({parent: $menu, label: item.htmlEscape(), data: data, name: index})
-                .addEventListener('onMouseEnter', function () {
+            new DlMenuItem({parent: $menu, label: item.htmlEscape(), data, name: index})
+                .addEventListener('onMouseEnter', () => {
                     if ($item != index) {
-                        if ($item != null) {
+                        if ($item !== null) {
                             $menu.children($item).callHooks('onMouseLeave');
                         }
                         $item = index;
@@ -334,14 +333,14 @@ function expandAllFolds(code, folded_ring) {
                 });
         });
         $menu.addEventListener({
-            onSelect: function (index, item) {
+            onSelect(index, item) {
                 $item = index;
                 alert(item);
                 console.log(JSON.stringify(item, null, 4));
                 handle_enter.call(self);
             }
         });
-        var popup = Ymacs_Completion_Popup.get();
+        const popup = Ymacs_Completion_Popup.get();
         popup.popup({
             timeout: 0,
             content: $menu,
@@ -354,7 +353,7 @@ function expandAllFolds(code, folded_ring) {
             },
             anchor: frame.getCaretElement(),
             widget: frame,
-            onHide: function () {
+            onHide() {
                 $popupActive = false;
                 self.popKeymap(KEYMAP_POPUP_ACTIVE);
                 // $menu.destroy();
@@ -373,17 +372,17 @@ function expandAllFolds(code, folded_ring) {
         let old_item = $item, w;
         switch (how) {
             case 'next':
-                if ($item == null)
+                if ($item === null)
                     $item = -1;
                 $item = $menu.children().rotateIndex(++$item);
                 break;
             case 'prev':
-                if ($item == null)
+                if ($item === null)
                     $item = 0;
                 $item = $menu.children().rotateIndex(--$item);
                 break;
         }
-        if (old_item != null) {
+        if (old_item !== null) {
             w = $menu.children(old_item);
             w.callHooks('onMouseLeave');
         }
@@ -406,7 +405,7 @@ function expandAllFolds(code, folded_ring) {
 
     function handle_enter() {
         if ($popupActive) {
-            if ($item != null) {
+            if ($item !== null) {
                 const text = $menu.children()[$item].userData;
                 this._insertText(text);
                 DlPopup.clearAllPopups();
@@ -416,7 +415,7 @@ function expandAllFolds(code, folded_ring) {
         } else {
             this.cmd('minibuffer_complete_and_exit');
         }
-    };
+    }
 
     function handle_tab() {
         if (!$popupActive)
@@ -434,10 +433,7 @@ function expandAllFolds(code, folded_ring) {
 
 
         org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
-            this.cmd('beginning_of_line');
-            const begin = this._rowColToPosition(this._rowcol.row, 0);
-            const rc = this._rowcol;
-            const end = this._rowColToPosition(rc.row, this.code[rc.row].length);
+            const {begin, rc, end} = getBeginAndEndOfCurrentLine.call(this);
 
             const line = this._bufferSubstring(begin, end);
             const new_line = line.includes('[ ]') ? line.replace('[ ]', '[X]') : line.replace('[X]', '[ ]');
@@ -486,7 +482,6 @@ function expandAllFolds(code, folded_ring) {
             const pos = this.caretMarker.getPosition();
 
             const code = this.getCode();
-            this.setCode(expandAllFolds(code, FOLDED_RING));
             this.cmd('goto_char', pos);
 
         }),
@@ -494,13 +489,7 @@ function expandAllFolds(code, folded_ring) {
         org_save_buffer: Ymacs_Interactive(function () {
 
             const code = this.getCode();
-            DAO.put(this.name, expandAllFolds(code, FOLDED_RING)).then(() => {
-                // window.Q = this.__undoQueue;
-                // DAO.put(this.name + '_undoring', this.__undoQueue.map(o => JSON.stringify(o))).then(() => {
-                this.dirty(false);
 
-                // })
-            });
 
         }),
 
@@ -514,4 +503,4 @@ function expandAllFolds(code, folded_ring) {
 
     });
 
-})();
+}());

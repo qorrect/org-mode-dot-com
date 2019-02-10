@@ -60,8 +60,6 @@ DEFINE_CLASS('Ymacs_Marker', null, (D, P) => {
     };
 
     P.editorChange = function (pos, diff, min) {
-        console.log('here ' + this.name + '   ::   this is broken the markers arent updating try indenting them out of seequence to see the broken behavior');
-        console.log(arguments);
         // console.trace();
         let p = this.position;
         if (this.before)
