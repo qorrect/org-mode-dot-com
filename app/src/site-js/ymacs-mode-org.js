@@ -284,102 +284,67 @@ function expandAllFolds(code, folded_ring) {
     return code;
 }
 
-Ymacs_Buffer.newCommands({
+(function () {
+
+    let $popupActive = false;
+    let $menu = null, $item = null;
+
+    const DEFAULT_MENU_KEYS = {
+        'TAB': handle_tab,
+        'ENTER': handle_enter
+    };
+
+    let KEYMAP_POPUP_ACTIVE = DEFINE_CLASS(null, Ymacs_Keymap, (D, P) => {
+        D.KEYS = Object.merge({
+            'S-TAB': handle_s_tab,
+            'ARROW_DOWN && ARROW_RIGHT && C-n && C-f': handle_arrow_down,
+            'ARROW_UP && ARROW_LEFT && C-p && C-b': handle_arrow_up,
+            'ESCAPE': function () {
+                DlPopup.clearAllPopups();
+            }
+        }, DEFAULT_MENU_KEYS);
+        P.defaultHandler = [function () {
+            DlPopup.clearAllPopups();
+            return false; // say it's not handled though
+        }];
+    });
+
+    KEYMAP_POPUP_ACTIVE = new KEYMAP_POPUP_ACTIVE();
 
 
-    org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
-        this.cmd('beginning_of_line');
-        const begin = this._rowColToPosition(this._rowcol.row, 0);
-        const rc = this._rowcol;
-        const end = this._rowColToPosition(rc.row, this.code[rc.row].length);
-
-        const line = this._bufferSubstring(begin, end);
-        const new_line = line.includes('[ ]') ? line.replace('[ ]', '[X]') : line.replace('[X]', '[ ]');
-        this._replaceLine(rc.row, new_line);
-        this._recordChange(2, begin, line.length, line);
-        this._recordChange(1, begin, new_line.length, new_line);
-        this._updateMarkers(begin, line.length);
-    }),
-
-    org_ctrl_c_c: Ymacs_Interactive(function () {
-        this.cmd('kill_ring_save');
-    }),
-
-    auto_insert_braces: Ymacs_Interactive(function () {
-        this.cmd('insert', '[ ] ');
-
-    }),
-
-    org_expand_line: Ymacs_Interactive(function () {
-        console.dir(this);
-        // const res = FOLDED_REGEX.exec(currentLine);
-        // if (res && HIDE_RING[res[1]]) {
-        //
-        //     const cache = HIDE_RING[res[1]];
-        //     const prefix = cache.length ? "\n" : "";
-        //
-        //     stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("... (..." + res[1] + ")", ""));
-        //     stream.buffer.cmd("end_of_line");
-        //     stream.buffer._insertText(prefix + cache.join("\n"), stream.buffer.caretMarker.getPosition());
-        //     stream.buffer.cmd("end_of_line");
-        //
-        // }
-    }),
-
-    auto_fix_braces: Ymacs_Interactive(function () {
-        const str = this.cmd('buffer_substring', this.point() - 5, this.point());
-
-        if (str === '[ ]  ') {
-            this.cmd('backward_char');
-        } else this.cmd('insert', ']');
-
-
-    }),
-
-    org_expand_buffer: Ymacs_Interactive(function () {
-        const pos = this.caretMarker.getPosition();
-
-        const code = this.getCode();
-        this.setCode(expandAllFolds(code, FOLDED_RING));
-        this.cmd('goto_char', pos);
-
-    }),
-
-    org_save_buffer: Ymacs_Interactive(function () {
-
-        const code = this.getCode();
-        DAO.put(this.name, expandAllFolds(code, FOLDED_RING)).then(() => {
-            // window.Q = this.__undoQueue;
-            // DAO.put(this.name + '_undoring', this.__undoQueue.map(o => JSON.stringify(o))).then(() => {
-            this.dirty(false);
-
-            // })
-        });
-
-    }),
-
-    org_test: Ymacs_Interactive(function () {
-        const frame = this.getActiveFrame();
-        console.log('HEY WHAT THE ');
-
-
-        const menu = new DlVMenu({});
-        ['One', 'Two'].foreach((item, index) => {
-            let data = item;
+    function popupCompletionMenu(frame, list) {
+        var self = this;        // minibuffer
+        if ($menu)
+            $menu.destroy();
+        $menu = new DlVMenu({});
+        list.foreach(function (item, index) {
+            var data = item;
             if (typeof item != 'string') {
                 data = item.completion;
                 item = item.label;
             }
-            new DlMenuItem({parent: menu, label: item.htmlEscape(), data, name: index})
-                .addEventListener('onMouseEnter', () => {
-
+            new DlMenuItem({parent: $menu, label: item.htmlEscape(), data: data, name: index})
+                .addEventListener('onMouseEnter', function () {
+                    if ($item != index) {
+                        if ($item != null) {
+                            $menu.children($item).callHooks('onMouseLeave');
+                        }
+                        $item = index;
+                    }
                 });
         });
-
-        const popup = Ymacs_Completion_Popup.get();
+        $menu.addEventListener({
+            onSelect: function (index, item) {
+                $item = index;
+                alert(item);
+                console.log(JSON.stringify(item, null, 4));
+                handle_enter.call(self);
+            }
+        });
+        var popup = Ymacs_Completion_Popup.get();
         popup.popup({
             timeout: 0,
-            content: menu,
+            content: $menu,
             align: {
                 prefer: 'Tr',
                 fallX1: '_r',
@@ -389,10 +354,164 @@ Ymacs_Buffer.newCommands({
             },
             anchor: frame.getCaretElement(),
             widget: frame,
+            onHide: function () {
+                $popupActive = false;
+                self.popKeymap(KEYMAP_POPUP_ACTIVE);
+                // $menu.destroy();
+                $item = null;
+                $menu = null;
+            },
             isContext: true
         });
+        $popupActive = true;
+        self.pushKeymap(KEYMAP_POPUP_ACTIVE);
 
-    }),
+        handle_arrow_down.call(self); // autoselect the first one anyway
+    }
+
+    function handle_completion(how) {
+        let old_item = $item, w;
+        switch (how) {
+            case 'next':
+                if ($item == null)
+                    $item = -1;
+                $item = $menu.children().rotateIndex(++$item);
+                break;
+            case 'prev':
+                if ($item == null)
+                    $item = 0;
+                $item = $menu.children().rotateIndex(--$item);
+                break;
+        }
+        if (old_item != null) {
+            w = $menu.children(old_item);
+            w.callHooks('onMouseLeave');
+        }
+        old_item = $item;
+        w = $menu.children($item);
+        w.callHooks('onMouseEnter');
+    }
+
+    function handle_arrow_down() {
+        if ($popupActive) {
+            return handle_completion.call(this, 'next');
+        }
+    }
+
+    function handle_arrow_up() {
+        if ($popupActive) {
+            return handle_completion.call(this, 'prev');
+        }
+    }
+
+    function handle_enter() {
+        if ($popupActive) {
+            if ($item != null) {
+                const text = $menu.children()[$item].userData;
+                this._insertText(text);
+                DlPopup.clearAllPopups();
+            } else {
+                this.signalError('Select something...');
+            }
+        } else {
+            this.cmd('minibuffer_complete_and_exit');
+        }
+    };
+
+    function handle_tab() {
+        if (!$popupActive)
+            this.cmd('minibuffer_complete');
+        else
+            handle_arrow_down.call(this);
+    }
+
+    function handle_s_tab() {
+        handle_arrow_up.call(this);
+    }
 
 
-});
+    Ymacs_Buffer.newCommands({
+
+
+        org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
+            this.cmd('beginning_of_line');
+            const begin = this._rowColToPosition(this._rowcol.row, 0);
+            const rc = this._rowcol;
+            const end = this._rowColToPosition(rc.row, this.code[rc.row].length);
+
+            const line = this._bufferSubstring(begin, end);
+            const new_line = line.includes('[ ]') ? line.replace('[ ]', '[X]') : line.replace('[X]', '[ ]');
+            this._replaceLine(rc.row, new_line);
+            this._recordChange(2, begin, line.length, line);
+            this._recordChange(1, begin, new_line.length, new_line);
+            this._updateMarkers(begin, line.length);
+        }),
+
+        org_ctrl_c_c: Ymacs_Interactive(function () {
+            this.cmd('kill_ring_save');
+        }),
+
+        auto_insert_braces: Ymacs_Interactive(function () {
+            this.cmd('insert', '[ ] ');
+
+        }),
+
+        org_expand_line: Ymacs_Interactive(function () {
+            console.dir(this);
+            // const res = FOLDED_REGEX.exec(currentLine);
+            // if (res && HIDE_RING[res[1]]) {
+            //
+            //     const cache = HIDE_RING[res[1]];
+            //     const prefix = cache.length ? "\n" : "";
+            //
+            //     stream.buffer._replaceLine(stream.buffer._rowcol.row, currentLine.toString().replace("... (..." + res[1] + ")", ""));
+            //     stream.buffer.cmd("end_of_line");
+            //     stream.buffer._insertText(prefix + cache.join("\n"), stream.buffer.caretMarker.getPosition());
+            //     stream.buffer.cmd("end_of_line");
+            //
+            // }
+        }),
+
+        auto_fix_braces: Ymacs_Interactive(function () {
+            const str = this.cmd('buffer_substring', this.point() - 5, this.point());
+
+            if (str === '[ ]  ') {
+                this.cmd('backward_char');
+            } else this.cmd('insert', ']');
+
+
+        }),
+
+        org_expand_buffer: Ymacs_Interactive(function () {
+            const pos = this.caretMarker.getPosition();
+
+            const code = this.getCode();
+            this.setCode(expandAllFolds(code, FOLDED_RING));
+            this.cmd('goto_char', pos);
+
+        }),
+
+        org_save_buffer: Ymacs_Interactive(function () {
+
+            const code = this.getCode();
+            DAO.put(this.name, expandAllFolds(code, FOLDED_RING)).then(() => {
+                // window.Q = this.__undoQueue;
+                // DAO.put(this.name + '_undoring', this.__undoQueue.map(o => JSON.stringify(o))).then(() => {
+                this.dirty(false);
+
+                // })
+            });
+
+        }),
+
+        org_test: Ymacs_Interactive(function () {
+            const frame = this.getActiveFrame();
+            const self = this;
+
+            popupCompletionMenu.call(self, frame, ['One', 'Two']);
+        }),
+
+
+    });
+
+})();
