@@ -103,8 +103,11 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
                 const markerLine = marker.getRowCol().row;
 
                 if (markerLine === currentLineNumber) {
+                    const lineDiv = local_stream.buffer.getActiveFrame().getLineDivElement(local_stream.buffer.getLineNumber());
+                    lineDiv.className = lineDiv.className.toString().replace('folded-line','');
                     const code = FOLDED_RING[marker.id];
-                    const insertString = '\n' + code.join(Keys.NEWLINE);
+                    let insertString = '\n' + code.join(Keys.NEWLINE);
+                    if (code.length === 0) insertString = '';
                     // const pos = local_stream.buffer.caretMarker.getPosition();
                     const position = marker.getPosition();
                     local_stream.buffer._insertText(insertString, position);
@@ -119,6 +122,8 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
                 let line = local_stream.lineText();
 
                 local_stream.buffer.cmd('end_of_line');
+                const lineDiv = local_stream.buffer.getActiveFrame().getLineDivElement(local_stream.buffer.getLineNumber());
+                lineDiv.className += ' folded-line ';
                 // local_stream.buffer._replaceLine(local_stream.line, line + FOLDED_STR);
                 const foldedMarker = local_stream.buffer.createMarker(local_stream.buffer.caretMarker.getPosition(), true, Keys.FOLDED_MARKER);
                 // local_stream.buffer.markers.push(foldedMarker);

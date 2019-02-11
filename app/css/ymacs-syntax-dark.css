@@ -198,13 +198,13 @@
 }
 
 
-
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-2 {
     color: #a6e22e;
     font-weight: bold;
     font-size: 125%;
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
+
 /*
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-folded-1 {
     font-size: 1% !important;
@@ -250,7 +250,9 @@
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
 */
-
+.folded-line::after {
+    content: "...";
+}
 
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-3 {
     color: #66d9ef;
@@ -272,7 +274,6 @@
     font-size: 125%;
     font-family: "Lucida Grande", "Trebuchet MS", Verdana, Tahoma, sans-serif;
 }
-
 
 
 .Ymacs-Theme-dark.Ymacs-Theme-y .Ymacs_Frame .org-heading-6 {
