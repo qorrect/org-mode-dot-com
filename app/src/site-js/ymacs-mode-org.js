@@ -91,10 +91,9 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
         const currentLineNumber = local_stream.line;
         const currentLine = local_stream.lineText();
         const previousLine = local_stream.lineText(local_stream.line - 1);
-        console.log('currentLineNumber=' + currentLineNumber);
-        console.log('MARKERS');
-        const markers = window.MARKERS = local_stream.buffer.markers;
-        local_stream.buffer.markers.forEach(marker => console.log(`Rowcol=${JSON.stringify(marker.getRowCol())}`));
+
+        // const markers = window.MARKERS = local_stream.buffer.markers;
+        // local_stream.buffer.markers.forEach(marker => console.log(`Rowcol=${JSON.stringify(marker.getRowCol())}`));
         // If its on an org-heading
         if (currentLine && currentLine.match(/^\*/)) {
 
@@ -437,7 +436,7 @@ function getBeginAndEndOfCurrentLine() {
     Ymacs_Buffer.newCommands({
 
 
-        org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
+        org_ctrl_c_ctrl_c: Ymacs_Interactive(() =>  {
             const {begin, rc, end} = getBeginAndEndOfCurrentLine.call(this);
 
             const line = this._bufferSubstring(begin, end);
@@ -448,16 +447,16 @@ function getBeginAndEndOfCurrentLine() {
             this._updateMarkers(begin, line.length);
         }),
 
-        org_ctrl_c_c: Ymacs_Interactive(function () {
+        org_ctrl_c_c: Ymacs_Interactive(() =>  {
             this.cmd('kill_ring_save');
         }),
 
-        auto_insert_braces: Ymacs_Interactive(function () {
+        auto_insert_braces: Ymacs_Interactive(() =>  {
             this.cmd('insert', '[ ] ');
 
         }),
 
-        org_expand_line: Ymacs_Interactive(function () {
+        org_expand_line: Ymacs_Interactive(() => {
             console.dir(this);
             // const res = FOLDED_REGEX.exec(currentLine);
             // if (res && HIDE_RING[res[1]]) {
@@ -473,7 +472,7 @@ function getBeginAndEndOfCurrentLine() {
             // }
         }),
 
-        auto_fix_braces: Ymacs_Interactive(function () {
+        auto_fix_braces: Ymacs_Interactive(() =>  {
             const str = this.cmd('buffer_substring', this.point() - 5, this.point());
 
             if (str === '[ ]  ') {
@@ -483,22 +482,22 @@ function getBeginAndEndOfCurrentLine() {
 
         }),
 
-        org_expand_buffer: Ymacs_Interactive(function () {
+        org_expand_buffer: Ymacs_Interactive(() => {
             const pos = this.caretMarker.getPosition();
 
-            const code = this.getCode();
+            // const code = this.getCode();
             this.cmd('goto_char', pos);
 
         }),
 
-        org_save_buffer: Ymacs_Interactive(function () {
+        org_save_buffer: Ymacs_Interactive( () => {
 
-            const code = this.getCode();
+            // const code = this.getCode();
 
 
         }),
 
-        org_test: Ymacs_Interactive(function () {
+        org_test: Ymacs_Interactive(() =>  {
             const frame = this.getActiveFrame();
             const self = this;
 
