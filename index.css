@@ -14,7 +14,7 @@ a {
     border: #5a5a5a solid;
     margin: 0 auto;
     height: 100px;
-    width: 600px;
+    width: 400px;
     background-color: #1a81ff;
     border-radius: 25px;
 }
@@ -30,7 +30,7 @@ a {
     border: black solid;
     margin: 0 auto;
     height: 100px;
-    width: 600px;
+    width: 400px;
     background-color: #5a5a5a;
     border-radius: 25px;
 }

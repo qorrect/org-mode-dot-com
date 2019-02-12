@@ -51,7 +51,7 @@ DEFINE_CLASS('Ymacs_Marker', null, (D, P) => {
         this.editor.markers.push(this);
         this.rowcol = null;
         this.onChange = [];
-        if ( this.id === null) this.id = StringUtils.randomString();
+        if (this.id === null) this.id = StringUtils.randomString();
     };
 
     P.destroy = function () {
@@ -74,7 +74,7 @@ DEFINE_CLASS('Ymacs_Marker', null, (D, P) => {
     };
 
     P.callHooks = function (a, arg) {
-        for (var i = a.length; --i >= 0;)
+        for (let i = a.length; --i >= 0;)
             a[i].call(this.editor, arg);
     };
 
@@ -92,7 +92,11 @@ DEFINE_CLASS('Ymacs_Marker', null, (D, P) => {
     };
 
     P.getRowCol = function () {
-        return this.rowcol || (this.rowcol = this.editor._positionToRowCol(this.position));
+        if (this.rowcol) return this.rowcol;
+        else {
+            this.rowcol = this.editor._positionToRowCol(this.position);
+            return this.rowcol;
+        }
     };
 
     P.updateMarkers = function (delta) {

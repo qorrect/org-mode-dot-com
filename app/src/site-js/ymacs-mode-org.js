@@ -23,7 +23,7 @@ DEFINE_SINGLETON('Ymacs_Keymap_OrgMode', Ymacs_Keymap, (D) => {
 
         'C-x c': 'kill_ring_save',
         'C-x v': 'yank',
-        '.': 'org_test'
+        // '.': 'org_test'
 
     };
 
@@ -36,6 +36,26 @@ function safePush(obj, label, element) {
     } else {
         obj[label.toString()] = [element];
     }
+}
+
+function expandAll(code, markers) {
+
+    console.dir(markers);
+    const new_lines = [];
+    const lines = code.split(Keys.NEWLINE);
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        new_lines.push(line);
+        const found = markers.filter(marker => marker.getRowCol().row === i);
+        if (found.length) {
+            const marker = found[0];
+            const folded = FOLDED_RING[marker.id];
+            if (folded) {
+                folded.forEach(l => new_lines.push(l));
+            }
+        }
+    }
+    return new_lines.join(Keys.NEWLINE);
 }
 
 Ymacs_Tokenizer.define('org', (stream, tok) => {
@@ -62,9 +82,7 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
 
         // If its a line heading
         if (stream.col === 0 && (tmp = stream.lookingAt(/^(\*+)/))) {
-
             foundToken(0, stream.col = stream.lineLength(), 'org-heading-' + tmp[0].length);
-
         }
         // If its folded
         // else if ((tmp = stream.lookingAt(FOLDED_REGEX))) {
@@ -103,7 +121,7 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
 
                 if (markerLine === currentLineNumber) {
                     const lineDiv = local_stream.buffer.getActiveFrame().getLineDivElement(local_stream.buffer.getLineNumber());
-                    lineDiv.className = lineDiv.className.toString().replace('folded-line','');
+                    lineDiv.className = lineDiv.className.toString().replace('folded-line', '');
                     const code = FOLDED_RING[marker.id];
                     let insertString = '\n' + code.join(Keys.NEWLINE);
                     if (code.length === 0) insertString = '';
@@ -436,7 +454,7 @@ function getBeginAndEndOfCurrentLine() {
     Ymacs_Buffer.newCommands({
 
 
-        org_ctrl_c_ctrl_c: Ymacs_Interactive(() =>  {
+        org_ctrl_c_ctrl_c: Ymacs_Interactive(function () {
             const {begin, rc, end} = getBeginAndEndOfCurrentLine.call(this);
 
             const line = this._bufferSubstring(begin, end);
@@ -447,16 +465,16 @@ function getBeginAndEndOfCurrentLine() {
             this._updateMarkers(begin, line.length);
         }),
 
-        org_ctrl_c_c: Ymacs_Interactive(() =>  {
+        org_ctrl_c_c: Ymacs_Interactive(function () {
             this.cmd('kill_ring_save');
         }),
 
-        auto_insert_braces: Ymacs_Interactive(() =>  {
+        auto_insert_braces: Ymacs_Interactive(function () {
             this.cmd('insert', '[ ] ');
 
         }),
 
-        org_expand_line: Ymacs_Interactive(() => {
+        org_expand_line: Ymacs_Interactive(function () {
             console.dir(this);
             // const res = FOLDED_REGEX.exec(currentLine);
             // if (res && HIDE_RING[res[1]]) {
@@ -472,7 +490,7 @@ function getBeginAndEndOfCurrentLine() {
             // }
         }),
 
-        auto_fix_braces: Ymacs_Interactive(() =>  {
+        auto_fix_braces: Ymacs_Interactive(function () {
             const str = this.cmd('buffer_substring', this.point() - 5, this.point());
 
             if (str === '[ ]  ') {
@@ -482,22 +500,29 @@ function getBeginAndEndOfCurrentLine() {
 
         }),
 
-        org_expand_buffer: Ymacs_Interactive(() => {
+        org_expand_buffer: Ymacs_Interactive(function () {
             const pos = this.caretMarker.getPosition();
-
-            // const code = this.getCode();
+            const code = this.getCode();
+            const markers = this.markers.filter(marker => marker.name === Keys.FOLDED_MARKER);
+            const new_lines = expandAll(code, markers);
+            this.setCode(new_lines);
             this.cmd('goto_char', pos);
+            // Now remove all markers
+            this.markers = this.markers.filter(marker => marker.name !== Keys.FOLDED_MARKER);
 
         }),
 
-        org_save_buffer: Ymacs_Interactive( () => {
-
-            // const code = this.getCode();
-
+        org_save_buffer: Ymacs_Interactive(function () {
+            const code = this.getCode();
+            const markers = this.markers.filter(marker => marker.name === Keys.FOLDED_MARKER);
+            const new_lines = expandAll(code, markers);
+            DAO.put(this.name, new_lines);
+            this.dirty(false);
 
         }),
 
-        org_test: Ymacs_Interactive(() =>  {
+
+        org_test: Ymacs_Interactive(function () {
             const frame = this.getActiveFrame();
             const self = this;
 
