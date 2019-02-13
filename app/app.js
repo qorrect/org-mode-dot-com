@@ -1,4 +1,3 @@
-// This has become the org-mode-dot-com app , Charlie Manning Sanders 1/11/2019
 
 class Application {
 
