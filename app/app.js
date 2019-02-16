@@ -1,3 +1,14 @@
+// Expects to be called like evaluateJavascript.call(buffer / this , arguments)
+function evaluateJavascript(ymacsContents, variables) {
+    try {
+        const code = new Function('buffer', 'ymacs', ymacsContents);
+        const ret = code.apply(this, variables);
+        console.log(ret);
+
+    } catch (ex) {
+        console.log(ex);
+    }
+}
 
 class Application {
 
@@ -8,7 +19,7 @@ class Application {
 
             const mainMenu = new DlHMenu({});
             mainMenu.setStyle({marginLeft: 0, marginRight: 0});
-            const dlg = new DlDialog({title: 'Ymacs', resizable: false});
+            const dlg = new DlDialog({title: 'Ymacs', resizable: false, className: Strings.APP_WINDOW_ID});
 
             const markdown = new Ymacs_Buffer({name: 'today.org'});
             const markdownContents = await DAO.get('today.org');
@@ -30,19 +41,19 @@ class Application {
             markdown.cmd('org_mode');
             // markdown.cmd("paren_match_mode");
 
-            const keys = new Ymacs_Buffer({name: '.ymacs'});
+            const dotYmacs = new Ymacs_Buffer({name: '.ymacs'});
             let ymacsContents = await DAO.get('.ymacs');
             if (!ymacsContents) {
                 ymacsContents = '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font your set in the Options menu\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'25px\'});\n';
             }
-            keys.setCode(ymacsContents);
+            dotYmacs.setCode(ymacsContents);
 
             // keys.setCode('testing');
-            keys.cmd('javascript_mode');
+            dotYmacs.cmd('javascript_mode');
 
             const layout = new DlLayout({parent: dlg});
 
-            const ymacs = window.ymacs = new Ymacs({buffers: [markdown, keys]});
+            const ymacs = window.ymacs = new Ymacs({buffers: [markdown, dotYmacs]});
             ymacs.setColorTheme(['dark', 'y']);
 
 
@@ -80,7 +91,7 @@ class Application {
                 ymacs.getActiveBuffer().cmd('execute_extended_command', 'find_file');
             });
 
-            let ymacsFilelist = (await DAO.get(Keys.FILE_LIST)) || '';
+            let ymacsFilelist = (await DAO.get(Strings.FILE_LIST)) || '';
             ymacsFilelist = ymacsFilelist.split(',');
             if (ymacsFilelist) {
                 ymacsFilelist = _.isArray(ymacsFilelist) ? ymacsFilelist : [ymacsFilelist];
@@ -100,7 +111,7 @@ class Application {
                     }
                 });
             } else {
-                await DAO.put(Keys.FILE_LIST, []);
+                await DAO.put(Strings.FILE_LIST, new Set());
             }
 
 
@@ -134,30 +145,30 @@ class Application {
                 }
 
             });
-
-
-            const ymacsSourceItem = new DlMenuItem({parent: submenu, label: 'Ymacs Source'.makeLabel()});
-
             yourFilesMenuItem.setMenu(submenu);
 
-            const ymacsSourceItemsubmenu = new DlVMenu({});
 
-            files.foreach((file) => {
-                const item = new DlMenuItem({label: file, parent: ymacsSourceItemsubmenu});
-                item.addEventListener('onSelect', () => {
-                    const request = new DlRPC({url: YMACS_SRC_PATH + file + '?killCache=' + new Date().getTime()});
-                    request.call({
-                        callback(data) {
-                            const code = data.text.replace(/\r\n/g, '\n');
-                            const buf = ymacs.getBuffer(file) || ymacs.createBuffer({name: file});
-                            buf.setCode(code);
-                            buf.cmd('javascript_dl_mode', true);
-                            ymacs.switchToBuffer(buf);
-                        }
-                    });
-                });
-            });
-            ymacsSourceItem.setMenu(ymacsSourceItemsubmenu);
+            // const ymacsSourceItem = new DlMenuItem({parent: submenu, label: 'Ymacs Source'.makeLabel()});
+            //
+            //
+            // const ymacsSourceItemsubmenu = new DlVMenu({});
+            //
+            // files.foreach((file) => {
+            //     const item = new DlMenuItem({label: file, parent: ymacsSourceItemsubmenu});
+            //     item.addEventListener('onSelect', () => {
+            //         const request = new DlRPC({url: YMACS_SRC_PATH + file + '?killCache=' + new Date().getTime()});
+            //         request.call({
+            //             callback(data) {
+            //                 const code = data.text.replace(/\r\n/g, '\n');
+            //                 const buf = ymacs.getBuffer(file) || ymacs.createBuffer({name: file});
+            //                 buf.setCode(code);
+            //                 buf.cmd('javascript_dl_mode', true);
+            //                 ymacs.switchToBuffer(buf);
+            //             }
+            //         });
+            //     });
+            // });
+            // ymacsSourceItem.setMenu(ymacsSourceItemsubmenu);
             mainMenu.addFiller();
 
             const optionsMenu = new DlMenuItem({parent: mainMenu, label: 'Options'.makeLabel()});
@@ -238,7 +249,7 @@ class Application {
 
             const fontFamilyMenuitem = new DlMenuItem({parent: fontFamilyMenuItemsubmenu, label: 'Reset to default'});
             fontFamilyMenuitem.addEventListener('onSelect', async () => {
-                await DAO.del(Config.FONT_FAMILY);
+                await DAO.del(Strings.Config.FONT_FAMILY);
                 ymacs.getActiveFrame().setStyle({fontFamily: ''});
             });
 
@@ -268,7 +279,7 @@ class Application {
                     label: '<span style=\'font-family:' + font + '\'>' + font + '</span>'
                 });
                 item.addEventListener('onSelect', () => {
-                    DAO.put(Config.FONT_FAMILY, font);
+                    DAO.put(Strings.Config.FONT_FAMILY, font);
                     ymacs.getActiveFrame().setStyle({fontFamily: font});
                 });
             });
@@ -283,7 +294,7 @@ class Application {
 
             const fontMenuitem = new DlMenuItem({parent: fontSizeMenuitemsubmenu, label: 'Reset to theme'});
             fontMenuitem.addEventListener('onSelect', () => {
-                DAO.put(Config.FONT_SIZE, '');
+                DAO.put(Strings.Config.FONT_SIZE, '');
                 ymacs.getActiveFrame().setStyle({fontSize: ''});
             });
 
@@ -305,7 +316,7 @@ class Application {
                     label: '<span style=\'font-size:' + font + '\'>' + font + '</span>'
                 });
                 item.addEventListener('onSelect', () => {
-                    DAO.put(Config.FONT_SIZE, font);
+                    DAO.put(Strings.Config.FONT_SIZE, font);
                     ymacs.getActiveFrame().setStyle({fontSize: font});
                 });
             });
@@ -324,25 +335,11 @@ class Application {
 
             // show two frames initially
             // ymacs.getActiveFrame().hsplit();
-            const fontSize = (await DAO.get(Config.FONT_SIZE)) || '25px';
+            const fontSize = (await DAO.get(Strings.Config.FONT_SIZE)) || '25px';
             ymacs.getActiveFrame().setStyle({fontSize});
-            const fontFamily = (await DAO.get(Config.FONT_FAMILY)) || 'Ubuntu Mono';
+            const fontFamily = (await DAO.get(Strings.Config.FONT_FAMILY)) || 'Ubuntu Mono';
             ymacs.getActiveFrame().setStyle({fontFamily});
-
-
-            try {
-                const code = new Function('buffer', 'ymacs', ymacsContents);
-                const variables = [
-                    keys,      // buffer
-                    ymacs // ymacs
-                ];
-                const ret = code.apply(this, variables);
-                console.log(ret);
-
-                ymacs.getActiveBuffer().cmd('eval_string', ymacsContents);
-            } catch (ex) {
-                console.log(ex);
-            }
+            evaluateJavascript.call(this, ymacsContents, [dotYmacs, ymacs]);
 
 
             dlg.show(true);

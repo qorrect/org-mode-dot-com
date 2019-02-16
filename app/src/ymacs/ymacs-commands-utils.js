@@ -37,235 +37,188 @@
 
 Ymacs_Buffer.newCommands({
 
-    get_region: function () {
+    get_region() {
         return this.getRegion();
     },
 
-    figure_out_mode: function (code) {
+    figure_out_mode(code) {
         if (!code)
             code = this.getCode();
-        var lines = code.split(/\n/);
+        const lines = code.split(/\n/);
         if (lines.length > 4)
             lines.splice(2, lines.length - 4);
-        return lines.foreach(function (line, m) {
+        return lines.foreach((line, m) => {
             if ((m = /-\*-\s*(.*?)\s*-\*-/i.exec(line))) {
                 $RETURN(m[1]);
             }
         });
     },
 
-    mode_from_name: function (name) {
+    mode_from_name(name) {
 
         if (!name)
             name = this.name;
 
-        var ext = (/\.[^.]+$/.exec(name) || [""])[0];
+        const ext = (/\.[^.]+$/.exec(name) || [''])[0];
 
         // TODO: the mapping from extension to mode should be defined
         // with each mode.
 
         switch (ext) {
 
-            case ".css":
-                return "css";
+            case '.css':
+                return 'css';
 
-            case ".js":
-                return "javascript";
+            case '.js':
+                return 'javascript';
 
-            case ".lisp":
-            case ".scm":
-                return "lisp";
+            case '.lisp':
+            case '.scm':
+                return 'lisp';
         }
 
         return null;
     },
 
-    set_buffer_mode: function (mode) {
+    set_buffer_mode(mode) {
         if (!mode)
-            mode = this.cmd("figure_out_mode") || this.cmd("mode_from_name");
+            mode = this.cmd('figure_out_mode') || this.cmd('mode_from_name');
         if (mode) {
             if (Object.HOP(this.COMMANDS, mode)) {
                 this.cmd(mode, true);
-            } else if (Object.HOP(this.COMMANDS, mode + "_mode")) {
-                this.cmd(mode + "_mode", true);
+            } else if (Object.HOP(this.COMMANDS, mode + '_mode')) {
+                this.cmd(mode + '_mode', true);
             }
         }
     },
 
-    cperl_lineup: Ymacs_Interactive("r", function (begin, end) {
-        this.cmd("save_excursion", function () {
-            var rcend = this._positionToRowCol(end), max = 0, lines = [];
-            this.cmd("goto_char", begin);
-            this.cmd("forward_whitespace", true);
-            var ch = this.charAt();
+    cperl_lineup: Ymacs_Interactive('r', function (begin, end) {
+        this.cmd('save_excursion', function () {
+            let rcend = this._positionToRowCol(end), max = 0, lines = [];
+            this.cmd('goto_char', begin);
+            this.cmd('forward_whitespace', true);
+            const ch = this.charAt();
             if (ch.toLowerCase() != ch.toUpperCase()) {
-                this.signalError("Cannot lineup here");
+                this.signalError('Cannot lineup here');
                 return;
             }
             while (this._rowcol.row <= rcend.row) {
-                var pos = this.getLine().indexOf(ch);
+                const pos = this.getLine().indexOf(ch);
                 if (pos >= 0) {
                     if (pos > max)
                         max = pos;
                     lines.push([this._rowcol.row, pos]);
                 }
-                if (!this.cmd("forward_line"))
+                if (!this.cmd('forward_line'))
                     break;
             }
             ++max;
             lines.foreach(function (l) {
-                this.cmd("goto_char", this._rowColToPosition(l[0], l[1]));
-                this.cmd("insert", " ".x(max - l[1]));
+                this.cmd('goto_char', this._rowColToPosition(l[0], l[1]));
+                this.cmd('insert', ' '.x(max - l[1]));
             }, this);
         });
     }),
 
-    htmlize_region: Ymacs_Interactive("r\nP", function (begin, end, lineNum) {
+    htmlize_region: Ymacs_Interactive('r\nP', function (begin, end, lineNum) {
         this.tokenizer.finishParsing();
-        var row = this._positionToRowCol(begin).row;
-        var html = String.buffer();
-        var line = row;
-        var pad;
+        let row = this._positionToRowCol(begin).row;
+        let html = String.buffer();
+        let line = row;
+        let pad;
         if (lineNum && !lineNum.empty)
             line = parseInt(lineNum, 10);
         end = this._positionToRowCol(end).row;
         pad = String(end).length;
         while (row <= end) {
-            html("<div class='line'>");
+            html('<div class=\'line\'>');
             if (lineNum)
-                html("<span class='line-number'>", line.zeroPad(pad, " "), "</span>");
+                html('<span class=\'line-number\'>', line.zeroPad(pad, ' '), '</span>');
             ++line;
-            html(this._textProperties.getLineHTML(row, this.code[row], null), "</div>\n");
+            html(this._textProperties.getLineHTML(row, this.code[row], null), '</div>\n');
             ++row;
         }
         html = html.get();
-        var tmp = this.ymacs.switchToBuffer("*Htmlize*");
+        const tmp = this.ymacs.switchToBuffer('*Htmlize*');
         tmp.setCode(html);
-        tmp.cmd("xml_mode", true);
+        tmp.cmd('xml_mode', true);
     }),
 
-    execute_extended_command: Ymacs_Interactive("^CM-x ", function (cmd) {
+    execute_extended_command: Ymacs_Interactive('^CM-x ', function (cmd) {
         this.callInteractively(cmd);
     }),
 
-    set_variable: Ymacs_Interactive("vSet variable: \nsTo value: ", function (variable, value) {
-        var tmp = parseFloat(value);
+    set_variable: Ymacs_Interactive('vSet variable: \nsTo value: ', function (variable, value) {
+        const tmp = parseFloat(value);
         if (!isNaN(tmp))
             value = tmp;
         this.setq(variable, value);
     }),
 
-    eval_string: Ymacs_Interactive("^MEval string: ", function (code) {
+    eval_string: Ymacs_Interactive('^MEval string: ', function (code) {
         try {
-            var variables = [
+            const variables = [
                 this,      // buffer
                 this.ymacs // ymacs
             ];
-            code = new Function("buffer", "ymacs", code);
+            code = new Function('buffer', 'ymacs', code);
             code.apply(this, variables);
             this.clearTransientMark();
         } catch (ex) {
-            this.signalError(ex.type + ": " + ex.message);
+            this.signalError(ex.type + ': ' + ex.message);
             if (window.console)
                 console.log(ex);
         }
     }),
 
-    eval_region: Ymacs_Interactive("^r", function (begin, end) {
-        this.cmd("eval_string", this.cmd("buffer_substring", begin, end));
+    eval_region: Ymacs_Interactive('^r', function (begin, end) {
+        this.cmd('eval_string', this.cmd('buffer_substring', begin, end));
     }),
 
     eval_buffer: Ymacs_Interactive(function () {
-        this.cmd("eval_string", this.getCode());
+        this.cmd('eval_string', this.getCode());
     }),
 
-    toggle_line_numbers: Ymacs_Interactive("^", function () {
-        this.whenActiveFrame("toggleLineNumbers");
+    toggle_line_numbers: Ymacs_Interactive('^', function () {
+        this.whenActiveFrame('toggleLineNumbers');
     }),
 
-    save_file: Ymacs_Interactive("FWrite file: ", function (name) {
+    save_file: Ymacs_Interactive('FWrite file: ', function (name) {
         this.ymacs.ls_setFileContents(name, this.getCode());
-        this.signalInfo("Saved in local storage");
+        this.signalInfo('Saved in local storage');
     }),
 
-    load_file: Ymacs_Interactive("fFind file: ", function (name) {
-        var code = this.ymacs.ls_getFileContents(name);
-        var buffer = this.ymacs.createBuffer({name: name});
+    load_file: Ymacs_Interactive('fFind file: ', function (name) {
+        const code = this.ymacs.ls_getFileContents(name);
+        const buffer = this.ymacs.createBuffer({name});
         buffer.setCode(code);
-        buffer.cmd("set_buffer_mode");
-        buffer.cmd("switch_to_buffer", name);
+        buffer.cmd('set_buffer_mode');
+        buffer.cmd('switch_to_buffer', name);
     }),
 
-    find_file: Ymacs_Interactive("FFind file: ", function (name) {
-        var self = this;
-        name = self.ymacs.fs_normalizePath(name);
-        self.ymacs.fs_fileType(name, function (type) {
-            if (type === "directory") {
-                self.signalInfo("Can't open directory");
-            } else {
-                self.ymacs.fs_getFileContents(name, true, function (code, stamp) {
-                    var buffer = self.ymacs.getBuffer(name);
+    find_file: Ymacs_Interactive('FFind file: ', (name) => {
+        ymacs.createOrOpen(name);
 
-                    function find_file() {
-                        buffer.setCode(code || "");
-                        buffer.stamp = stamp;
-                        buffer.dirty(false);
-                        buffer.cmd("set_buffer_mode");
-                        buffer.cmd("switch_to_buffer", name);
-                        buffer.maybeSetMode(name);
-
-                    }
-
-                    if (buffer) {
-                        if (stamp == null) {
-                            find_file();
-                        } else if (buffer.stamp == stamp) {
-                            buffer.cmd("switch_to_buffer", name);
-                        } else {
-                            var msg = "File " + name + " changed on disk.  "
-                                + (buffer.dirty() ? "Discard your edits?" : "Reread from disk?");
-                            buffer.cmd("minibuffer_yn", msg, function (yes) {
-                                if (yes)
-                                    find_file();
-                            });
-                        }
-                    } else {
-                        buffer = self.ymacs.createBuffer({name: name, stamp: stamp});
-                        buffer.maybeSetMode(name);
-                        if (code == null) {
-                            self.signalInfo("New file");
-                            DAO.get(Keys.FILE_LIST).then((_files) => {
-                                let files = _files || '';
-                                files = files.split(',');
-                                files.push(name);
-                                DAO.put(Keys.FILE_LIST, ensureUnique(files).join(','));
-                            });
-                        }
-                        find_file();
-                    }
-                });
-            }
-        });
     }),
 
-    write_file: Ymacs_Interactive("FWrite file: ", function (name) {
-        var self = this;
+    write_file: Ymacs_Interactive('FWrite file: ', function (name) {
+        const self = this;
 
         function write_file() {
-            self.ymacs.fs_setFileContents(name, self.getCode(), null, function (stamp) {
-                self.cmd("rename_buffer", name);
+            self.ymacs.fs_setFileContents(name, self.getCode(), null, (stamp) => {
+                self.cmd('rename_buffer', name);
                 self.dirty(false);
                 self.stamp = stamp; // refresh stamp
-                self.signalInfo("Wrote " + name);
+                self.signalInfo('Wrote ' + name);
             });
         }
 
-        var buffer = self.ymacs.getBuffer(name);
+        const buffer = self.ymacs.getBuffer(name);
         if (!buffer)
             write_file();
         else {
-            var msg = "A buffer is visiting " + name + "; proceed?";
-            buffer.cmd("minibuffer_yn", msg, function (yes) {
+            const msg = 'A buffer is visiting ' + name + '; proceed?';
+            buffer.cmd('minibuffer_yn', msg, (yes) => {
                 if (yes) {
                     self.ymacs.killBuffer(buffer);
                     write_file();
@@ -274,18 +227,18 @@ Ymacs_Buffer.newCommands({
         }
     }),
 
-    save_some_buffers: function () {
-        this.cmd("save_some_buffers_with_continuation", true, function () {
+    save_some_buffers() {
+        this.cmd('save_some_buffers_with_continuation', true, () => {
         });
     },
 
-    save_some_buffers_with_continuation: function (ask, cont) {
+    save_some_buffers_with_contiWnuation(ask, cont) {
 
-        var bufs = this.ymacs.buffers.slice(); // get copy of buffers
+        const bufs = this.ymacs.buffers.slice(); // get copy of buffers
 
         function loop(saved) {
             if (bufs.length > 0)
-                bufs.shift().cmd("save_buffer_with_continuation", ask, loop);
+                bufs.shift().cmd('save_buffer_with_continuation', ask, loop);
             else
                 cont();
         }
@@ -293,13 +246,20 @@ Ymacs_Buffer.newCommands({
         loop(false);
     },
 
-    save_buffer_with_continuation: function (ask, cont) {
+    save_buffer_with_continuation(ask, cont) {
 
-        var self = this;
+        const self = this;
         self.dirty(false);
-        DAO.put(self.name, self.getCode()).then(() => {
-            cont(true);
-        })
+        DAO.put(self.name, self.getCode());
+        DAO.get(Strings.FILE_LIST).then(_files => {
+            const files = ensureList(_files.split(','));
+
+            files.push(self.name);
+            DAO.put(Strings.FILE_LIST, ensureUnique(files).join(','));
+        });
+
+        cont(true);
+
         // localStorage.setItem(self.name,self.getCode());
         //
         // function did_save(stamp) {
@@ -341,28 +301,28 @@ Ymacs_Buffer.newCommands({
         // }
     },
 
-    save_buffer: Ymacs_Interactive("", function () {
-        var self = this;
+    save_buffer: Ymacs_Interactive('', function () {
+        const self = this;
         if (self.dirty())
-            self.cmd("save_buffer_with_continuation", false, function (saved) {
+            self.cmd('save_buffer_with_continuation', false, (saved) => {
                 if (saved)
-                    self.signalInfo("Wrote " + self.name);
+                    self.signalInfo('Wrote ' + self.name);
             });
         else
-            self.signalInfo("No changes need to be saved");
+            self.signalInfo('No changes need to be saved');
     }),
 
-    delete_file: Ymacs_Interactive("fDelete file: ", function (name) {
-        var self = this;
-        self.ymacs.fs_deleteFile(name, function () {
-            self.signalInfo("Deleted " + name);
+    delete_file: Ymacs_Interactive('fDelete file: ', function (name) {
+        const self = this;
+        self.ymacs.fs_deleteFile(name, () => {
+            self.signalInfo('Deleted ' + name);
         });
     }),
 
-    eval_file: Ymacs_Interactive("fEval file: ", function (name) {
-        var self = this;
-        self.ymacs.fs_getFileContents(name, false, function (code, stamp) {
-            self.cmd("eval_string", code);
+    eval_file: Ymacs_Interactive('fEval file: ', function (name) {
+        const self = this;
+        self.ymacs.fs_getFileContents(name, false, (code, stamp) => {
+            self.cmd('eval_string', code);
         });
     })
 

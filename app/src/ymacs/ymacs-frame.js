@@ -33,27 +33,27 @@
 
 // @require ymacs.js
 
-DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
+DEFINE_CLASS('Ymacs_Frame', DlContainer, function (D, P, DOM) {
 
     var DBL_CLICK_SPEED = 300;
 
     var EX = DlException.stopEventBubbling;
 
-    var LINE_DIV = DOM.createElement("div", null, {className: "line", innerHTML: "<br/>"});
+    var LINE_DIV = DOM.createElement('div', null, {className: 'line', innerHTML: '<br/>'});
 
     var BLINK_TIMEOUT = 225;
 
-    D.DEFAULT_EVENTS = ["onPointChange"];
+    D.DEFAULT_EVENTS = ['onPointChange'];
 
     D.DEFAULT_ARGS = {
-        highlightCurrentLine: ["highlightCurrentLine", true],
-        buffer: ["buffer", null],
-        ymacs: ["ymacs", null],
-        isMinibuffer: ["isMinibuffer", false],
+        highlightCurrentLine: ['highlightCurrentLine', true],
+        buffer: ['buffer', null],
+        ymacs: ['ymacs', null],
+        isMinibuffer: ['isMinibuffer', false],
 
         // override in DlWidget
-        _focusable: ["focusable", true],
-        _fillParent: ["fillParent", true]
+        _focusable: ['focusable', true],
+        _fillParent: ['fillParent', true]
     };
 
     D.CONSTRUCT = function () {
@@ -117,19 +117,19 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
     };
 
     var HTML = String.buffer(
-        "<div class='Ymacs-frame-overlays'>",
-        "<div class='Ymacs-frame-content'></div>",
-        "</div>",
-        "<div class='Ymacs_Modeline'></div>"
+        '<div class=\'Ymacs-frame-overlays\'>',
+        '<div class=\'Ymacs-frame-content\'></div>',
+        '</div>',
+        '<div class=\'Ymacs_Modeline\'></div>'
     ).get();
 
     P.focus = function (exitAllowed) {
         D.BASE.focus.call(this);
         if (exitAllowed instanceof Function) {
-            this.removeEventListener("onBlur", this.__exitFocusHandler);
-            this.addEventListener("onBlur", this.__exitFocusHandler = function () {
+            this.removeEventListener('onBlur', this.__exitFocusHandler);
+            this.addEventListener('onBlur', this.__exitFocusHandler = function () {
                 if (exitAllowed.call(this.buffer)) {
-                    this.removeEventListener("onBlur", this.__exitFocusHandler);
+                    this.removeEventListener('onBlur', this.__exitFocusHandler);
                 } else {
                     this.focus.delayed(2, this, null);
                 }
@@ -139,7 +139,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
 
     P.blur = function (force) {
         if (force)
-            this.removeEventListener("onBlur", this.__exitFocusHandler);
+            this.removeEventListener('onBlur', this.__exitFocusHandler);
         D.BASE.blur.call(this);
     };
 
@@ -222,7 +222,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
             if (this.isMinibuffer) {
                 this.caretMarker = buffer.caretMarker;
             } else {
-                this.caretMarker = buffer.createMarker(buffer.caretMarker.getPosition(), false, "framecaret");
+                this.caretMarker = buffer.createMarker(buffer.caretMarker.getPosition(), false, 'framecaret');
             }
             this._redrawBuffer();
             this._redrawCaret(true);
@@ -253,47 +253,67 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
     };
 
     P.vsplit = function (percent) {
-        if (percent == null) percent = "50%";
+        if (percent == null) percent = '50%';
         var cont = this.parent,
             fr = this.ymacs.createFrame({buffer: this.buffer}),
             layout = new DlLayout(),
-            rb = new DlResizeBar({widget: this, keepPercent: true, horiz: true, className: "Ymacs-splitbar-horiz"});
+            rb = new DlResizeBar({widget: this, keepPercent: true, horiz: true, className: 'Ymacs-splitbar-horiz'});
         if (this._resizeBar) {
             this._resizeBar._widget = layout;
             layout._resizeBar = this._resizeBar;
         }
         this._resizeBar = rb;
         cont.replaceWidget(this, layout);
-        layout.packWidget(this, {pos: "top", fill: percent});
-        layout.packWidget(rb, {pos: "top"});
-        layout.packWidget(fr, {pos: "top", fill: "*"});
+        layout.packWidget(this, {pos: 'top', fill: percent});
+        layout.packWidget(rb, {pos: 'top'});
+        layout.packWidget(fr, {pos: 'top', fill: '*'});
         cont.__doLayout();
         fr.centerOnCaret();
+
+        DAO.get(Strings.Config.FONT_FAMILY).then(fontFamily => {
+            fontFamily = fontFamily || 'Ubuntu Mono';
+            fr.setStyle({fontFamily});
+            DAO.get(Strings.Config.FONT_SIZE).then(fontSize => {
+                fontSize = fontSize || '25px';
+                fr.setStyle({fontSize});
+            });
+        });
+
         return fr;
     };
 
     P.hsplit = function (percent) {
-        if (percent == null) percent = "50%";
-        var cont = this.parent,
+        if (percent === null) percent = '50%';
+        const cont = this.parent,
             fr = this.ymacs.createFrame({buffer: this.buffer}),
             layout = new DlLayout(),
-            rb = new DlResizeBar({widget: this, keepPercent: true, className: "Ymacs-splitbar-vert"});
+            rb = new DlResizeBar({widget: this, keepPercent: true, className: 'Ymacs-splitbar-vert'});
         if (this._resizeBar) {
             this._resizeBar._widget = layout;
             layout._resizeBar = this._resizeBar;
         }
         this._resizeBar = rb;
         cont.replaceWidget(this, layout);
-        layout.packWidget(this, {pos: "left", fill: percent});
-        layout.packWidget(rb, {pos: "left"});
-        layout.packWidget(fr, {pos: "left", fill: "*"});
+        layout.packWidget(this, {pos: 'left', fill: percent});
+        layout.packWidget(rb, {pos: 'left'});
+        layout.packWidget(fr, {pos: 'left', fill: '*'});
         cont.__doLayout();
         fr.centerOnCaret();
+
+        DAO.get(Strings.Config.FONT_FAMILY).then(fontFamily => {
+            fontFamily = fontFamily || 'Ubuntu Mono';
+            fr.setStyle({fontFamily});
+            DAO.get(Strings.Config.FONT_SIZE).then(fontSize => {
+                fontSize = fontSize || '25px';
+                fr.setStyle({fontSize});
+            });
+        });
+
         return fr;
     };
 
     P.toggleLineNumbers = function () {
-        this.condClass(this.__lineNumbers = !this.__lineNumbers, "Ymacs-line-numbers");
+        this.condClass(this.__lineNumbers = !this.__lineNumbers, 'Ymacs-line-numbers');
         if (this.buffer.transientMarker)
             this.buffer.ensureTransientMark();
     };
@@ -341,7 +361,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
         if (!row.tagName) // accept an element as well
             row = this.getLineDivElement(row);
         if (row)
-            return insertInText(row, col, DOM.createElement("span"));
+            return insertInText(row, col, DOM.createElement('span'));
     };
 
     P.__restartBlinking = function () {
@@ -361,17 +381,17 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
     };
 
     P.__blinkCaret = function () {
-        DOM.condClass(this.getCaretElement(), this.BLINKING = !this.BLINKING, "Ymacs-caret");
+        DOM.condClass(this.getCaretElement(), this.BLINKING = !this.BLINKING, 'Ymacs-caret');
         this.__caretTimer = setTimeout(this.__blinkCaret, BLINK_TIMEOUT);
     };
 
     P.__showCaret = function () {
-        DOM.addClass(this.getCaretElement(), "Ymacs-caret");
+        DOM.addClass(this.getCaretElement(), 'Ymacs-caret');
     };
 
     P._unhoverLine = function () {
         if (this.__hoverLine != null) {
-            DOM.delClass(this.getLineDivElement(this.__hoverLine), "Ymacs-current-line");
+            DOM.delClass(this.getLineDivElement(this.__hoverLine), 'Ymacs-current-line');
             this.__hoverLine = null;
         }
     };
@@ -389,15 +409,15 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
 
         if (this.highlightCurrentLine) {
             this._unhoverLine();
-            DOM.addClass(this.getLineDivElement(rc.row), "Ymacs-current-line");
+            DOM.addClass(this.getLineDivElement(rc.row), 'Ymacs-current-line');
             this.__hoverLine = rc.row;
         }
 
         // hide stale carets :-\
         // mess everywhere.
-        Array.$(this.getElement().querySelectorAll(".Ymacs-caret, #" + this.__caretId)).foreach(function (el) {
-            el.id = "";
-            el.className = "";
+        Array.$(this.getElement().querySelectorAll('.Ymacs-caret, #' + this.__caretId)).foreach(function (el) {
+            el.id = '';
+            el.className = '';
         });
 
         // redraw the line where the caret was previously, so that it disappears from there
@@ -414,7 +434,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
         if (isActive)
             this.__restartBlinking();
 
-        this.callHooks("onPointChange", rc.row, rc.col);
+        this.callHooks('onPointChange', rc.row, rc.col);
         this.redrawModelineWithTimer(rc);
     };
 
@@ -422,10 +442,10 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
         var html = this.buffer.formatLineHTML(row, this.caretMarker);
         // taking advantage of the fact that a literal > entered by the user will never appear in
         // the generated HTML, since special HTMl characters are escaped.
-        var pos = html.indexOf("Ymacs-caret'>");
+        var pos = html.indexOf('Ymacs-caret\'>');
         if (pos >= 0) {
             html = html.substr(0, pos + 12)
-                + " id='" + this.__caretId + "'"
+                + ' id=\'' + this.__caretId + '\''
                 + html.substr(pos + 12);
         }
         return html;
@@ -433,8 +453,8 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
 
     P._redrawBuffer = function () {
         this.setContent(this.buffer.code.map(function (line, i) {
-            return this._getLineHTML(i).htmlEmbed("div", "line");
-        }, this).join(""));
+            return this._getLineHTML(i).htmlEmbed('div', 'line');
+        }, this).join(''));
     };
 
     P.coordinatesToRowCol = function (x, y) {
@@ -494,10 +514,10 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
         var firstline = this.firstLineVisible();
         var lastline = this.lastLineVisible();
         var percent = firstline == 0
-            ? "Top"
+            ? 'Top'
             : lastline == maxline
-                ? "Bot"
-                : Math.round(lastline / maxline * 100) + "%";
+                ? 'Bot'
+                : Math.round(lastline / maxline * 100) + '%';
         this.setModelineContent(this.buffer.renderModelineContent(rc, percent));
     };
 
@@ -532,7 +552,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
     };
 
     P._on_bufferOverwriteMode = function (om) {
-        this.condClass(om, "Ymacs-overwrite-mode");
+        this.condClass(om, 'Ymacs-overwrite-mode');
     };
 
     P._on_bufferMessage = function (type, text, html, timeout) {
@@ -542,7 +562,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
             content: html ? text : text.htmlEscape(),
             widget: anchor,
             anchor: anchor.getElement(),
-            align: {prefer: "CC", fallX1: "CC", fallX2: "CC", fallY1: "CC", fallY2: "CC"}
+            align: {prefer: 'CC', fallX1: 'CC', fallX2: 'CC', fallY1: 'CC', fallY2: 'CC'}
         });
         popup.hide(timeout || 5000);
     };
@@ -561,7 +581,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
     };
 
     P.getOverlayId = function (name) {
-        return this.id + "-ovl-" + name;
+        return this.id + '-ovl-' + name;
     };
 
     P.getOverlayHTML = function (name, props) {
@@ -575,19 +595,19 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
         p1.x -= p0.x;
         p2.x -= p0.x;
         var str = String.buffer(
-            "<div id='", this.getOverlayId(name), "' class='Ymacs_Overlay ", name,
-            "' style='top:", p1.y, "px;left:", p0.x, "px'>"
+            '<div id=\'', this.getOverlayId(name), '\' class=\'Ymacs_Overlay ', name,
+            '\' style=\'top:', p1.y, 'px;left:', p0.x, 'px\'>'
         );
         if (props.line1 == props.line2) {
-            str("<div class='", name, "' style='margin-left:", p1.x,
-                "px; width:", p2.x - p1.x, "px;height:", p2.h, "px;'>&nbsp;</div>");
+            str('<div class=\'', name, '\' style=\'margin-left:', p1.x,
+                'px; width:', p2.x - p1.x, 'px;height:', p2.h, 'px;\'>&nbsp;</div>');
         } else {
-            str("<div class='", name, "' style='margin-left:", p1.x, "px;height:", p1.h, "px;'>&nbsp;</div>");
+            str('<div class=\'', name, '\' style=\'margin-left:', p1.x, 'px;height:', p1.h, 'px;\'>&nbsp;</div>');
             if (props.line2 - props.line1 > 1)
-                str("<div class='", name, "' style='height:", p2.y - p1.y - p1.h, "px'></div>");
-            str("<div class='", name, "' style='width:", p2.x, "px;height:", p2.h, "px;'>&nbsp;</div>");
+                str('<div class=\'', name, '\' style=\'height:', p2.y - p1.y - p1.h, 'px\'></div>');
+            str('<div class=\'', name, '\' style=\'width:', p2.x, 'px;height:', p2.h, 'px;\'>&nbsp;</div>');
         }
-        str("</div>");
+        str('</div>');
         return str.get();
     };
 
@@ -622,9 +642,9 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
         window.focus();
         // console.log("FOCUS for %s", this.buffer.name);
         this.ymacs.setActiveFrame(this, true);
-        this.addClass("Ymacs_Frame-active");
+        this.addClass('Ymacs_Frame-active');
         if (!this.isMinibuffer) {
-            this.buffer.cmd("goto_char", this.caretMarker.getPosition());
+            this.buffer.cmd('goto_char', this.caretMarker.getPosition());
         }
         this.buffer.addEventListener(this._moreBufferEvents);
         this._redrawCaret();
@@ -643,7 +663,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
     var CLICK_COUNT = 0, CLICK_COUNT_TIMER = null, CLICK_LAST_TIME = null;
 
     function CLEAR_CLICK_COUNT() {
-        CLICK_COUNT = null
+        CLICK_COUNT = null;
     };
 
     P._on_mouseDown = function (ev) {
@@ -666,23 +686,23 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
 
         buf.clearTransientMark();
         const ch = buf._rowColToPosition(rc.row, rc.col);
-        buf.cmd("goto_char", ch);
-        buf.callInteractively("keyboard_quit");
+        buf.cmd('goto_char', ch);
+        buf.callInteractively('keyboard_quit');
         if (CLICK_COUNT == 1) {
             // buf.ensureTransientMark();
             DlEvent.captureGlobals(this._dragSelectCaptures);
         } else if (CLICK_COUNT == 2) {
-            buf.cmd("forward_word");
-            buf.cmd("backward_word");
-            buf.cmd("forward_word_mark");
+            buf.cmd('forward_word');
+            buf.cmd('backward_word');
+            buf.cmd('forward_word_mark');
         } else if (CLICK_COUNT == 3) {
-            buf.cmd("beginning_of_line");
-            buf.cmd("end_of_line_mark");
+            buf.cmd('beginning_of_line');
+            buf.cmd('end_of_line_mark');
         } else if (CLICK_COUNT == 4) {
-            buf.cmd("backward_paragraph");
-            buf.cmd("forward_whitespace");
-            buf.cmd("beginning_of_line");
-            buf.cmd("forward_paragraph_mark");
+            buf.cmd('backward_paragraph');
+            buf.cmd('forward_whitespace');
+            buf.cmd('beginning_of_line');
+            buf.cmd('forward_paragraph_mark');
         }
 
         EX();
@@ -691,7 +711,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
     function _dragSelect_onMouseMove(ev) {
         var pos = ev.computePos(this.getContentElement()),
             rc = this.coordinatesToRowCol(pos.x, pos.y);
-        this.buffer.cmd("goto_char", this.buffer._rowColToPosition(rc.row, rc.col));
+        this.buffer.cmd('goto_char', this.buffer._rowColToPosition(rc.row, rc.col));
         this.buffer.ensureTransientMark();
         this.ensureCaretVisible();
     };
@@ -757,7 +777,7 @@ DEFINE_CLASS("Ymacs_Frame", DlContainer, function (D, P, DOM) {
 
 });
 
-DEFINE_CLASS("Ymacs_Message_Popup", DlPopup, function (D, P) {
+DEFINE_CLASS('Ymacs_Message_Popup', DlPopup, function (D, P) {
     D.FIXARGS = function (args) {
         args.focusable = false;
         args.autolink = false;

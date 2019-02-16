@@ -474,6 +474,19 @@ Ymacs_Buffer.newCommands({
     downcase_word: Ymacs_Interactive_X(function () {
         this.cmd('_apply_operation_on_word', String.prototype.toLowerCase, 'downcase_word');
     }),
+    show_help: Ymacs_Interactive_X(function () {
+        this.whenActiveFrame('hsplit', '80%');
+    }),
+
+    eval_dotymacs: Ymacs_Interactive_X(function () {
+        const file = '.ymacs';
+        const dotYmacs = ymacs.getBuffer(file);
+        const self = this;
+
+        DAO.get('.ymacs').then(ymacsContents => {
+            evaluateJavascript.call(self, ymacsContents, [dotYmacs, ymacs]);
+        });
+    }),
 
     upcase_word: Ymacs_Interactive_X(function () {
         this.cmd('_apply_operation_on_word', String.prototype.toUpperCase, 'upcase_word');
@@ -873,7 +886,7 @@ Ymacs_Buffer.newCommands({
             ctx.buffer = this;
             ctx.startBuffer = this;
         }
-        var expansion;
+        let expansion;
 
         // in the following excursion, *this* is ctx.buffer,
         // not necessarily the currently active buffer.  It's
@@ -881,9 +894,9 @@ Ymacs_Buffer.newCommands({
         // setup the context so that the next invocation would
         // continue.
         ctx.buffer.cmd('save_excursion', function repeat() {
-            var word = this.getq('syntax_word_dabbrev');
-            var p1;
-            var found = false;
+            const word = this.getq('syntax_word_dabbrev');
+            let p1;
+            let found = false;
             this.cmd('goto_char', ctx.lastSearch);
             // console.log("last at: %d", ctx.lastSearch);
             if (!ctx.forward) {
@@ -927,7 +940,7 @@ Ymacs_Buffer.newCommands({
                     }
                 }
             }
-            if (p1 != null) {
+            if (p1 !== null) {
                 // console.log("%s at %d, next from %d", ctx.search, p1, ctx.lastSearch);
                 this.cmd('bind_variables', {
                     syntax_word: this.getq('syntax_word_dabbrev')
@@ -937,7 +950,7 @@ Ymacs_Buffer.newCommands({
                     repeat.call(this);
             }
         });
-        if (expansion != null) {
+        if (expansion !== null) {
             this._replaceText(ctx.point, ctx.point + ctx.length, expansion);
             ctx.length = expansion.length;
             ctx.encountered[expansion] = true;
@@ -947,15 +960,18 @@ Ymacs_Buffer.newCommands({
     /* -----[ frames and buffers ]----- */
 
     split_frame_vertically: Ymacs_Interactive('p', function (percent) {
-        if (percent == null) percent = '50%';
+        if (percent === null) percent = '50%';
         else percent += '%';
         this.whenActiveFrame('vsplit', percent);
     }),
 
     split_frame_horizontally: Ymacs_Interactive('p', function (percent) {
-        if (percent == null) percent = '50%';
+        if (percent === null) percent = '50%';
         else percent += '%';
         this.whenActiveFrame('hsplit', percent);
+        this.cmd('other_frame');
+        this.cmd('eval_dotymacs');
+
     }),
 
     delete_other_frames: Ymacs_Interactive(function () {
@@ -993,6 +1009,12 @@ Ymacs_Buffer.newCommands({
             }
             ymacs.switchToBuffer(buffer);
         });
+    }),
+
+    html_render_buffer: Ymacs_Interactive(function () {
+        const dlgs = document.getElementsByClassName('DlDialog-Rel');
+        const dlg = dlgs[0];
+        dlg.innerHTML = this.getCode();
     }),
 
     list_buffers: Ymacs_Interactive(function () {

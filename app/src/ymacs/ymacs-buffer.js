@@ -269,7 +269,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
             const ext = filename.substr(idx + 1).toLowerCase();
             if (ext === 'js' || ext === 'json') ret = 'javascript_dl_mode';
             if (ext === 'org') ret = 'org_mode';
-            if (ext === 'xml') ret = 'xml_mode';
+            if (ext === 'xml' || ext === 'html') ret = 'xml_mode';
         }
 
         if (ret) {
@@ -894,7 +894,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
     };
 
     P._deleteLine = function (row) {
-        console.log('Warning: _deleteLine doesnt update markers')
+        console.log('Warning: _deleteLine doesnt update markers');
         this.code.splice(row, 1);
         this._textProperties.deleteLine(row);
         if (this.tokenizer)
@@ -1027,10 +1027,11 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
         return this.getCode().substring(begin, end);
     };
 
-    P._killingAction = function (p1, p2, prepend, noDelete) {
+    P._killingAction = function (p1, p2, prepend, noDelete, saveToClipboard = true) {
         p1 = MRK(p1);
         p2 = MRK(p2);
         const text = this._bufferSubstring(p1, p2);
+        if (saveToClipboard) copyToClipboard(text);
         this._saveKilledText(text, prepend);
         if (!noDelete)
             this._deleteText(p1, p2);
