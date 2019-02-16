@@ -21,8 +21,12 @@ DEFINE_SINGLETON('Ymacs_Keymap_OrgMode', Ymacs_Keymap, (D) => {
         'C-+': 'org_expand_buffer',
         // User friendly keybindings
 
-        'C-x c': 'kill_ring_save',
-        'C-x v': 'yank',
+        'C-x C-c': 'kill_ring_save',
+        'C-x C-v': 'yank',
+        'C-x C-l': 'kill_line',
+        'C-x C-d': 'kill_word',
+        'C-x C-b': 'yank2',
+
         // '.': 'org_test'
 
     };
@@ -517,6 +521,8 @@ function getBeginAndEndOfCurrentLine() {
             const markers = this.markers.filter(marker => marker.name === Strings.FOLDED_MARKER);
             const new_lines = expandAll(code, markers);
             DAO.put(this.name, new_lines);
+            this.cmd('save_file_to_file_list', this.name);
+
             this.dirty(false);
 
         }),

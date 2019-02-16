@@ -1,4 +1,5 @@
 // Expects to be called like evaluateJavascript.call(buffer / this , arguments)
+// TODO:  Put this somewhere
 function evaluateJavascript(ymacsContents, variables) {
     try {
         const code = new Function('buffer', 'ymacs', ymacsContents);
@@ -59,32 +60,6 @@ class Application {
 
             const yourFilesMenuItem = new DlMenuItem({parent: mainMenu, label: 'Your Files'.makeLabel()});
 
-            const files = [
-                'ymacs.js',
-                'ymacs-keyboard.js',
-                'ymacs-regexp.js',
-                'ymacs-frame.js',
-                'ymacs-textprop.js',
-                'ymacs-exception.js',
-                'ymacs-interactive.js',
-                'ymacs-buffer.js',
-                'ymacs-marker.js',
-                'ymacs-commands.js',
-                'ymacs-commands-utils.js',
-                'ymacs-keymap.js',
-                'ymacs-keymap-emacs.js',
-                'ymacs-keymap-isearch.js',
-                'ymacs-minibuffer.js',
-                'ymacs-tokenizer.js',
-                'ymacs-mode-paren-match.js',
-                'ymacs-mode-lisp.js',
-                'ymacs-mode-js.js',
-                'ymacs-mode-org.js',
-                'ymacs-mode-xml.js',
-                'ymacs-mode-css.js',
-                'ymacs-mode-markdown.js',
-                '../app.js'
-            ];
             const submenu = new DlVMenu({});
             const newFileItem = new DlMenuItem({parent: submenu, label: '[+] New File'.makeLabel()});
             newFileItem.addEventListener('onSelect', () => {
@@ -111,7 +86,7 @@ class Application {
                     }
                 });
             } else {
-                await DAO.put(Strings.FILE_LIST, new Set());
+                await DAO.put(Strings.FILE_LIST, '');
             }
 
 

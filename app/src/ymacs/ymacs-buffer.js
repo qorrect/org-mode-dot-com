@@ -376,7 +376,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
     };
 
     P.createMarker = function (pos, before, name) {
-        if (pos == null)
+        if (pos === null)
             pos = this.point();
         return new Ymacs_Marker({editor: this, pos: pos, name: name, before: before});
     };
@@ -388,7 +388,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
     P.dirty = function (dirty) {
         if (arguments.length > 0) {
             this.__isDirty = dirty;
-            this.__undoQueue.foreach(function (x) {
+            this.__undoQueue.foreach( (x) => {
                 if (x.type !== 3) x.dirty = true;
             });
             this.updateModeline();

@@ -197,7 +197,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     find_file: Ymacs_Interactive('FFind file: ', (name) => {
-        ymacs.createOrOpen(name);
+        ymacs.createOrOpen(name.trim());
 
     }),
 
@@ -246,18 +246,22 @@ Ymacs_Buffer.newCommands({
         loop(false);
     },
 
+    save_file_to_file_list(name) {
+        DAO.get(Strings.FILE_LIST).then(_files => {
+            const files = ensureList((_files || '').split(','));
+
+            files.push(name);
+            DAO.put(Strings.FILE_LIST, ensureUnique(files).join(','));
+
+        });
+    },
+
     save_buffer_with_continuation(ask, cont) {
 
         const self = this;
         self.dirty(false);
         DAO.put(self.name, self.getCode());
-        DAO.get(Strings.FILE_LIST).then(_files => {
-            const files = ensureList(_files.split(','));
-
-            files.push(self.name);
-            DAO.put(Strings.FILE_LIST, ensureUnique(files).join(','));
-        });
-
+        this.cmd('save_file_to_file_list', self.name);
         cont(true);
 
         // localStorage.setItem(self.name,self.getCode());
