@@ -269,6 +269,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
             const ext = filename.substr(idx + 1).toLowerCase();
             if (ext === 'js' || ext === 'json') ret = 'javascript_dl_mode';
             if (ext === 'org') ret = 'org_mode';
+            if (ext === 'md') ret = 'markdown_mode';
             if (ext === 'xml' || ext === 'html') ret = 'xml_mode';
         }
 
@@ -388,7 +389,7 @@ DEFINE_CLASS('Ymacs_Buffer', DlEventProxy, (D, P) => {
     P.dirty = function (dirty) {
         if (arguments.length > 0) {
             this.__isDirty = dirty;
-            this.__undoQueue.foreach( (x) => {
+            this.__undoQueue.foreach((x) => {
                 if (x.type !== 3) x.dirty = true;
             });
             this.updateModeline();

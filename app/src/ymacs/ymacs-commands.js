@@ -48,11 +48,11 @@ Ymacs_Buffer.newCommands({
 
     forward_line: Ymacs_Interactive('p', function (x) {
         if (x == null) x = 1;
-        var rc = this._rowcol;
+        const rc = this._rowcol;
         if (!/^(forward|backward)_line$/.test(this.previousCommand)) {
             this.setq('line_movement_requested_col', rc.col);
         }
-        var ret = this.cmd('goto_char',
+        const ret = this.cmd('goto_char',
             this._rowColToPosition(rc.row + x,
                 Math.max(rc.col,
                     this.getq('line_movement_requested_col')))); // starting to look like Lisp, eh?
@@ -74,7 +74,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     forward_whitespace: Ymacs_Interactive('P', function (noLine) {
-        var re = noLine ? /[^\x20\t\xA0]/g : /[^\s]/g;
+        const re = noLine ? /[^\x20\t\xA0]/g : /[^\s]/g;
         if (this.cmd('search_forward_regexp', re)) {
             this.cmd('backward_char');
             return true;
@@ -83,7 +83,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     backward_whitespace: Ymacs_Interactive('P', function (noLine) {
-        var re = noLine ? /[^\x20\t\xA0]/g : /[^\s]/g;
+        const re = noLine ? /[^\x20\t\xA0]/g : /[^\s]/g;
         if (this.cmd('search_backward_regexp', re)) {
             this.cmd('forward_char');
             return true;
@@ -96,7 +96,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     back_to_indentation: Ymacs_Interactive(function () {
-        var rc = this._rowcol, line = this.code[rc.row], m = /\S/.exec(line);
+        const rc = this._rowcol, line = this.code[rc.row], m = /\S/.exec(line);
         if (m)
             return this.cmd('goto_char', this._rowColToPosition(rc.row, m.index));
     }),
@@ -106,7 +106,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     end_of_line: Ymacs_Interactive(function () {
-        var rc = this._rowcol;
+        const rc = this._rowcol;
         return this.cmd('goto_char', this._rowColToPosition(rc.row, this.code[rc.row].length));
     }),
 
@@ -118,27 +118,27 @@ Ymacs_Buffer.newCommands({
         return this.cmd('goto_char', this.getCodeSize());
     }),
 
-    eob_p: function () {
+    eob_p() {
         return this.point() == this.getCodeSize();
     },
 
-    bob_p: function () {
+    bob_p() {
         return this.point() == 0;
     },
 
-    eol_p: function () {
-        var rc = this._positionToRowCol(this.point());
+    eol_p() {
+        const rc = this._positionToRowCol(this.point());
         return rc.col == this.code[rc.line].length;
     },
 
-    bol_p: function () {
+    bol_p() {
         return this._positionToRowCol(this.point()).col == 0;
     },
 
     backward_delete_char: Ymacs_Interactive('^p', function (n) {
         if (!this.deleteTransientRegion()) {
             if (n == null) n = 1;
-            var pos = this.point();
+            const pos = this.point();
             if (pos > 0)
                 this._deleteText(pos - n, pos);
         }
@@ -147,14 +147,14 @@ Ymacs_Buffer.newCommands({
     delete_char: Ymacs_Interactive('^p', function (n) {
         if (!this.deleteTransientRegion()) {
             if (n == null) n = 1;
-            var pos = this.point();
+            const pos = this.point();
             this._deleteText(pos, pos + n);
         }
     }),
 
     delete_whitespace: Ymacs_Interactive('^P', function (noLine) {
         if (!this.deleteTransientRegion()) {
-            var p = this.point();
+            const p = this.point();
             if (this.cmd('forward_whitespace', noLine)) {
                 this._deleteText(p, this.point());
                 return true;
@@ -164,7 +164,7 @@ Ymacs_Buffer.newCommands({
 
     backward_delete_whitespace: Ymacs_Interactive('^P', function (noLine) {
         if (!this.deleteTransientRegion()) {
-            var p = this.point();
+            const p = this.point();
             if (this.cmd('backward_whitespace', noLine)) {
                 this._deleteText(this.point(), p);
                 return true;
@@ -191,7 +191,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     self_insert_command: Ymacs_Interactive('^p', function (repeat) {
-        var ev = this.interactiveEvent(),
+        let ev = this.interactiveEvent(),
             ch = String.fromCharCode(ev.charCode),
             rc = this._rowcol;
         if (ev.charCode && ch && !ev.altKey && !ev.ctrlKey) {
@@ -199,7 +199,7 @@ Ymacs_Buffer.newCommands({
             if (repeat != null)
                 ch = ch.x(repeat);
             if (this.overwriteMode) {
-                var line = this.code[rc.row], left = line.length - rc.col;
+                const line = this.code[rc.row], left = line.length - rc.col;
                 if (left > 0)
                     this.cmd('delete_char', Math.min(left, repeat || 1));
             }
@@ -228,10 +228,10 @@ Ymacs_Buffer.newCommands({
 
     indent_line: Ymacs_Interactive('P', function (noEmpty) {
         if (this.tokenizer) {
-            var indent = this.tokenizer.getIndentation(this._rowcol.row, this);
+            const indent = this.tokenizer.getIndentation(this._rowcol.row, this);
             if (indent != null) {
                 if (!noEmpty || /\S/.test(this.getLine())) {
-                    var pos = this.cmd('save_excursion', function () {
+                    const pos = this.cmd('save_excursion', function () {
                         this.cmd('back_to_indentation');
                         if (this._rowcol.col != indent) {
                             this.cmd('beginning_of_line');
@@ -252,12 +252,12 @@ Ymacs_Buffer.newCommands({
 
     indent_region: Ymacs_Interactive('r', function (begin, end) {
         if (end < begin) {
-            var tmp = begin;
+            const tmp = begin;
             begin = end;
             end = tmp;
         }
         this.cmd('save_excursion', function () {
-            var m = this.createMarker(end);
+            const m = this.createMarker(end);
             this.cmd('goto_char', begin);
             while (this.point() < m.getPosition()) {
                 this.cmd('indent_line', true);
@@ -265,43 +265,43 @@ Ymacs_Buffer.newCommands({
                 if (!this.cmd('forward_line'))
                     break;
             }
-            ;
+
             m.destroy();
         });
     }),
 
-    make_marker: function (pos) {
+    make_marker(pos) {
         return this.createMarker(pos);
     },
 
-    line_matches: function (rx) {
+    line_matches(rx) {
         const code = this.getCode();
-        var pos = rx.lastIndex = this.point();
-        var ret = this.matchData = rx.exec(code);
+        const pos = rx.lastIndex = this.point();
+        const ret = this.matchData = rx.exec(code);
 
     },
 
 
-    looking_at: function (rx) {
-        var pos = rx.lastIndex = this.point();
-        var ret = this.matchData = rx.exec(this.getCode());
+    looking_at(rx) {
+        const pos = rx.lastIndex = this.point();
+        const ret = this.matchData = rx.exec(this.getCode());
         if (ret)
             ret.after = rx.lastIndex;
         return ret && ret.index == pos;
     },
 
-    looking_back: function (rx) {
-        var m = this.lastIndexOfRegexp(this.getCode(), rx, this.point());
+    looking_back(rx) {
+        const m = this.lastIndexOfRegexp(this.getCode(), rx, this.point());
         return m && m.after == this.point();
     },
 
     search_forward: Ymacs_Interactive('sSearch: ', function (str, bound) {
-        var code = this.getCode(), point = this.point();
+        let code = this.getCode(), point = this.point();
         if (this.getq('case_fold_search')) {
             code = code.toLowerCase();
             str = str.toLowerCase();
         }
-        var pos = code.indexOf(str, point);
+        const pos = code.indexOf(str, point);
         if (pos >= 0 && (bound == null || pos <= bound)) {
             this.cmd('goto_char', pos + str.length);
             return true;
@@ -309,12 +309,12 @@ Ymacs_Buffer.newCommands({
     }),
 
     search_backward: Ymacs_Interactive('sSearch backward: ', function (str, bound) {
-        var code = this.getCode(), point = this.point();
+        const code = this.getCode(), point = this.point();
         if (this.getq('case_fold_search')) {
             code = code.toLowerCase();
             str = str.toLowerCase();
         }
-        var pos = code.lastIndexOf(str, point);
+        let pos = code.lastIndexOf(str, point);
         if (pos == point)
             pos = code.lastIndexOf(str, point - 1);
         if (pos >= 0 && pos != point && (bound == null || pos >= bound)) {
@@ -323,9 +323,9 @@ Ymacs_Buffer.newCommands({
         }
     }),
 
-    make_regexp: function (rx) {
+    make_regexp(rx) {
         if (!(rx instanceof RegExp)) {
-            var matchCase = rx.toLowerCase() != rx.toUpperCase();
+            const matchCase = rx.toLowerCase() != rx.toUpperCase();
             try {
                 rx = new RegExp(rx, matchCase ? 'ig' : 'g');
             } catch (ex) {
@@ -337,7 +337,7 @@ Ymacs_Buffer.newCommands({
 
     search_forward_regexp: Ymacs_Interactive('sRegExp search: ', function (rx) {
         rx = this.cmd('make_regexp', rx);
-        var code = this.getCode(),
+        const code = this.getCode(),
             pos = rx.lastIndex = this.point(),
             ret = this.matchData = rx.exec(code);
         if (ret && rx.lastIndex != pos) {
@@ -349,7 +349,7 @@ Ymacs_Buffer.newCommands({
 
     search_backward_regexp: Ymacs_Interactive('sBackward RegExp search: ', function (rx) {
         rx = this.cmd('make_regexp', rx);
-        var m = this.lastIndexOfRegexp(this.getCode(), rx, this.point());
+        const m = this.lastIndexOfRegexp(this.getCode(), rx, this.point());
         if (m && m.index != this.point()) {
             this.cmd('goto_char', m.index);
             return true;
@@ -357,7 +357,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     forward_word: Ymacs_Interactive_X(function () {
-        var word = this.getq('syntax_word'), end = false;
+        let word = this.getq('syntax_word'), end = false;
         while (!end && !word.test(this.charAt()))
             if (!this.cmd('forward_char'))
                 end = true;
@@ -367,7 +367,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     backward_word: Ymacs_Interactive_X(function () {
-        var word = this.getq('syntax_word'), end = false;
+        const word = this.getq('syntax_word'), end = false;
         while (!end && !word.test(this.charAt(-1)))
             if (!this.cmd('backward_char'))
                 end = true;
@@ -400,7 +400,7 @@ Ymacs_Buffer.newCommands({
         if (this.getq('syntax_word').test(this.charAt()))
             this.cmd('forward_word');
 
-        var a = [];
+        const a = [];
         this.cmd('forward_word');
         a.push(this.point());
         this.cmd('backward_word');
@@ -413,7 +413,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     transpose_lines: Ymacs_Interactive_X(function () {
-        var a = [];
+        const a = [];
         this.cmd('backward_line');
         this.cmd('beginning_of_line');
         a.push(this.point());
@@ -427,34 +427,34 @@ Ymacs_Buffer.newCommands({
     }),
 
     transpose_chars: Ymacs_Interactive_X(function () {
-        var pos = this.point();
+        const pos = this.point();
         if (this.cmd('backward_char'))
             this.cmd('goto_char', this._swapAreas([pos - 1, pos, pos, pos + 1]));
     }),
 
     kill_word: Ymacs_Interactive_X(function () {
-        var pos = this.point();
+        const pos = this.point();
         this.cmd('forward_word');
-        var pos2 = this.point();
+        const pos2 = this.point();
         this._killingAction(pos, pos2, false);
     }),
 
 
     backward_kill_word: Ymacs_Interactive_X(function () {
-        var pos = this.point();
+        const pos = this.point();
         this.cmd('backward_word');
-        var pos2 = this.point();
+        const pos2 = this.point();
         this._killingAction(pos, pos2, true);
     }),
 
-    _apply_operation_on_word: function (op, cc) {
-        var pos = this.point();
+    _apply_operation_on_word(op, cc) {
+        const pos = this.point();
         if (this.getq('syntax_word').test(this.charAt())) {
-            var pos2 = this.cmd('save_excursion', function () {
+            const pos2 = this.cmd('save_excursion', function () {
                 this.cmd('forward_word');
                 return this.point();
             });
-            var word = op.call(this._bufferSubstring(pos, pos2));
+            const word = op.call(this._bufferSubstring(pos, pos2));
             this._deleteText(pos, pos2);
             this._insertText(word);
         } else {
@@ -474,8 +474,40 @@ Ymacs_Buffer.newCommands({
     downcase_word: Ymacs_Interactive_X(function () {
         this.cmd('_apply_operation_on_word', String.prototype.toLowerCase, 'downcase_word');
     }),
-    show_help: Ymacs_Interactive_X(function () {
-        this.whenActiveFrame('hsplit', '80%');
+    show_help: Ymacs_Interactive_X(() => {
+        // this.whenActiveFrame('hsplit', '75%');
+
+        if (this.__helpDlg) {
+            this.__helpDlg.destroy();
+            this.__helpDlg = null;
+        } else {
+            window.YmacsEvents = this;
+            const dlg = new DlDialog({title: 'Wemacs Help', fixed: true});
+            const cont = new DlContainer({parent: dlg});
+            cont.setContent(Strings.English.HELP_CONTENT);
+            cont.getElement().style.padding = '20px';
+            const btn = new DlButton({parent: cont, label: 'Close'});
+            btn.addEventListener('onClick', () => {
+                dlg.destroy();
+            });
+            const yOffset = 25;
+            const x = window.innerWidth * .75;
+            const width = window.innerWidth * .25;
+            dlg.setPos(x, yOffset);
+            dlg.setSize({x: width, y: window.innerHeight - yOffset - 10});
+            // dlg._handleKeybinding(DlKeyboard.parseKey('ESCAPE'), () => {
+            //     this.__helpDlg.destroy();
+            //     this.__helpDlg = null;
+            // });
+            dlg.show();
+            ymacs.getActiveFrame().focus();
+            window.helpDlg = this.__helpDlg = dlg;
+            ymacs.registerEvents(['href_event']);
+            ymacs.addEventListener('href_event', function () {
+                console.log('ON HELPCLICKED');
+                console.log(arguments);
+            });
+        }
     }),
 
     eval_dotymacs: Ymacs_Interactive_X(function () {
@@ -514,13 +546,13 @@ Ymacs_Buffer.newCommands({
     }),
 
     goto_line: Ymacs_Interactive('NGoto line: ', function (row) {
-        var pos = this._rowColToPosition(row - 1, 0);
+        const pos = this._rowColToPosition(row - 1, 0);
         return this.cmd('goto_char', pos);
     }),
 
     move_to_column: Ymacs_Interactive('NMove to column: ', function (col, force) {
-        var rc = this._positionToRowCol(this.point());
-        var text = this.code[rc.row];
+        const rc = this._positionToRowCol(this.point());
+        const text = this.code[rc.row];
         if (text.length < col) {
             if (force) {
                 this.cmd('end_of_line');
@@ -541,13 +573,13 @@ Ymacs_Buffer.newCommands({
         return this._insertText(Array.$(arguments).join(''));
     }),
 
-    keyboard_quit: Ymacs_Interactive('^p', function () {
+    keyboard_quit: Ymacs_Interactive('^p', () => {
         self.ymacs.getActiveBuffer().cancelHighlightMarker();
     }),
 
-    buffer_substring: function (begin, end) {
+    buffer_substring(begin, end) {
         if (arguments.length == 0) {
-            var r = this.getRegion();
+            const r = this.getRegion();
             begin = r.begin;
             end = r.end;
         }
@@ -555,7 +587,7 @@ Ymacs_Buffer.newCommands({
     },
 
     kill_line: Ymacs_Interactive_X(function () {
-        var pos = this.point(),
+        let pos = this.point(),
             rc = this._rowcol,
             line = this.code[rc.row],
             end = pos + line.length - rc.col;
@@ -564,15 +596,15 @@ Ymacs_Buffer.newCommands({
         this._killingAction(pos, end);
     }),
 
-    save_excursion: function () {
+    save_excursion() {
         return this._saveExcursion.apply(this, arguments);
     },
 
-    prevent_undo: function () {
+    prevent_undo() {
         return this._disableUndo.apply(this, arguments);
     },
 
-    point: function () {
+    point() {
         return this.caretMarker.getPosition();
     },
 
@@ -584,8 +616,8 @@ Ymacs_Buffer.newCommands({
         // this.cmd("exchange_point_and_mark");
         // setTimeout(() => this.cmd("exchange_point_and_mark"), 700);
 
-        var pos1 = self.ymacs.getActiveBuffer()._positionToRowCol(begin);
-        var pos2 = self.ymacs.getActiveBuffer()._positionToRowCol(end);
+        const pos1 = self.ymacs.getActiveBuffer()._positionToRowCol(begin);
+        const pos2 = self.ymacs.getActiveBuffer()._positionToRowCol(end);
 
         this.setOverlay('mark-highlight', {
             line1: pos1.row, line2: pos2.row,
@@ -598,7 +630,7 @@ Ymacs_Buffer.newCommands({
 
     yank: Ymacs_Interactive('^P', function (atStart) {
         this.deleteTransientRegion();
-        var point = this.point();
+        const point = this.point();
         this._insertText(this.ymacs.killRingText());
         this.cmd('set_mark_command', point);
         if (atStart)
@@ -625,7 +657,7 @@ Ymacs_Buffer.newCommands({
         }
     }),
 
-    mark: function () {
+    mark() {
         return this.markMarker.getPosition();
     },
 
@@ -649,13 +681,13 @@ Ymacs_Buffer.newCommands({
     }),
 
     recenter_top_bottom: Ymacs_Interactive(function () {
-        this.whenActiveFrame(function (frame) {
+        this.whenActiveFrame((frame) => {
             frame.centerOnCaret();
         });
     }),
 
     ensure_caret_visible: Ymacs_Interactive(function () {
-        this.whenActiveFrame(function (frame) {
+        this.whenActiveFrame((frame) => {
             if (frame.ensureCaretVisible())
                 frame.centerOnCaret();
         });
@@ -667,13 +699,13 @@ Ymacs_Buffer.newCommands({
         this.cmd('save_excursion', function () {
             if (!this.cmd('looking_at', this.getq('syntax_paragraph_sep')))
                 this.cmd('forward_paragraph');
-            var eop = this.createMarker(this.point() - 1);
+            const eop = this.createMarker(this.point() - 1);
             this.cmd('backward_paragraph');
             if (this.point() > 0)
                 this.cmd('forward_char');
 
             // identify the prefix to use for each line
-            var prefix = '', del = /\s+/g;
+            let prefix = '', del = /\s+/g;
             if (this.cmd('looking_at', /\s*\/\/+\s*/g)) {
                 prefix = this.matchData[0];
                 del = /\s*\/\/+\s*/g;
@@ -708,10 +740,10 @@ Ymacs_Buffer.newCommands({
             this.cmd('beginning_of_line');
 
             // main operation
-            var max = 5000;
+            let max = 5000;
             while (this.point() < eop.getPosition()) {
                 if (--max == 0) break; // whatever is screwed, do not freeze.
-                var p = this.point();
+                const p = this.point();
                 if (!this.cmd('search_forward_regexp', /\s/g))
                     break;
                 if (this.point() > eop.getPosition()) {
@@ -744,7 +776,7 @@ Ymacs_Buffer.newCommands({
             this.cmd('forward_char');
 
         // identify the prefix to use for each line
-        var prefix = '';
+        let prefix = '';
         if (this.cmd('looking_at', /(\s*)([0-9]+)(\.\s+)/g)) {
             prefix = this.matchData[1] +
                 (parseInt(this.matchData[2], 10) + 1) +
@@ -774,7 +806,7 @@ Ymacs_Buffer.newCommands({
 
     scroll_down_half: Ymacs_Interactive_X(function () {
         this.whenActiveFrame(function (frame) {
-            var hl = frame.heightInLines();
+            const hl = frame.heightInLines();
             this.cmd('forward_line', Math.round(hl / 1.33));
             this.cmd('recenter_top_bottom');
         });
@@ -782,7 +814,7 @@ Ymacs_Buffer.newCommands({
 
     scroll_up_half: Ymacs_Interactive_X(function () {
         this.whenActiveFrame(function (frame) {
-            var hl = frame.heightInLines();
+            const hl = frame.heightInLines();
             this.cmd('backward_line', Math.round(hl / 1.33));
             this.cmd('recenter_top_bottom');
         });
@@ -790,14 +822,14 @@ Ymacs_Buffer.newCommands({
 
     scroll_up: Ymacs_Interactive('p', function (arg) {
         if (arg == null) arg = 3;
-        this.whenActiveFrame(function (frame) {
+        this.whenActiveFrame((frame) => {
             frame.scrollUp(arg);
         });
     }),
 
     scroll_down: Ymacs_Interactive('p', function (arg) {
         if (arg == null) arg = 3;
-        this.whenActiveFrame(function (frame) {
+        this.whenActiveFrame((frame) => {
             frame.scrollDown(arg);
         });
     }),
@@ -806,7 +838,7 @@ Ymacs_Buffer.newCommands({
         this.cmd('save_excursion', function () {
             this.cmd('goto_char', 0);
             while (this._rowcol.row < this.code.length) {
-                var line = this.code[this._rowcol.row],
+                const line = this.code[this._rowcol.row],
                     m = /\s+$/.exec(line);
                 if (m) {
                     this.cmd('beginning_of_line');
@@ -818,15 +850,15 @@ Ymacs_Buffer.newCommands({
         });
     }),
 
-    match_string: function (n) {
+    match_string(n) {
         return this.matchData[n];
     },
 
-    match_beginning: function () {
+    match_beginning() {
         return this.matchData.index;
     },
 
-    match_end: function () {
+    match_end() {
         return this.matchData.index + this.matchData[0].length;
     },
 
@@ -853,8 +885,8 @@ Ymacs_Buffer.newCommands({
                 this.cmd('backward_delete_whitespace', true);
                 this.cmd('beginning_of_line');
                 this.cmd('delete_whitespace', true);
-                var line = this.code[this._rowcol.row];
-                var indent = Math.floor((this.getq('fill_column') - line.length) / 2);
+                const line = this.code[this._rowcol.row];
+                const indent = Math.floor((this.getq('fill_column') - line.length) / 2);
                 this.cmd('insert', ' '.x(indent));
             });
         }, this);
@@ -866,10 +898,10 @@ Ymacs_Buffer.newCommands({
         if (this.previousCommand != 'dabbrev_expand')
             this.setq('dabbrev_context', null);
 
-        var ctx = this.getq('dabbrev_context');
+        let ctx = this.getq('dabbrev_context');
         if (!ctx) {
             ctx = this.setq('dabbrev_context', {});
-            var p1 = this.cmd('save_excursion', function () {
+            const p1 = this.cmd('save_excursion', function () {
                 this.cmd('bind_variables', {
                     syntax_word: this.getq('syntax_word_dabbrev')
                 }, 'backward_word');
@@ -986,9 +1018,9 @@ Ymacs_Buffer.newCommands({
         this.whenYmacs('focusOtherFrame');
     }),
 
-    windmove: function (dir) {
-        this.whenYmacs(function (ymacs) {
-            var f = ymacs.getFrameInDirection(dir);
+    windmove(dir) {
+        this.whenYmacs((ymacs) => {
+            const f = ymacs.getFrameInDirection(dir);
             if (f) f.focus();
         });
     },
@@ -1002,7 +1034,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     switch_to_buffer: Ymacs_Interactive('BSwitch to buffer: ', function (buffer) {
-        this.whenYmacs(function (ymacs) {
+        this.whenYmacs((ymacs) => {
             if (!/\S/.test(buffer)) {
                 if (ymacs.buffers.length < 2) return;
                 buffer = ymacs.buffers[1];
@@ -1018,7 +1050,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     list_buffers: Ymacs_Interactive(function () {
-        this.whenYmacs(function (ymacs) {
+        this.whenYmacs((ymacs) => {
 
             const buffer = ymacs.createBuffer({name: 'Buffer List'});
             console.log(ymacs.buffers);
@@ -1035,17 +1067,17 @@ Ymacs_Buffer.newCommands({
         });
     }),
     kill_buffer: Ymacs_Interactive(function () {
-        var self = this;
+        const self = this;
 
         function kill() {
-            self.whenYmacs(function (ymacs) {
+            self.whenYmacs((ymacs) => {
                 ymacs.killBuffer(self);
             });
         }
 
         if (self.dirty()) {
-            var msg = 'Buffer ' + self.name + ' modified; kill anyway?';
-            self.cmd('minibuffer_yn', msg, function (yes) {
+            const msg = 'Buffer ' + self.name + ' modified; kill anyway?';
+            self.cmd('minibuffer_yn', msg, (yes) => {
                 if (yes) kill();
             });
         } else {
@@ -1064,7 +1096,7 @@ Ymacs_Buffer.newCommands({
     delete_region_or_line: Ymacs_Interactive('^', function () {
         if (!this.deleteTransientRegion()) {
             this.cmd('beginning_of_line');
-            var pos = this.point();
+            const pos = this.point();
             if (this.cmd('forward_line') || this.cmd('end_of_line')) {
                 this._deleteText(pos, this.point());
                 return true;
@@ -1074,9 +1106,9 @@ Ymacs_Buffer.newCommands({
 
     // http://mihai.bazon.net/blog/close-last-xml-tag-emacs
     close_last_xml_tag: Ymacs_Interactive_X(function () {
-        var tag, quote;
+        let tag, quote;
         this.cmd('save_excursion', function () {
-            var skip = 1;
+            let skip = 1;
             while (skip != 0 && this.cmd('search_backward_regexp', /<\x2f?([a-zA-Z0-9:_-]+)/g)) {
                 tag = this.cmd('match_string', 1);
                 if (this.cmd('looking_at', /<\x2f/g)) {
@@ -1095,13 +1127,13 @@ Ymacs_Buffer.newCommands({
         }
     }),
 
-    bind_variables: function () {
+    bind_variables() {
         return this.withVariables.apply(this, arguments);
     },
 
     for_region: Ymacs_Interactive('^r\nCExecute command within region: ', function (begin, end, func) {
         if (end < begin) {
-            var tmp = begin;
+            const tmp = begin;
             begin = end;
             end = tmp;
         } // MACROS!  I WANT MACROS!  EVAL SUCKS. x-(
@@ -1113,7 +1145,7 @@ Ymacs_Buffer.newCommands({
         end = this.createMarker(end);
         this.withCommands(
             {
-                goto_char: function (pos) {
+                goto_char(pos) {
                     if (pos >= begin.getPosition() && pos <= end.getPosition())
                         return this._repositionCaret(pos);
                     throw 'YMACS_RESTRICT';
@@ -1122,7 +1154,7 @@ Ymacs_Buffer.newCommands({
             function () {
                 try {
                     while (true) {
-                        var tmp = this.point();
+                        const tmp = this.point();
                         func.call(this);
                         if (this.point() == tmp && !this.cmd('forward_line'))
                             break;
@@ -1138,24 +1170,24 @@ Ymacs_Buffer.newCommands({
         );
     }),
 
-    get_line_comment_syntax: function () {
-        var cstart = this.getq('syntax_comment_line');
+    get_line_comment_syntax() {
+        const cstart = this.getq('syntax_comment_line');
         if (!cstart) throw new Ymacs_Exception('Unknown comment syntax');
         return cstart;
     },
 
     comment_region: Ymacs_Interactive('^r', function (begin, end) {
-        var cstart = this.cmd('get_line_comment_syntax');
+        const cstart = this.cmd('get_line_comment_syntax');
         this.clearTransientMark();
         this.cmd('save_excursion', function () {
             end = this.createMarker(end);
             this.cmd('goto_char', begin);
-            var min = 100000;
+            let min = 100000;
             out: while (this.point() < end.getPosition()) {
                 while (this.cmd('looking_at', /\s*$/mg)) {
                     if (!this.cmd('forward_line')) break out;
                 }
-                var col = this._rowcol.col;
+                let col = this._rowcol.col;
                 while (this.cmd('looking_at', /\s/g) && col < min) {
                     if (!this.cmd('forward_char')) break out;
                     ++col;
@@ -1172,7 +1204,7 @@ Ymacs_Buffer.newCommands({
     }),
 
     uncomment_region: Ymacs_Interactive('r', function (begin, end) {
-        var cstart = this.cmd('get_line_comment_syntax');
+        const cstart = this.cmd('get_line_comment_syntax');
         this.clearTransientMark();
         this.cmd('save_excursion', function () {
             end = this.createMarker(end);
@@ -1187,11 +1219,11 @@ Ymacs_Buffer.newCommands({
     }),
 
     comment_dwim: Ymacs_Interactive('^r', function (begin, end) {
-        var cstart = this.cmd('get_line_comment_syntax');
+        const cstart = this.cmd('get_line_comment_syntax');
         if (this.transientMarker) {
             this.cmd('save_excursion', function () {
                 this.cmd('goto_char', begin);
-                var already_comment = this.cmd('looking_at', cstart.rx);
+                const already_comment = this.cmd('looking_at', cstart.rx);
                 if (already_comment)
                     this.cmd('uncomment_region', begin, end);
                 else
@@ -1212,17 +1244,17 @@ Ymacs_Buffer.newCommands({
 
     function apply_on_rectangle(buffer, begin, end, func) {
         buffer.cmd('save_excursion', function () {
-            var p1 = this._positionToRowCol(begin),
+            const p1 = this._positionToRowCol(begin),
                 p2 = this._positionToRowCol(end),
                 width = Math.abs(p2.col - p1.col);
-            for (var line = p1.row; line <= p2.row; ++line) {
+            for (let line = p1.row; line <= p2.row; ++line) {
                 this.cmd('goto_char', this._rowColToPosition(line, 0));
-                var text = this.code[line],
+                let text = this.code[line],
                     c1 = p1.col,
                     c2 = p2.col,
                     p = this.point(), ws = 0;
                 if (c1 > c2) {
-                    var tmp = c1;
+                    const tmp = c1;
                     c1 = c2;
                     c2 = tmp;
                 }
@@ -1236,7 +1268,7 @@ Ymacs_Buffer.newCommands({
                 func.call(this, p + c1, p + c2, ws, width);
             }
         }, begin == buffer.point());
-    };
+    }
 
     Ymacs_Buffer.newCommands({
 
@@ -1252,9 +1284,9 @@ Ymacs_Buffer.newCommands({
         }),
 
         kill_rectangle: Ymacs_Interactive('r', function (begin, end) {
-            var text = [];
+            const text = [];
             apply_on_rectangle(this, begin, end, function (c1, c2, ws, width) {
-                var str = this._bufferSubstring(c1, c2);
+                let str = this._bufferSubstring(c1, c2);
                 if (c2 - c1 < width)
                     str += ' '.x(width - c2 + c1);
                 text.push(str);
@@ -1269,8 +1301,8 @@ Ymacs_Buffer.newCommands({
                     this._positionToRowCol(begin).col)));
         }),
 
-        insert_rectangle: function (point, rect) {
-            var col = this._positionToRowCol(point).col;
+        insert_rectangle(point, rect) {
+            const col = this._positionToRowCol(point).col;
             this.cmd('set_mark_command', point);
             rect.foreach(function (text, i) {
                 if (i > 0) {
@@ -1285,7 +1317,7 @@ Ymacs_Buffer.newCommands({
         },
 
         yank_rectangle: Ymacs_Interactive('d', function (point) {
-            var kr = this.getq('killed_rectangle');
+            const kr = this.getq('killed_rectangle');
             if (kr == null)
                 throw new Ymacs_Exception('No killed rectangle');
             this.cmd('insert_rectangle', point, kr);
@@ -1293,7 +1325,7 @@ Ymacs_Buffer.newCommands({
 
     });
 
-})();
+}());
 
 (function () {
     Ymacs_Buffer.newCommands({
@@ -1323,12 +1355,12 @@ Ymacs_Buffer.newCommands({
             this.ymacs.stopMacro();
             if (arg === null)
                 arg = 1;
-            var macro = this.ymacs.getLastMacro();
+            const macro = this.ymacs.getLastMacro();
             this.interactiveEvent(null);
             this.ymacs.runMacro(arg, macro);
         })
     });
-})();
+}());
 
 /* -----[ commands to help using the system clipboard ]----- */
 
@@ -1338,13 +1370,13 @@ Ymacs_Buffer.newCommands({
     // this should be moved some level up if it proves to be more
     // generally useful
     function modalTextarea(buffer, type, title, text, cont) {
-        var dlg = buffer.createDialog({
-            title: title,
+        const dlg = buffer.createDialog({
+            title,
             quitBtn: 'destroy',
             modal: true
         });
-        var layout = new DlLayout({parent: dlg, outerSpace: 5});
-        var entry = new DlEntry({type: 'textarea', fillParent: true, value: text});
+        const layout = new DlLayout({parent: dlg, outerSpace: 5});
+        const entry = new DlEntry({type: 'textarea', fillParent: true, value: text});
         dlg._focusedWidget = entry;
         if (type == 'copy') {
             entry.addEventListener('onCopy', function (ev) {
@@ -1354,7 +1386,7 @@ Ymacs_Buffer.newCommands({
         } else if (type == 'paste') {
             entry.addEventListener('onPaste', function (ev) {
                 // var code = entry.getValue().replace(/\t/g, "        ");
-                var code = entry.getValue();
+                const code = entry.getValue();
                 dlg.destroy();
                 cont(code);
             }.clearingTimeout(0));
@@ -1363,14 +1395,15 @@ Ymacs_Buffer.newCommands({
         layout.setSize({x: 350, y: 250});
         dlg.show(true);
         entry.select();
-    };
+    }
+
     // </XXX>
 
     Ymacs_Buffer.newCommands({
 
         yank_from_operating_system: Ymacs_Interactive(function () {
-            var self = this;
-            modalTextarea(self, 'paste', 'Paste below (press CTRL-V)', null, function (code) {
+            const self = this;
+            modalTextarea(self, 'paste', 'Paste below (press CTRL-V)', null, (code) => {
                 self._saveKilledText(code);
                 self.cmd('yank');
                 self.cmd('recenter_top_bottom');
@@ -1378,15 +1411,15 @@ Ymacs_Buffer.newCommands({
         }),
 
         copy_for_operating_system: Ymacs_Interactive('r', function (begin, end) {
-            var self = this;
-            modalTextarea(self, 'copy', 'Press CTRL-C to copy', self.cmd('buffer_substring'), function () {
+            const self = this;
+            modalTextarea(self, 'copy', 'Press CTRL-C to copy', self.cmd('buffer_substring'), () => {
                 self.cmd('kill_ring_save', begin, end);
             });
         })
 
     });
 
-})();
+}());
 
 /* -----[ transient mark extension commands ]----- */
 
@@ -1407,7 +1440,7 @@ Ymacs_Buffer.newCommands({
     'end_of_line',
     'end_of_buffer'
 
-].foreach(function (cmd) {
+].foreach((cmd) => {
     Ymacs_Buffer.COMMANDS[cmd + '_mark'] = Ymacs_Interactive('^', function () {
         this.ensureTransientMark();
         this.cmdApply(cmd, arguments);
