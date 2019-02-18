@@ -9,3 +9,11 @@
     font-size: 18px;
     font-family: "DejaVu Sans Mono", "Lucida Sans Typewriter", monospace;
 }
+
+.DlDialog-Content {
+    background-color: lightgray;
+    position: relative;
+}
+.emacs-original {
+    color: #5a5a5a;
+}

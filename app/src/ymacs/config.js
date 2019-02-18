@@ -9,6 +9,6 @@ const Strings = {
         FONT_FAMILY: 'ymacs__fontFamily',
     },
     English: {
-        HELP_CONTENT: '<a href="#" onClick="ymacs.callHooks(\'href_event\',\'hello-href\')">Hello and welcome</a><div style="text-align: center;">To Charlies MAGIC FUN WORLD </div>'
+
     }
 };

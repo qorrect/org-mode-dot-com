@@ -1,0 +1,71 @@
+<div style="font-family: 'Fira Mono';background-color: lightgray;padding-top: 10px;">
+    <div style="margin: 10px;">
+        <h2 style="text-align: center;"><u>Wemacs Help</u></h2>
+
+        <!--<p style="text-align: center;text-decoration: underline;">Wemacs Cheat Sheet</p>-->
+        <p>
+            Wemacs is a keyboard driven editor that is built on <b>functions</b> ( type <span
+                style="color: darkslategrey;">`M-x TAB`</span> to see a list of all
+            functions available ) . These functions can be mapped to <a href="#"
+                                                                        onclick="ymacs.callHooks(YmacsEvents.HREF_EVENT,'help-keyboard')">keyboard
+            bindings</a> to execute them quickly.
+
+            <!--This repeatability lends itself to Emacs' namesake, <a-->
+            <!--href="http://www.emacs.org" target="_blank">editor macros</a>, recording and replaying keyboard-->
+            <!--sequences (-->
+            <!--which are really just a series of functions - we're composing functions with keyboard shortcuts )-->
+            <!--.-->
+            <!--See <a href="#" onclick="ymacs.callHooks(YmacsEvents.HREF_EVENT,'emacs_rocks')">this demo list</a> to see it-->
+            <!--in-->
+            <!--action.-->
+        </p>
+        <h3><u>Notation:</u></h3>
+        <div style="padding: 10px;">
+
+            C = Control <br/>
+            M = Alt <br/>
+            S = Shift <br/>
+            &lt;key&gt; = A number, letter, or symbol <br/> <br/>
+            Example: C-x C-s --> Control + x followed by Control + s <br/>
+            Example: C-SPACE --> Control + Spacebar <br/>
+
+            <span style="color: darkred">Exception:</span> C-n M-x function_name --> Here n refers to a digit , for
+            example
+            typing Ctrl + 20 then M-x comment_line will execute comment_line 20 times ( to comment 20 lines of code )
+
+
+        </div>
+        <h3><u>File Functions:</u><br/> <span class="emacs-original" style="font-size: 10px;padding-top: 15px;">(Dark gray is the emacs command)</span>
+        </h3>
+        <div style="padding: 10px;">
+            C-x C-f = open_file <span class="emacs-original">(find_file)</span> <br/>
+            C-x C-s = save_file <span class="emacs-original">(save_buffer)</span> <br/>
+            C-x C-q = safe_file_as <span class="emacs-original">(write_file)</span> <br/>
+            C-x k &nbsp; = close_file <span class="emacs-original">(kill_buffer)</span> <br/>
+
+        </div>
+        <h3><u>Navigation Functions:</u><br/> <span class="emacs-original" style="font-size: 10px;padding-top: 15px;">(Dark gray is the emacs command)</span>
+        </h3>
+        <div style="padding: 10px;">
+            C-f = forward_char<span class="emacs-original">(forward_char)</span> <br/>
+            C-b = backward_char <span class="emacs-original">(backward_char)</span> <br/>
+            M-f = forward_word<span class="emacs-original">(forward_word)</span> <br/>
+            M-b = backward_word <span class="emacs-original">(backward_word)</span> <br/>
+            C-a = beginning_of_line <span class="emacs-original">(beginning_of_line)</span> <br/>
+            C-e = end_of_line <span class="emacs-original">(end_of_line)</span> <br/>
+            C-M-a = beginning_of_buffer <span class="emacs-original">(beginning_of_buffer)</span> <br/>
+            C-M-e = end_of_buffer <span class="emacs-original">(end_of_buffer)</span> <br/>
+            C-ARROW_DOWN = forward_paragraph <span class="emacs-original">(forward_paragraph)</span> <br/>
+            C-ARROW_UP   = backward_paragraph <span class="emacs-original">(backward_paragraph)</span> <br/>
+
+        </div>
+        <h3><u>Editing Functions:</u><br/> <span class="emacs-original" style="font-size: 10px;padding-top: 15px;">(Dark gray is the emacs command)</span>
+        </h3>
+        <div style="padding: 10px;">
+            C-SPACE = set_mark_command<span class="emacs-original">(set_mark_command)</span> <br/>
+            C-SPACE = set_mark_command<span class="emacs-original">(set_mark_command)</span> <br/>
+
+
+        </div>
+    </div>
+</div>

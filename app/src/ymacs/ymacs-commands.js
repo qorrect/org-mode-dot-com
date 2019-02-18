@@ -482,10 +482,16 @@ Ymacs_Buffer.newCommands({
             this.__helpDlg = null;
         } else {
             window.YmacsEvents = this;
-            const dlg = new DlDialog({title: 'Wemacs Help', fixed: true});
+            const dlg = new DlDialog({title: 'Wemacs Help', fixed: true, scroll: true});
             const cont = new DlContainer({parent: dlg});
-            cont.setContent(Strings.English.HELP_CONTENT);
-            cont.getElement().style.padding = '20px';
+            const request = new DlRPC({url: YMACS_SRC_PATH + '../content/help_main.html'});
+            request.call({
+                callback(data) {
+                    console.log(data);
+                    cont.setContent(data.text);
+                }
+            });
+            // cont.getElement().style['padding'] = '10px';
             const btn = new DlButton({parent: cont, label: 'Close'});
             btn.addEventListener('onClick', () => {
                 dlg.destroy();
@@ -494,7 +500,7 @@ Ymacs_Buffer.newCommands({
             const x = window.innerWidth * .75;
             const width = window.innerWidth * .25;
             dlg.setPos(x, yOffset);
-            dlg.setSize({x: width, y: window.innerHeight - yOffset - 10});
+            dlg.setSize({x: width, y: window.innerHeight - yOffset - 20});
             // dlg._handleKeybinding(DlKeyboard.parseKey('ESCAPE'), () => {
             //     this.__helpDlg.destroy();
             //     this.__helpDlg = null;
@@ -502,11 +508,7 @@ Ymacs_Buffer.newCommands({
             dlg.show();
             ymacs.getActiveFrame().focus();
             window.helpDlg = this.__helpDlg = dlg;
-            ymacs.registerEvents(['href_event']);
-            ymacs.addEventListener('href_event', function () {
-                console.log('ON HELPCLICKED');
-                console.log(arguments);
-            });
+
         }
     }),
 

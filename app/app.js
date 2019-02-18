@@ -31,8 +31,6 @@ class Application {
                     '** Work\n' +
                     '    - [ ] Automation\n' +
                     '    - [ ] Tickets\n' +
-                    '*** Next Sprint \n' +
-                    '    - [ ] Replace all truthys with falsys\n' +
                     '** Groceries\n' +
                     '    - [ ] Buy milk\n' +
                     '    - [ ] Fresh dill \n'
