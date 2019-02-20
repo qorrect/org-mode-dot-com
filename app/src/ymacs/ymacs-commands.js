@@ -481,30 +481,30 @@ Ymacs_Buffer.newCommands({
             this.__helpDlg.destroy();
             this.__helpDlg = null;
         } else {
-            window.YmacsEvents = this;
-            const dlg = new DlDialog({title: 'Wemacs Help', fixed: true, scroll: true});
+
+            const self = this;
+            const dlg = new DlDialog({title: 'Wemacs Help', fixed: true, scroll: true, quitBtn: () => { self.__helpDlg = null;dlg.destroy()}});
             const cont = new DlContainer({parent: dlg});
             const request = new DlRPC({url: YMACS_SRC_PATH + '../content/help_main.html'});
             request.call({
                 callback(data) {
-                    console.log(data);
                     cont.setContent(data.text);
+                    //
+                    // const btn = new DlButton({parent: cont, label: 'Close'});
+                    // btn.addEventListener('onClick', () => {
+                    //     dlg.destroy();
+                    //     self.__helpDlg = null;
+                    // });
                 }
             });
             // cont.getElement().style['padding'] = '10px';
-            const btn = new DlButton({parent: cont, label: 'Close'});
-            btn.addEventListener('onClick', () => {
-                dlg.destroy();
-            });
+
             const yOffset = 25;
             const x = window.innerWidth * .75;
             const width = window.innerWidth * .25;
             dlg.setPos(x, yOffset);
             dlg.setSize({x: width, y: window.innerHeight - yOffset - 20});
-            // dlg._handleKeybinding(DlKeyboard.parseKey('ESCAPE'), () => {
-            //     this.__helpDlg.destroy();
-            //     this.__helpDlg = null;
-            // });
+
             dlg.show();
             ymacs.getActiveFrame().focus();
             window.helpDlg = this.__helpDlg = dlg;

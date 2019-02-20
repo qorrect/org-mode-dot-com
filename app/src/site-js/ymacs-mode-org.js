@@ -23,9 +23,6 @@ DEFINE_SINGLETON('Ymacs_Keymap_OrgMode', Ymacs_Keymap, (D) => {
 
         'C-x C-c': 'kill_ring_save',
         'C-x C-v': 'yank',
-        'C-x C-l': 'kill_line',
-        'C-x C-d': 'kill_word',
-        'C-x C-b': 'yank2',
 
         // '.': 'org_test'
 

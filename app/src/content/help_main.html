@@ -26,46 +26,69 @@
             M = Alt <br/>
             S = Shift <br/>
             &lt;key&gt; = A number, letter, or symbol <br/> <br/>
-            Example: C-x C-s --> Control + x followed by Control + s <br/>
-            Example: C-SPACE --> Control + Spacebar <br/>
-
-            <span style="color: darkred">Exception:</span> C-n M-x function_name --> Here n refers to a digit , for
-            example
-            typing Ctrl + 20 then M-x comment_line will execute comment_line 20 times ( to comment 20 lines of code )
-
+          Example: C-M-f <i>=</i> Control + Alt + f, all pressed at the same time  <br/>
+      Example: C-x C-s <i>=</i> Control + x followed by Control + s  <br/>
 
         </div>
-        <h3><u>File Functions:</u><br/> <span class="emacs-original" style="font-size: 10px;padding-top: 15px;">(Dark gray is the emacs command)</span>
+        <h3><u>The Essentials:</u><br/>
         </h3>
         <div style="padding: 10px;">
-            C-x C-f = open_file <span class="emacs-original">(find_file)</span> <br/>
-            C-x C-s = save_file <span class="emacs-original">(save_buffer)</span> <br/>
-            C-x C-q = safe_file_as <span class="emacs-original">(write_file)</span> <br/>
-            C-x k &nbsp; = close_file <span class="emacs-original">(kill_buffer)</span> <br/>
+            C-x C-c = close_wemacs  <br/>
+            C-g <span>&nbsp;</span> &nbsp;  = cancel <br/>
+            M-x <span>&nbsp;</span> &nbsp;  = execute_function <br/>
+            C-x C-f = open_file <br/>
+            C-x k &nbsp; = close_file  <br/> <br/>
+        </div>
+        <h3><u>File Functions:</u><br/> <!--<span class="emacs-original" style="font-size: 10px;padding-top: 15px;">(Dark gray is the emacs command)</span>-->
+        </h3>
+        <div style="padding: 10px;">
+            C-x C-f = open_file <!--<span class="emacs-original">(find_file)</span>--> <br/>
+            C-x C-f = new_file <!--<span class="emacs-original">(find_file)</span>--> <br/>
+            C-x C-s = save_file <!--<span class="emacs-original">(save_buffer)</span> --><br/>
+            C-x C-q = safe_file_as <!--<span class="emacs-original">(write_file)</span>--> <br/>
+            C-x k &nbsp; = close_file <!--<span class="emacs-original">(kill_buffer)</span> --><br/>
 
         </div>
-        <h3><u>Navigation Functions:</u><br/> <span class="emacs-original" style="font-size: 10px;padding-top: 15px;">(Dark gray is the emacs command)</span>
+        <h3><u>Navigation Functions:</u><br/>
         </h3>
         <div style="padding: 10px;">
-            C-f = forward_char<span class="emacs-original">(forward_char)</span> <br/>
-            C-b = backward_char <span class="emacs-original">(backward_char)</span> <br/>
-            M-f = forward_word<span class="emacs-original">(forward_word)</span> <br/>
-            M-b = backward_word <span class="emacs-original">(backward_word)</span> <br/>
-            C-a = beginning_of_line <span class="emacs-original">(beginning_of_line)</span> <br/>
-            C-e = end_of_line <span class="emacs-original">(end_of_line)</span> <br/>
-            C-M-a = beginning_of_buffer <span class="emacs-original">(beginning_of_buffer)</span> <br/>
-            C-M-e = end_of_buffer <span class="emacs-original">(end_of_buffer)</span> <br/>
-            C-ARROW_DOWN = forward_paragraph <span class="emacs-original">(forward_paragraph)</span> <br/>
-            C-ARROW_UP   = backward_paragraph <span class="emacs-original">(backward_paragraph)</span> <br/>
-
+            C-f &nbsp;&nbsp;= forward_char <br/><!--<span class="emacs-original">(forward_char)</span> <br/>-->
+            C-b &nbsp;&nbsp;= backward_char <br/><!--<span class="emacs-original">(backward_char)</span> <br/>-->
+            M-f &nbsp;&nbsp;= forward_word <br/><!--<span class="emacs-original">(forward_word)</span> <br/>-->
+            M-b &nbsp;&nbsp;= backward_word <br/><!--<span class="emacs-original">(backward_word)</span> <br/>-->
+            C-a &nbsp;&nbsp;= beginning_of_line <br/><!--<span class="emacs-original">(beginning_of_line)</span> <br/>-->
+            C-e &nbsp;&nbsp;= end_of_line <br/><!--<span class="emacs-original">(end_of_line)</span> <br/>-->
+            <!--C-ARROW_DOWN = forward_paragraph <br/>&lt;!&ndash;<span class="emacs-original">(forward_paragraph)</span> <br/>&ndash;&gt;-->
+            <!--C-ARROW_UP = backward_paragraph <br/>&lt;!&ndash;<span class="emacs-original">(backward_paragraph)</span> <br/>&ndash;&gt;-->
+            C-M-a = beginning_of_buffer <br/> <!-- <span class="emacs-original">(beginning_of_buffer)</span> <br/>-->
+            C-M-e = end_of_buffer <br/><!--<span class="emacs-original">(end_of_buffer)</span> <br/>-->
+            C-ARROW_LEFT = backward_word<br/>
+            C-ARROW_RIGHT = forward_word<br/>
+            C-ARROW_UP = backward_paragraph<br/>
+            C-ARROW_DOWN = forward_paragraph<br/>
         </div>
-        <h3><u>Editing Functions:</u><br/> <span class="emacs-original" style="font-size: 10px;padding-top: 15px;">(Dark gray is the emacs command)</span>
-        </h3>
+        <h3><u>Editing Functions:</u><br/></h3>
         <div style="padding: 10px;">
-            C-SPACE = set_mark_command<span class="emacs-original">(set_mark_command)</span> <br/>
-            C-SPACE = set_mark_command<span class="emacs-original">(set_mark_command)</span> <br/>
+            TAB <span>&nbsp;</span> &nbsp;= indent <br/>
+            C-q &nbsp;&nbsp; = delete_region<br/>
+            C-BACKSPACE = backward_kill_word<br/>
+            M-BACKSPACE = <span style="font-size: .8em;">backward_kill_word_no_copy</span><br/>
 
+            M-d = kill_word<br/>
+            C-k = kill_line<br/>
 
+            S-BACKSPACE = <span style="font-size: .8em;">backward_delete_whitespace</span><br/>
+            S-DELETE = <span style="font-size: .8em;">delete_whitespace</span><br/>
+            C-M-d = <span style="font-size: .8em;">delete_region_or_line</span> <br/>
+        </div>
+
+        <h3><u>Selection Functions:</u><br/></h3>
+        <div style="padding: 10px;">
+            C-SPACE = set_mark_command<br/>
+            C-c c   = copy<br/>
+            C-c v   = paste<br/>
+            C-c b   = paste_second_to_last<br/>
+            C-c n   = paste_nth_copy<br/>
         </div>
     </div>
 </div>
