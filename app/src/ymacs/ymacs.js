@@ -472,13 +472,15 @@ DEFINE_CLASS('Ymacs', DlLayout, (D, P, DOM) => {
             throw new Ymacs_Exception('Local storage facility not available in this browser');
     }
 
-    P.ls_get = function () {
+    P.ls_get = async function () {
         ensureLocalStorage();
-        return DlJSON.decode(localStorage.getItem('.ymacs') || '{}', true);
+        const fileStr = await DAO.get(Strings.FILE_LIST);
+        return fileStr.split(',').filter(x => !_.isEmpty(x));
     };
 
     P.ls_set = function (src) {
         ensureLocalStorage();
+        console.log('This is wrong fix this');
         localStorage.setItem('.ymacs', DlJSON.encode(src));
     };
 
@@ -500,8 +502,9 @@ DEFINE_CLASS('Ymacs', DlLayout, (D, P, DOM) => {
         this.ls_set(files.store);
     };
 
-    P.ls_getFileDirectory = function (name, create) {
-        let store, dir = store = this.ls_get(), back = [];
+    P.ls_getFileDirectory = async function (name, create) {
+        let store, dir = store = await this.ls_get();
+        let back = [];
         name = name.replace(/^[~\x2f]+/, '').split(/\x2f+/);
         let path = [], other = [];
         while (name.length > 0) {
@@ -588,22 +591,20 @@ DEFINE_CLASS('Ymacs', DlLayout, (D, P, DOM) => {
         }
     };
 
-    P.fs_getDirectory = function (dirname, cont) {
-        const info = this.ls_getFileDirectory(dirname, false);
+    P.fs_getDirectory = async function (dirname, cont) {
+        const info = await this.ls_getFileDirectory(dirname, false);
         dirname = info.path.join('/'); // normalized
         if (info) {
             const files = {};
-            for (const f in info.dir) {
-                if (Object.HOP(info.dir, f)) {
-                    files[f] = {
-                        name: f,
-                        path: dirname + '/' + f,
-                        type: (typeof info.dir[f] == 'string'
-                            ? 'regular'
-                            : 'directory')
-                    };
-                }
-            }
+            info.dir.forEach(f => {
+                files[f] = {
+                    name: f,
+                    path: dirname + '/' + f,
+                    type:  'regular'
+
+                };
+            });
+
             cont(files);
         } else {
             cont(null);
