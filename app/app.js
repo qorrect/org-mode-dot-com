@@ -17,43 +17,37 @@ class Application {
 
         try {
 
+            const ymacs = window.ymacs = new Ymacs();
+            ymacs.setColorTheme(['dark', 'y']);
 
             const mainMenu = new DlHMenu({});
             mainMenu.setStyle({marginLeft: 0, marginRight: 0});
             const dlg = new DlDialog({title: 'Ymacs', resizable: false, className: Strings.APP_WINDOW_ID});
 
-            const markdown = new Ymacs_Buffer({name: 'today.org'});
-            const markdownContents = await DAO.get('today.org');
-            if (markdownContents) markdown.setCode(markdownContents);
-            else {
-                markdown.setCode(
-                    '* Today \n' +
+            const today = await DAO.get(Strings.DefaultFiles.TODAY_ORG);
+            if (!today) {
+                await DAO.put(Strings.DefaultFiles.TODAY_ORG, '* Today \n' +
                     '** Work\n' +
                     '    - [ ] Automation\n' +
                     '    - [ ] Tickets\n' +
                     '** Groceries\n' +
                     '    - [ ] Buy milk\n' +
-                    '    - [ ] Fresh dill \n'
-                )
-                ;
+                    '    - [ ] Fresh dill \n' +
+                    '    - [ ] Cholula \n'
+                );
             }
-            markdown.cmd('org_mode');
-            // markdown.cmd("paren_match_mode");
+            await ymacs.createOrOpen(Strings.DefaultFiles.TODAY_ORG);
 
-            const dotYmacs = new Ymacs_Buffer({name: '.ymacs'});
-            let ymacsContents = await DAO.get('.ymacs');
-            if (!ymacsContents) {
-                ymacsContents = '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font your set in the Options menu\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'25px\'});\n';
+            const dotYmacsContent = await DAO.get(Strings.DefaultFiles._YMACS);
+            if (!dotYmacsContent) {
+                await DAO.put(Strings.DefaultFiles._YMACS, '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font your set in the Options menu\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'25px\'});\n');
             }
-            dotYmacs.setCode(ymacsContents);
 
-            // keys.setCode('testing');
+            const dotYmacs = await ymacs.createOrOpen(Strings.DefaultFiles._YMACS);
             dotYmacs.cmd('javascript_mode');
+            evaluateJavascript.call(this, dotYmacsContent, [dotYmacs, ymacs]);
 
             const layout = new DlLayout({parent: dlg});
-
-            const ymacs = window.ymacs = new Ymacs({buffers: [markdown, dotYmacs]});
-            ymacs.setColorTheme(['dark', 'y']);
 
 
             const yourFilesMenuItem = new DlMenuItem({parent: mainMenu, label: 'Your Files'.makeLabel()});
@@ -64,28 +58,22 @@ class Application {
                 ymacs.getActiveBuffer().cmd('execute_extended_command', 'find_file');
             });
 
-            let ymacsFilelist = (await DAO.get(Strings.FILE_LIST)) || '';
-            ymacsFilelist = ymacsFilelist.split(',');
-            if (ymacsFilelist) {
-                ymacsFilelist = _.isArray(ymacsFilelist) ? ymacsFilelist : [ymacsFilelist];
-                ymacsFilelist.forEach(async file => {
-                    if (file) {
-                        const buffer = new Ymacs_Buffer({name: file});
-                        const bufferContent = await DAO.get(file);
-                        if (bufferContent) {
-                            buffer.setCode(bufferContent);
-                        }
-                        buffer.maybeSetMode(file);
-
-                        const menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
-                        menuItem.addEventListener('onSelect', async () => {
-                            await ymacs.createOrOpen(file);
-                        });
+            const ymacsFilelist = await DAO.get(Strings.FILE_LIST, []);
+            ymacsFilelist.forEach(async file => {
+                if (file) {
+                    const buffer = new Ymacs_Buffer({name: file});
+                    const bufferContent = await DAO.get(file);
+                    if (bufferContent) {
+                        buffer.setCode(bufferContent);
                     }
-                });
-            } else {
-                await DAO.put(Strings.FILE_LIST, '');
-            }
+                    buffer.maybeSetMode(file);
+
+                    const menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
+                    menuItem.addEventListener('onSelect', async () => {
+                        await ymacs.createOrOpen(file);
+                    });
+                }
+            });
 
 
             // const files = localStorage.getItem('files');
@@ -222,7 +210,7 @@ class Application {
 
             const fontFamilyMenuitem = new DlMenuItem({parent: fontFamilyMenuItemsubmenu, label: 'Reset to default'});
             fontFamilyMenuitem.addEventListener('onSelect', async () => {
-                await DAO.del(Strings.Config.FONT_FAMILY);
+                await DAO.del(Strings.CONFIG.FONT_FAMILY);
                 ymacs.getActiveFrame().setStyle({fontFamily: ''});
             });
 
@@ -252,7 +240,7 @@ class Application {
                     label: '<span style=\'font-family:' + font + '\'>' + font + '</span>'
                 });
                 item.addEventListener('onSelect', () => {
-                    DAO.put(Strings.Config.FONT_FAMILY, font);
+                    DAO.put(Strings.CONFIG.FONT_FAMILY, font);
                     ymacs.getActiveFrame().setStyle({fontFamily: font});
                 });
             });
@@ -267,7 +255,7 @@ class Application {
 
             const fontMenuitem = new DlMenuItem({parent: fontSizeMenuitemsubmenu, label: 'Reset to theme'});
             fontMenuitem.addEventListener('onSelect', () => {
-                DAO.put(Strings.Config.FONT_SIZE, '');
+                DAO.put(Strings.CONFIG.FONT_SIZE, '');
                 ymacs.getActiveFrame().setStyle({fontSize: ''});
             });
 
@@ -289,7 +277,7 @@ class Application {
                     label: '<span style=\'font-size:' + font + '\'>' + font + '</span>'
                 });
                 item.addEventListener('onSelect', () => {
-                    DAO.put(Strings.Config.FONT_SIZE, font);
+                    DAO.put(Strings.CONFIG.FONT_SIZE, font);
                     ymacs.getActiveFrame().setStyle({fontSize: font});
                 });
             });
@@ -308,11 +296,10 @@ class Application {
 
             // show two frames initially
             // ymacs.getActiveFrame().hsplit();
-            const fontSize = (await DAO.get(Strings.Config.FONT_SIZE)) || '25px';
+            const fontSize = (await DAO.get(Strings.CONFIG.FONT_SIZE)) || '25px';
             ymacs.getActiveFrame().setStyle({fontSize});
-            const fontFamily = (await DAO.get(Strings.Config.FONT_FAMILY)) || 'Ubuntu Mono';
+            const fontFamily = (await DAO.get(Strings.CONFIG.FONT_FAMILY)) || 'Ubuntu Mono';
             ymacs.getActiveFrame().setStyle({fontFamily});
-            evaluateJavascript.call(this, ymacsContents, [dotYmacs, ymacs]);
 
 
             dlg.show(true);
@@ -326,7 +313,7 @@ class Application {
             }
 
         } catch (ex) {
-            // console.log(ex);
+            console.log(ex);
         }
         DynarchDomUtils.trash(document.getElementById('x-loading'));
 

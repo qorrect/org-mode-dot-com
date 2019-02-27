@@ -194,13 +194,17 @@ DEFINE_CLASS('Ymacs', DlLayout, (D, P, DOM) => {
         const buffer = ymacs.getBuffer(file);
         if (buffer) {
             ymacs.switchToBuffer(buffer);
+            return buffer;
         } else {
             const newBuffer = ymacs.createBuffer({name: file});
-            const contents = await DAO.get(file);
-            newBuffer.setCode(contents || '');
+            const fileContents = await DAO.get(file);
+            newBuffer.setCode(fileContents || '');
             ymacs.switchToBuffer(newBuffer);
             newBuffer.maybeSetMode(file);
-
+            const history = await DAO.get(Strings.FILE_HISTORY, []);
+            history.push(file);
+            await DAO.put(Strings.FILE_HISTORY, ensureUnique(history));
+            return newBuffer;
         }
     };
 
@@ -474,14 +478,13 @@ DEFINE_CLASS('Ymacs', DlLayout, (D, P, DOM) => {
 
     P.ls_get = async function () {
         ensureLocalStorage();
-        const fileStr = await DAO.get(Strings.FILE_LIST);
-        return fileStr.split(',').filter(x => !_.isEmpty(x));
+        const files = await DAO.get(Strings.FILE_LIST, []);
+
+        return files;
     };
 
     P.ls_set = function (src) {
         ensureLocalStorage();
-        console.log('This is wrong fix this');
-        localStorage.setItem('.ymacs', DlJSON.encode(src));
     };
 
     P.ls_getFileContents = function (name, nothrow) {
@@ -600,7 +603,7 @@ DEFINE_CLASS('Ymacs', DlLayout, (D, P, DOM) => {
                 files[f] = {
                     name: f,
                     path: dirname + '/' + f,
-                    type:  'regular'
+                    type: 'regular'
 
                 };
             });

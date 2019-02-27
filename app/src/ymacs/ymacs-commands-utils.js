@@ -247,12 +247,9 @@ Ymacs_Buffer.newCommands({
     },
 
     save_file_to_file_list(name) {
-        DAO.get(Strings.FILE_LIST).then(_files => {
-            const files = ensureList((_files || '').split(','));
-
+        DAO.get(Strings.FILE_LIST,[]).then(files => {
             files.push(name);
-            DAO.put(Strings.FILE_LIST, ensureUnique(files).join(','));
-
+            DAO.put(Strings.FILE_LIST, ensureUnique(files));
         });
     },
 

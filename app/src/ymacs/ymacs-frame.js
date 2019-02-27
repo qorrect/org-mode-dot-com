@@ -35,13 +35,13 @@
 
 DEFINE_CLASS('Ymacs_Frame', DlContainer, function (D, P, DOM) {
 
-    var DBL_CLICK_SPEED = 300;
+    const DBL_CLICK_SPEED = 300;
 
-    var EX = DlException.stopEventBubbling;
+    const EX = DlException.stopEventBubbling;
 
-    var LINE_DIV = DOM.createElement('div', null, {className: 'line', innerHTML: '<br/>'});
+    const LINE_DIV = DOM.createElement('div', null, {className: 'line', innerHTML: '<br/>'});
 
-    var BLINK_TIMEOUT = 225;
+    const BLINK_TIMEOUT = 500;
 
     D.DEFAULT_EVENTS = ['onPointChange'];
 
@@ -270,10 +270,10 @@ DEFINE_CLASS('Ymacs_Frame', DlContainer, function (D, P, DOM) {
         cont.__doLayout();
         fr.centerOnCaret();
 
-        DAO.get(Strings.Config.FONT_FAMILY).then(fontFamily => {
+        DAO.get(Strings.CONFIG.FONT_FAMILY).then(fontFamily => {
             fontFamily = fontFamily || 'Ubuntu Mono';
             fr.setStyle({fontFamily});
-            DAO.get(Strings.Config.FONT_SIZE).then(fontSize => {
+            DAO.get(Strings.CONFIG.FONT_SIZE).then(fontSize => {
                 fontSize = fontSize || '25px';
                 fr.setStyle({fontSize});
             });
@@ -300,10 +300,10 @@ DEFINE_CLASS('Ymacs_Frame', DlContainer, function (D, P, DOM) {
         cont.__doLayout();
         fr.centerOnCaret();
 
-        DAO.get(Strings.Config.FONT_FAMILY).then(fontFamily => {
+        DAO.get(Strings.CONFIG.FONT_FAMILY).then(fontFamily => {
             fontFamily = fontFamily || 'Ubuntu Mono';
             fr.setStyle({fontFamily});
-            DAO.get(Strings.Config.FONT_SIZE).then(fontSize => {
+            DAO.get(Strings.CONFIG.FONT_SIZE).then(fontSize => {
                 fontSize = fontSize || '25px';
                 fr.setStyle({fontSize});
             });

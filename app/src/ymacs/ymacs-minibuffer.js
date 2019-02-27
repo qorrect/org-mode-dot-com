@@ -130,7 +130,7 @@ Ymacs_Buffer.newMode('minibuffer_mode', function () {
     }
 
     function filename_completion(mb, str, re, cont) {
-
+        console.log('FIX THIS , should read from current directory');
         const self = this;
         const lastslash = str.lastIndexOf('/');
         const dir = str.slice(0, lastslash + 1);
@@ -186,6 +186,7 @@ Ymacs_Buffer.newMode('minibuffer_mode', function () {
                 if (!nofocus)
                     f.focus();
             });
+
         },
 
         minibuffer_yn(prompt, cont) {
@@ -269,6 +270,7 @@ Ymacs_Buffer.newMode('minibuffer_mode', function () {
 
         minibuffer_read_existing_file(cont) {
             const self = this;
+            console.log('Here for file completion');
             self.cmd('minibuffer_replace_input_by_current_dir', () => {
                 read_with_continuation.call(self, filename_completion, cont, (mb, name, cont2) => {
                     self.ymacs.fs_fileType(name, (type) => {
@@ -331,6 +333,21 @@ Ymacs_Buffer.newMode('minibuffer_mode', function () {
             });
         },
 
+
+        minibuffer_history() {
+            const self = this;
+
+            self.whenMinibuffer(mb => {
+
+                const a = DAO.get(Strings.FILE_LIST);
+                if (!a || !a.length) {
+                    mb.signalError('No completions');
+                } else {
+                    popupCompletionMenu.call(mb, self.getMinibufferFrame(), a);
+                }
+
+            });
+        },
         minibuffer_complete() {
             const self = this;
             self.whenMinibuffer((mb) => {
@@ -355,6 +372,8 @@ Ymacs_Buffer.newMode('minibuffer_mode', function () {
                 let a = mb.getq('completion_list'),
                     re = str.replace(/([\[\]\(\)\{\}\.\*\+\?\|\\])/g, '\\$1').replace(/([_-])/g, '[^_-]*[_-]');
                 re = new RegExp('^' + re, 'i');
+                console.log('here');
+                console.log(a);
                 if (a instanceof Function) {
                     a.call(self, mb, str, re, (obj) => {
                         if (obj)

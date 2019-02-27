@@ -1,14 +1,16 @@
 const Strings = {
     FILE_LIST: 'ymacs_filelist',
+    FILE_HISTORY: 'ymacs_filehistory',
     FOLDED_MARKER: 'folded-marker',
     NEWLINE: '\n',
     APP_WINDOW_ID: 'app-main-window',
-    Config: {
+    CONFIG: {
 
         FONT_SIZE: 'ymacs__fontSize',
         FONT_FAMILY: 'ymacs__fontFamily',
     },
-    English: {
-
+    DefaultFiles : {
+        TODAY_ORG : 'today.org',
+        _YMACS: '.ymacs'
     }
 };

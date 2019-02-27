@@ -4,9 +4,9 @@ class LocalStorageDAO extends BaseDAO {
      * @param key
      * @returns {Promise<string>}
      */
-    async get(key) {
+    async get(key, def = null) {
         const res = localStorage.getItem(key);
-        return Promise.resolve(res);
+        return Promise.resolve(JSON.parse(res) || def);
 
     }
 
@@ -17,7 +17,7 @@ class LocalStorageDAO extends BaseDAO {
      * @returns {Promise<void>}
      */
     async put(key, val) {
-        const res = localStorage.setItem(key, val);
+        const res = localStorage.setItem(key, JSON.stringify(val));
         return Promise.resolve(res);
     }
 

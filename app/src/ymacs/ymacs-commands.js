@@ -64,7 +64,9 @@ Ymacs_Buffer.newCommands({
     arrow_up: Ymacs_Interactive('p', function (x) {
         const mode = this.modes[0];
         if (mode === 'minibuffer_mode') {
-            this.ymacs.minibuffer.cmd('minibuffer_complete');
+            this.ymacs.minibuffer.cmd('minibuffer_history');
+
+            // this.ymacs.minibuffer.cmd('minibuffer_complete');
         } else this.cmd('backward_line', 1);
     }),
 
