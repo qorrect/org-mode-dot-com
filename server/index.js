@@ -3,6 +3,7 @@ const app = express();
 const session = require('express-session');
 const DropboxController = require('./src/controllers/DropboxController.class');
 const _path = require('path');
+const stringUtils = require('./src/utils/stringUtils')
 const SESSION_OPTIONS = {
     secret: 'hey_its_me_org_mode',
     cookie: {}
@@ -17,7 +18,6 @@ app.use(session(SESSION_OPTIONS));
 app.use('/app', express.static(_path.join(__dirname, 'app')));
 
 
-
 process.on('unhandledRejection', (err, p) => {
     logger.error(err.stack);
     logger.error(`Unhandled REJECTION at: ${err.toString()} - Promise ( ${JSON.stringify(p)} )`);
@@ -30,7 +30,19 @@ process.on('uncaughtException', err => {
 
 });
 
-
+app.get('/api/file/:path', async (req, res) => {
+    const path = req.params.path;
+    let content = '';
+    try {
+        content = await DropboxController.get(req.session.accessToken).readFile(stringUtils.ensureStartsWithSlash(path));
+        console.log('content=');
+        console.log(content);
+    } catch (e) {
+        logger.error(e);
+        content = e.toString();
+    }
+    res.send(content);
+});
 app.get('/api/files', async (req, res) => {
     let files = '';
     try {

@@ -8,7 +8,8 @@ const {Strings} = require('../constants');
 const config = require('config');
 const {execInParallel} = require('../utils/collectionUtils');
 const logger = require('../utils/logUtil');
-
+const textEncoding = require('text-encoding');
+const TextDecoder = textEncoding.TextDecoder;
 let g_dropboxController = null;
 
 class DropboxController extends BaseFileController {
@@ -39,6 +40,15 @@ class DropboxController extends BaseFileController {
         if (g_dropboxController)
             return g_dropboxController;
         else return DropboxController.set(accessToken);
+    }
+
+    async readFile(path) {
+
+        const data = await this.dropbox.filesDownload({path});
+        const blob = data.fileBinary;
+        const file = new TextDecoder('utf-8').decode(blob);
+        return file;
+
     }
 
     async lsDir(path = '', filter = '') {
