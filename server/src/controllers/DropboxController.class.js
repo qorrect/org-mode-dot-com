@@ -7,6 +7,7 @@ const fetch = require('isomorphic-fetch');
 const {Strings} = require('../constants');
 const config = require('config');
 const {execInParallel} = require('../utils/collectionUtils');
+const logger = require('../utils/logUtil');
 
 let g_dropboxController = null;
 
@@ -55,19 +56,20 @@ class DropboxController extends BaseFileController {
     }
 
     async _lsDirRecursive(path = '/') {
-        // console.log(`Starting lsDirRecursive with "${path}"`);
+
+        logger.warn(`Starting lsDirRecursive with "${path}"`);
 
         const self = this;
         const entries = await this.lsDir(path);
 
         const children = await execInParallel(
-            entries.filter(e => e.type === Strings.Types.FOLDER && !this.ignoreDirectories.find(d => e.name.indexOf(d) !== -1)),
+            entries.filter(e => e.type === Strings.Types.FOLDER && !this.ignoreDirectories.find(d => e.path.split('/').find(split => split === d))),
             async (entry) => {
                 entry.children = await self._lsDirRecursive(entry.path);
                 return entry;
             });
 
-        return children;
+        return entries;
     }
 
     static getDropbox(accessToken) {

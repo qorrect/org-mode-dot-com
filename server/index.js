@@ -58,7 +58,7 @@ app.get('/authed', async (req, res) => {
     const accessToken = result['access_token'];
     req.session.accessToken = accessToken;
     DropboxController.set(accessToken);
-    res.redirect('api/files?recursive=true');
+    res.redirect('app/index.html');
 
 });
 
