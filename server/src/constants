@@ -1,0 +1,9 @@
+
+const Strings = {
+    Types : {
+        FOLDER : 'folder',
+        FILE: 'file'
+    }
+};
+
+module.exports = {Strings};

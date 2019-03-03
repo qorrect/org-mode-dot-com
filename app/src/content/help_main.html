@@ -82,13 +82,15 @@
             C-M-d = <span style="font-size: .8em;">delete_region_or_line</span> <br/>
         </div>
 
-        <h3><u>Selection Functions:</u><br/></h3>
+        <h3><u>Copy Functions:</u><br/></h3>
         <div style="padding: 10px;">
             C-SPACE = set_mark_command<br/>
-            C-c c   = copy<br/>
-            C-c v   = paste<br/>
-            C-c b   = paste_second_to_last<br/>
-            C-c n   = paste_nth_copy<br/>
+            C-x x   = kill_region<br/>
+            C-x z   = kill_region_no_killring<br/>
+            C-x c   = copy<br/>
+            C-x v   = paste<br/>
+            C-x b   = paste_second_to_last<br/>
+            C-x n $digit  = paste_nth_copy<br/>
         </div>
     </div>
 </div>

@@ -1,8 +1,8 @@
 // Expects to be called like evaluateJavascript.call(buffer / this , arguments)
 // TODO:  Put this somewhere
-function evaluateJavascript(ymacsContents, variables) {
+function evaluateJavascript(code_string, variables) {
     try {
-        const code = new Function('buffer', 'ymacs', ymacsContents);
+        const code = new Function('buffer', 'ymacs', code_string);
         const ret = code.apply(this, variables);
         console.log(ret);
 
