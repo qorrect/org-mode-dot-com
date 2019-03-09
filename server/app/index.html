@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <title>org-mode for the web, using Ymacs</title>
+    <link rel="stylesheet" type="text/css" href="src/dl/new-theme/default.css"/>
+    <link rel="stylesheet" type="text/css" href="css/overrides-dl-default.css"/>
+
+    <link rel="stylesheet" type="text/css" href="css/ymacs.css"/>
+    <link rel="stylesheet" type="text/css" href="app.css"/>
+    <link href="https://fonts.googleapis.com/css?family=B612+Mono|Cousine|Fira+Mono|IBM+Plex+Mono|Inconsolata|Major+Mono+Display|Nanum+Gothic+Coding|Nova+Mono|Overpass+Mono|Oxygen+Mono|Roboto+Mono|Share+Tech+Mono|Source+Code+Pro|Ubuntu+Mono"
+          rel="stylesheet">
+
+</head>
+<body>
+<center style="margin-top: 10em" id="x-loading">
+    <h1><tt>.oO[ loading ]Oo.</tt></h1>
+</center>
+
+<script>
+    window.Dynarch_Base_Url = 'lib/dl/';
+    window.YMACS_SRC_PATH = 'src/ymacs/';
+</script>
+<!--<script src="lib/dl/js/thelib.js"></script>-->
+<script src="src/ymacs/config.js"></script>
+<script src="src/dl/js/texts.js"></script>
+<script src="src/dl/js/singleton.js"></script>
+<script src="src/dl/js/jslib.js"></script>
+<script src="src/dl/js/json.js"></script>
+
+<script src="src/dl/js/event.js"></script>
+
+<script src="src/dl/js/eventproxy.js"></script>
+<script src="src/dl/js/widget.js"></script>
+<script src="src/dl/js/container.js"></script>
+<script src="src/dl/js/box.js"></script>
+<script src="src/dl/js/hbox.js"></script>
+<script src="src/dl/js/vbox.js"></script>
+<script src="src/dl/js/popup.js"></script>
+<script src="src/dl/js/popupmenu.js"></script>
+<script src="src/dl/js/buttonmenu.js"></script>
+<script src="src/dl/js/exception.js"></script>
+<script src="src/dl/js/entry.js"></script>
+<script src="src/dl/js/completionentry.js"></script>
+<script src="src/dl/js/drag.js"></script>
+<script src="src/dl/js/geometry.js"></script>
+
+<script src="src/dl/js/abstractbutton.js"></script>
+<script src="src/dl/js/animation.js"></script>
+<script src="src/dl/js/buttoncalendar.js"></script>
+<script src="src/dl/js/buttoncolorpicker.js"></script>
+<script src="src/dl/js/button.js"></script>
+<script src="src/dl/js/calendar.js"></script>
+<script src="src/dl/js/canvas.js"></script>
+<script src="src/dl/js/checkbox.js"></script>
+<script src="src/dl/js/color.js"></script>
+<script src="src/dl/js/colorpickerhsv.js"></script>
+<script src="src/dl/js/table.js"></script>
+<script src="src/dl/js/layout.js"></script>
+
+<script src="src/dl/js/combo.js"></script>
+<script src="src/dl/js/console.js"></script>
+<script src="src/dl/js/datagrid.js"></script>
+<script src="src/dl/js/desktop.js"></script>
+<script src="src/dl/js/dialog.js"></script>
+<script src="src/dl/js/elementcache.js"></script>
+<script src="src/dl/js/fieldgrid.js"></script>
+<script src="src/dl/js/fieldset.js"></script>
+<script src="src/dl/js/flashutils.js"></script>
+<script src="src/dl/js/gridlayout.js"></script>
+
+<script src="src/dl/js/htmlutils.js"></script>
+<script src="src/dl/js/iconlistview.js"></script>
+
+<script src="src/dl/js/keyboard.js"></script>
+<script src="src/dl/js/label.js"></script>
+<script src="src/dl/js/litetree.js"></script>
+<script src="src/dl/js/macbar.js"></script>
+<script src="src/dl/js/notebook.js"></script>
+<script src="src/dl/js/progressbar.js"></script>
+<script src="src/dl/js/radiobutton.js"></script>
+<script src="src/dl/js/radiogroup.js"></script>
+<script src="src/dl/js/radioselect.js"></script>
+<script src="src/dl/js/regexp.js"></script>
+<script src="src/dl/js/resizebar.js"></script>
+<script src="src/dl/js/rpc.js"></script>
+<script src="src/dl/js/rteframe.js"></script>
+<script src="src/dl/js/socket.js"></script>
+<script src="src/dl/js/sound.js"></script>
+<script src="src/dl/js/spinner.js"></script>
+<script src="src/dl/js/stylesheet.js"></script>
+<script src="src/dl/js/system.js"></script>
+<script src="src/dl/js/tabs.js"></script>
+<script src="src/dl/js/textutils.js"></script>
+<script src="src/dl/js/tooltip.js"></script>
+<script src="src/dl/js/tree.js"></script>
+<script src="src/dl/js/type.js"></script>
+<script src="src/dl/js/uploadentry.js"></script>
+<script src="src/dl/js/validator.js"></script>
+
+<script src="lib/async.min.js"></script>
+<script src="lib/lodash.js"></script>
+<script src="lib/stringUtils.js"></script>
+<script src="lib/collectionUtils.js"></script>
+<script src="src/dao/BaseFileSystem.js"></script>
+<script src="src/dao/DropboxFileSystem.js"></script>
+<script src="src/dao/BaseDAO.js"></script>
+<script src="src/dao/LocalStorageDAO.js"></script>
+<script src="src/dao/index.js"></script>
+<script src="src/site-js/rpc.js"></script>
+
+<!--<script src="/ymacs/js-minified/ymacs-min.js"></script>-->
+<script src="src/ymacs/util.js"></script>
+<script src="src/ymacs/ymacs.js"></script>
+<script src="src/ymacs/ymacs-keyboard.js"></script>
+<script src="src/ymacs/ymacs-regexp.js"></script>
+<script src="src/ymacs/ymacs-frame.js"></script>
+<script src="src/ymacs/ymacs-textprop.js"></script>
+<script src="src/ymacs/ymacs-exception.js"></script>
+<script src="src/ymacs/ymacs-interactive.js"></script>
+<script src="src/ymacs/ymacs-buffer.js"></script>
+<script src="src/ymacs/ymacs-marker.js"></script>
+<script src="src/ymacs/ymacs-commands.js"></script>
+<script src="src/ymacs/ymacs-commands-utils.js"></script>
+<script src="src/ymacs/ymacs-keymap.js"></script>
+<script src="src/ymacs/ymacs-keymap-emacs.js"></script>
+<script src="src/ymacs/ymacs-keymap-isearch.js"></script>
+<script src="src/ymacs/ymacs-minibuffer.js"></script>
+<script src="src/ymacs/ymacs-tokenizer.js"></script>
+<script src="src/ymacs/ymacs-mode-paren-match.js"></script>
+<script src="src/ymacs/ymacs-mode-lisp.js"></script>
+<script src="src/ymacs/ymacs-mode-js.js"></script>
+<script src="src/ymacs/ymacs-mode-xml.js"></script>
+<script src="src/ymacs/ymacs-mode-css.js"></script>
+<script src="src/ymacs/ymacs-mode-markdown.js"></script>
+<script src="src/site-js/ymacs-mode-org.js"></script>
+
+<div style="display: none">
+    <div id="browser-warning" style="padding: 1em; width: 20em;">
+        <b>Note that Ymacs is only tested with Firefox for now.</b><br/><br/>
+        This is mentioned on the <a href="http://www.ymacs.org/"
+                                    target="_blank">project page</a>,
+        but I just thought I'd say it again.
+    </div>
+</div>
+
+
+<script src="app.js"></script>
+
+
+</body>
+</html>
