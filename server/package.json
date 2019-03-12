@@ -6,7 +6,8 @@
     "scripts": {
         "nodemon": "nodemon ./index.js",
         "eslint": "eslint src/.  --config .eslintrc.json",
-        "start": "npm run eslint && node %NODE_DEBUG_OPTION% ./index.js",
+        "start_dev": "npm run eslint && node %NODE_DEBUG_OPTION% ./index.js",
+        "start": "npm run eslint && node $NODE_DEBUG_OPTION ./index.js",
         "prod": "forever -w ./index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
