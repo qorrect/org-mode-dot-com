@@ -70,7 +70,7 @@ app.get('/api/authed', async (req, res) => {
     const accessToken = result['access_token'];
     req.session.accessToken = accessToken;
     DropboxController.set(accessToken);
-    res.redirect('app/index.html');
+    res.redirect('../app/index.html');
 });
 
 const host = '0.0.0.0';
