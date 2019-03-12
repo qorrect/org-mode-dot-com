@@ -3,7 +3,7 @@ const app = express();
 const session = require('express-session');
 const DropboxController = require('./src/controllers/DropboxController.class');
 const _path = require('path');
-const stringUtils = require('./src/utils/stringUtils')
+const stringUtils = require('./src/utils/stringUtils');
 const SESSION_OPTIONS = {
     secret: 'hey_its_me_org_mode',
     cookie: {}
@@ -63,7 +63,7 @@ app.get('/api/files', async (req, res) => {
     res.json(files);
 });
 
-app.get('/authed', async (req, res) => {
+app.get('/api/authed', async (req, res) => {
     const code = req.query.code;
 
     const result = await DropboxController.getAccessToken(code);
@@ -71,7 +71,6 @@ app.get('/authed', async (req, res) => {
     req.session.accessToken = accessToken;
     DropboxController.set(accessToken);
     res.redirect('app/index.html');
-
 });
 
 // eslint-disable-next-line

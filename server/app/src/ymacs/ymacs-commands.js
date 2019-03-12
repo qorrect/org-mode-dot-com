@@ -311,15 +311,16 @@ Ymacs_Buffer.newCommands({
     }),
 
     search_backward: Ymacs_Interactive('sSearch backward: ', function (str, bound) {
-        const code = this.getCode(), point = this.point();
+        let code = this.getCode();
+        const point = this.point();
         if (this.getq('case_fold_search')) {
             code = code.toLowerCase();
             str = str.toLowerCase();
         }
         let pos = code.lastIndexOf(str, point);
-        if (pos == point)
+        if (pos === point)
             pos = code.lastIndexOf(str, point - 1);
-        if (pos >= 0 && pos != point && (bound == null || pos >= bound)) {
+        if (pos >= 0 && pos !== point && (bound === null || pos >= bound)) {
             this.cmd('goto_char', pos);
             return true;
         }

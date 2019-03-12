@@ -1,15 +1,3 @@
-// Expects to be called like evaluateJavascript.call(buffer / this , arguments)
-// TODO:  Put this somewhere
-function evaluateJavascript(code_string, variables) {
-    try {
-        const code = new Function('buffer', 'ymacs', code_string);
-        const ret = code.apply(this, variables);
-        console.log(ret);
-
-    } catch (ex) {
-        console.log(ex);
-    }
-}
 
 class Application {
 
@@ -36,65 +24,119 @@ class Application {
                     '    - [ ] Cholula \n'
                 );
             }
-            await ymacs.createOrOpen(Strings.DefaultFiles.TODAY_ORG, true );
+            await ymacs.createOrOpen(Strings.DefaultFiles.TODAY_ORG, true);
 
             const dotYmacsContent = await DAO.get(Strings.DefaultFiles._YMACS);
             if (!dotYmacsContent) {
                 await DAO.put(Strings.DefaultFiles._YMACS, '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font your set in the Options menu\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'25px\'});\n');
             }
 
-            const dotYmacs = await ymacs.createOrOpen(Strings.DefaultFiles._YMACS, true );
+            const dotYmacs = await ymacs.createOrOpen(Strings.DefaultFiles._YMACS, true);
             dotYmacs.cmd('javascript_mode');
-            evaluateJavascript.call(this, dotYmacsContent, [dotYmacs, ymacs]);
 
             const layout = new DlLayout({parent: dlg});
 
 
-            const yourFilesMenuItem = new DlMenuItem({parent: mainMenu, label: 'Your Files'.makeLabel()});
+            const FileMenuItem = new DlMenuItem({parent: mainMenu, label: 'File'.makeLabel()});
 
-            const submenu = new DlVMenu({});
-            const newFileItem = new DlMenuItem({parent: submenu, label: '[+] New File'.makeLabel()});
+            const fileSubmenu = new DlVMenu({});
+            const newFileItem = new DlMenuItem({parent: fileSubmenu, label: '[+] New File'.makeLabel()});
             newFileItem.addEventListener('onSelect', () => {
                 ymacs.getActiveBuffer().cmd('execute_extended_command', 'find_file');
             });
-
-            const ymacsFilelist = await DAO.get(Strings.Defs.FILE_LIST, []);
-            ymacsFilelist.forEach(async file => {
-                if (file) {
-                    const buffer = new Ymacs_Buffer({name: file});
-                    const bufferContent = await DAO.get(file);
-                    if (bufferContent) {
-                        buffer.setCode(bufferContent);
-                    }
-                    buffer.maybeSetMode(file);
-
-                    const menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
-                    menuItem.addEventListener('onSelect', async () => {
-                        await ymacs.createOrOpen(file);
-                    });
-                }
+            const helpItem = new DlMenuItem({parent: fileSubmenu, label: '[?] Help'.makeLabel()});
+            helpItem.addEventListener('onSelect', () => {
+                ymacs.getActiveBuffer().cmd('execute_extended_command', 'show_help');
             });
+            //
+            // const ymacsFilelist = await DAO.get(Strings.Defs.FILE_LIST, []);
+            // ymacsFilelist.forEach(async file => {
+            //     if (file) {
+            //         const buffer = new Ymacs_Buffer({name: file});
+            //         const bufferContent = await DAO.get(file);
+            //         if (bufferContent) {
+            //             buffer.setCode(bufferContent);
+            //         }
+            //         buffer.maybeSetMode(file);
+            //
+            //         const menuItem = new DlMenuItem({parent: submenu, label: file.makeLabel()});
+            //         menuItem.addEventListener('onSelect', async () => {
+            //             await ymacs.createOrOpen(file);
+            //         });
+            //     }
+            // });
 
 
             // const files = localStorage.getItem('files');
+            //
+            // const todayItem = new DlMenuItem({parent: submenu, label: 'today.org'.makeLabel()});
+            // todayItem.addEventListener('onSelect', async () => {
+            //     const file = 'today.org';
+            //     const buffer = ymacs.getBuffer(file);
+            //     if (buffer) {
+            //         ymacs.switchToBuffer(buffer);
+            //     } else {
+            //         const newBuffer = ymacs.createBuffer({name: file});
+            //         newBuffer.setCode(await DAO.get(file) || '');
+            //         newBuffer.cmd('org_mode');
+            //         ymacs.switchToBuffer(newBuffer);
+            //
+            //     }
+            //
+            //
+            // });
 
-            const todayItem = new DlMenuItem({parent: submenu, label: 'today.org'.makeLabel()});
-            todayItem.addEventListener('onSelect', async () => {
-                const file = 'today.org';
-                const buffer = ymacs.getBuffer(file);
-                if (buffer) {
-                    ymacs.switchToBuffer(buffer);
-                } else {
-                    const newBuffer = ymacs.createBuffer({name: file});
-                    newBuffer.setCode(await DAO.get(file) || '');
-                    newBuffer.cmd('org_mode');
-                    ymacs.switchToBuffer(newBuffer);
-
-                }
+            FileMenuItem.setMenu(fileSubmenu);
 
 
+            fileSubmenu.addSeparator();
+            const ymacsSourceItem = new DlMenuItem({parent: fileSubmenu, label: '[.] Ymacs Source'.makeLabel()});
+
+
+            const ymacsSourceItemsubmenu = new DlVMenu({});
+
+            const files = [
+                'ymacs.js',
+                'ymacs-keyboard.js',
+                'ymacs-regexp.js',
+                'ymacs-frame.js',
+                'ymacs-textprop.js',
+                'ymacs-exception.js',
+                'ymacs-interactive.js',
+                'ymacs-buffer.js',
+                'ymacs-marker.js',
+                'ymacs-commands.js',
+                'ymacs-commands-utils.js',
+                'ymacs-keymap.js',
+                'ymacs-keymap-emacs.js',
+                'ymacs-keymap-isearch.js',
+                'ymacs-minibuffer.js',
+                'ymacs-tokenizer.js',
+                'ymacs-mode-paren-match.js',
+                'ymacs-mode-lisp.js',
+                'ymacs-mode-js.js',
+                'ymacs-mode-org.js',
+                'ymacs-mode-xml.js',
+                'ymacs-mode-css.js',
+                'ymacs-mode-markdown.js',
+                '../../app.js'
+            ];
+            files.foreach((file) => {
+                const item = new DlMenuItem({label: file, parent: ymacsSourceItemsubmenu});
+                item.addEventListener('onSelect', () => {
+                    const request = new DlRPC({url: YMACS_SRC_PATH + file + '?killCache=' + new Date().getTime()});
+                    request.call({
+                        callback(data) {
+                            const code = data.text.replace(/\r\n/g, '\n');
+                            const buf = ymacs.getBuffer(file) || ymacs.createBuffer({name: file});
+                            buf.setCode(code);
+                            buf.cmd('javascript_dl_mode', true);
+                            ymacs.switchToBuffer(buf);
+                        }
+                    });
+                });
             });
-            const dotYmacsItem = new DlMenuItem({parent: submenu, label: '.ymacs'.makeLabel()});
+            const dotYmacsItem = new DlMenuItem({parent: fileSubmenu, label: '[~] .ymacs'.makeLabel()});
             dotYmacsItem.addEventListener('onSelect', () => {
                 const file = '.ymacs';
                 const buffer = ymacs.getBuffer(file);
@@ -106,30 +148,7 @@ class Application {
                 }
 
             });
-            yourFilesMenuItem.setMenu(submenu);
-
-
-            // const ymacsSourceItem = new DlMenuItem({parent: submenu, label: 'Ymacs Source'.makeLabel()});
-            //
-            //
-            // const ymacsSourceItemsubmenu = new DlVMenu({});
-            //
-            // files.foreach((file) => {
-            //     const item = new DlMenuItem({label: file, parent: ymacsSourceItemsubmenu});
-            //     item.addEventListener('onSelect', () => {
-            //         const request = new DlRPC({url: YMACS_SRC_PATH + file + '?killCache=' + new Date().getTime()});
-            //         request.call({
-            //             callback(data) {
-            //                 const code = data.text.replace(/\r\n/g, '\n');
-            //                 const buf = ymacs.getBuffer(file) || ymacs.createBuffer({name: file});
-            //                 buf.setCode(code);
-            //                 buf.cmd('javascript_dl_mode', true);
-            //                 ymacs.switchToBuffer(buf);
-            //             }
-            //         });
-            //     });
-            // });
-            // ymacsSourceItem.setMenu(ymacsSourceItemsubmenu);
+            ymacsSourceItem.setMenu(ymacsSourceItemsubmenu);
             mainMenu.addFiller();
 
             const optionsMenu = new DlMenuItem({parent: mainMenu, label: 'Options'.makeLabel()});
@@ -301,7 +320,7 @@ class Application {
             const fontFamily = (await DAO.get(Strings.CONFIG.FONT_FAMILY)) || 'Ubuntu Mono';
             ymacs.getActiveFrame().setStyle({fontFamily});
 
-
+            evaluateJavascript.call(this, dotYmacsContent, [dotYmacs, ymacs]);
             dlg.show(true);
 
             try {
@@ -310,6 +329,8 @@ class Application {
                 dlg.maximize(true);
                 // eslint-disable-next-line no-empty
             } catch (e) {
+                if (e.toString().indexOf('__maxBtn.checked is not a function') === -1)
+                    console.log(e);
             }
 
         } catch (ex) {
@@ -317,6 +338,18 @@ class Application {
         }
         DynarchDomUtils.trash(document.getElementById('x-loading'));
 
+    }
+}
+// Expects to be called like evaluateJavascript.call(buffer / this , arguments)
+// TODO:  Put this somewhere
+function evaluateJavascript(code_string, variables) {
+    try {
+        const code = new Function('buffer', 'ymacs', code_string);
+        const ret = code.apply(this, variables);
+        console.log(ret);
+
+    } catch (ex) {
+        console.log(ex);
     }
 }
 
