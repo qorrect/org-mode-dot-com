@@ -73,9 +73,9 @@ app.get('/api/authed', async (req, res) => {
     res.redirect('app/index.html');
 });
 
+const host = '0.0.0.0';
+const port = 8081;
 // eslint-disable-next-line
-const server = app.listen(8081, () => {
-    const host = 'localhost';
-    const port = 8081;
+const server = app.listen(port, () => {
     logger.info(`Org-mode is listening on ${host} ${port}`);
-}, '0.0.0.0');
+}, host);
