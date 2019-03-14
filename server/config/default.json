@@ -3,5 +3,5 @@
         ".git",
         "node_modules"
     ],
-    "redirect_uri" : "localhost:8081/api/authed"
+    "redirect_uri": "http://localhost:8081/api/authed"
 }

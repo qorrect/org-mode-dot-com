@@ -22,3 +22,4 @@ const Strings = {
         _YMACS: '.ymacs'
     }
 };
+const DEBUG_MODE = true;

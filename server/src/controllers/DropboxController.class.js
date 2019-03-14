@@ -91,7 +91,7 @@ class DropboxController extends BaseFileController {
     }
 
     static async getAccessToken(code) {
-
+        console.log('Using redirect_uri: ' + redirect_uri);
         const options = {
             uri: 'https://api.dropbox.com/1/oauth2/token?code=' + code + '&grant_type=authorization_code&redirect_uri=' + redirect_uri,
             method: 'POST',
