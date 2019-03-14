@@ -11,6 +11,7 @@ const logger = require('../utils/logUtil');
 const textEncoding = require('text-encoding');
 const TextDecoder = textEncoding.TextDecoder;
 let g_dropboxController = null;
+const redirect_uri = config.get('redirect_uri');
 
 class DropboxController extends BaseFileController {
 
@@ -18,7 +19,6 @@ class DropboxController extends BaseFileController {
         super(accessToken);
         this.ignoreDirectories = config.get('ignoreDirectories');
         this.dropbox = DropboxController.getDropbox(this.accessToken);
-        this.redirect_uri = config.get('redirect_uri');
     }
 
     /**
@@ -92,9 +92,8 @@ class DropboxController extends BaseFileController {
 
     static async getAccessToken(code) {
 
-
         const options = {
-            uri: 'https://api.dropbox.com/1/oauth2/token?code=' + code + '&grant_type=authorization_code&redirect_uri=' + this.redirect_uri,
+            uri: 'https://api.dropbox.com/1/oauth2/token?code=' + code + '&grant_type=authorization_code&redirect_uri=' + redirect_uri,
             method: 'POST',
             headers: {
                 'Authorization': auth
