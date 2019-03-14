@@ -26,7 +26,9 @@
         "request": "^2.88.0",
         "request-promise": "^4.2.2",
         "text-encoding": "^0.7.0",
-        "usleep": "^1.0.3"
+        "usleep": "^1.0.3",
+        "cryptiles": ">=4.1.2"
+
     },
     "devDependencies": {
         "nodemon": "^1.18.10"

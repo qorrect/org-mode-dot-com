@@ -35,9 +35,9 @@
 
 /* -----[ This defines the tokenizer ]----- */
 
-(function(){
+(function () {
 
-    var KEYWORDS = "abstract break case catch class const \
+    var KEYWORDS = 'abstract break case catch class const \
 continue debugger default delete do else \
 enum export extends final finally for \
 function goto if implements import in \
@@ -45,17 +45,17 @@ instanceof interface native new package \
 private protected public return static \
 super switch synchronized throw \
 throws transient try typeof var void let \
-yield volatile while with".qw();
+yield volatile while with'.qw();
 
-    var KEYWORDS_TYPE = "boolean byte char double float int long short void \
-Array Date Function Math Number Object RegExp String".qw();
+    var KEYWORDS_TYPE = 'boolean byte char double float int long short void \
+Array Date Function Math Number Object RegExp String'.qw();
 
-    var KEYWORDS_CONST = "false null undefined Infinity NaN true arguments this".qw();
+    var KEYWORDS_CONST = 'false null undefined Infinity NaN true arguments this'.qw();
 
-    var KEYWORDS_BUILTIN = "Infinity NaN \
+    var KEYWORDS_BUILTIN = 'Infinity NaN \
 Packages decodeURI decodeURIComponent \
 encodeURI encodeURIComponent eval isFinite isNaN parseFloat \
-parseInt undefined window document alert prototype constructor".qw();
+parseInt undefined window document alert prototype constructor'.qw();
 
     var ALLOW_REGEXP_AFTER = /[\[({,;+\-*=?&|!:][\x20\t\n\xa0]*$|return\s+$|typeof\s+$/;
 
@@ -72,15 +72,15 @@ parseInt undefined window document alert prototype constructor".qw();
     };
 
     var OPEN_PAREN = {
-        "(" : ")",
-        "{" : "}",
-        "[" : "]"
+        '(': ')',
+        '{': '}',
+        '[': ']'
     };
 
     var CLOSE_PAREN = {
-        ")" : "(",
-        "}" : "{",
-        "]" : "["
+        ')': '(',
+        '}': '{',
+        ']': '['
     };
 
     function isOpenParen(ch) {
@@ -94,34 +94,35 @@ parseInt undefined window document alert prototype constructor".qw();
     function JS_PARSER(KEYWORDS, KEYWORDS_TYPE, KEYWORDS_CONST, KEYWORDS_BUILTIN, stream, tok) {
 
         var $cont = [],
-        $parens = [],
-        $passedParens = [],
-        $inComment = null,
-        $inString = null,
-        PARSER = {
-            next        : next,
-            copy        : copy,
-            indentation : indentation
-        };
+            $parens = [],
+            $passedParens = [],
+            $inComment = null,
+            $inString = null,
+            PARSER = {
+                next: next,
+                copy: copy,
+                indentation: indentation
+            };
 
         function INDENT_LEVEL() {
-            return stream.buffer.getq("indent_level");
+            return stream.buffer.getq('indent_level');
         };
 
         function copy() {
             var context = restore.context = {
-                cont         : $cont.slice(0),
-                inComment    : $inComment,
-                inString     : $inString,
-                parens       : $parens.slice(0),
-                passedParens : $passedParens.slice(0)
+                cont: $cont.slice(0),
+                inComment: $inComment,
+                inString: $inString,
+                parens: $parens.slice(0),
+                passedParens: $passedParens.slice(0)
             };
+
             function restore() {
-                $cont          = context.cont.slice(0);
-                $inComment     = context.inComment;
-                $inString      = context.inString;
-                $parens        = context.parens.slice(0);
-                $passedParens  = context.passedParens.slice(0);
+                $cont = context.cont.slice(0);
+                $inComment = context.inComment;
+                $inString = context.inString;
+                $parens = context.parens.slice(0);
+                $passedParens = context.passedParens.slice(0);
                 return PARSER;
             };
             return restore;
@@ -133,7 +134,7 @@ parseInt undefined window document alert prototype constructor".qw();
 
         function readName() {
             var col = stream.col, ch = stream.get(),
-            name = ch;
+                name = ch;
             while (!stream.eol()) {
                 ch = stream.peek();
                 if (!isNameChar(ch))
@@ -141,23 +142,23 @@ parseInt undefined window document alert prototype constructor".qw();
                 name += ch;
                 stream.nextCol();
             }
-            return ch && { line: stream.line, c1: col, c2: stream.col, id: name };
+            return ch && {line: stream.line, c1: col, c2: stream.col, id: name};
         };
 
         function readComment() {
-            var line = stream.lineText(), pos = line.indexOf("*/", stream.col);
+            var line = stream.lineText(), pos = line.indexOf('*/', stream.col);
             var m = /^\s*\*+/.exec(line.substr(stream.col));
             if (m) {
-                foundToken(stream.col, stream.col += m[0].length, "mcomment-starter");
+                foundToken(stream.col, stream.col += m[0].length, 'mcomment-starter');
             }
             if (pos >= 0) {
                 $cont.pop();
                 $inComment = null;
-                foundToken(stream.col, pos, "mcomment");
-                foundToken(pos, pos += 2, "mcomment-stopper");
+                foundToken(stream.col, pos, 'mcomment');
+                foundToken(pos, pos += 2, 'mcomment-stopper');
                 stream.col = pos;
             } else {
-                foundToken(stream.col, line.length, "mcomment");
+                foundToken(stream.col, line.length, 'mcomment');
                 stream.col = line.length;
             }
         };
@@ -170,10 +171,10 @@ parseInt undefined window document alert prototype constructor".qw();
                     $cont.pop();
                     $inString = null;
                     foundToken(start, stream.col, type);
-                    foundToken(stream.col, ++stream.col, type + "-stopper");
+                    foundToken(stream.col, ++stream.col, type + '-stopper');
                     return true;
                 }
-                esc = !esc && ch === "\\";
+                esc = !esc && ch === '\\';
                 stream.nextCol();
             }
             foundToken(start, stream.col, type);
@@ -196,20 +197,20 @@ parseInt undefined window document alert prototype constructor".qw();
                     if (inset < 0)
                         inset = 0;
                 }
-                if (ch === "/" && !esc && !inset) {
+                if (ch === '/' && !esc && !inset) {
                     $cont.pop();
                     $inString = null;
-                    foundToken(start, stream.col, "regexp");
-                    foundToken(stream.col, ++stream.col, "regexp-stopper");
+                    foundToken(start, stream.col, 'regexp');
+                    foundToken(stream.col, ++stream.col, 'regexp-stopper');
                     var m = stream.lookingAt(/^[gmsiy]+/);
                     if (m)
-                        foundToken(stream.col, stream.col += m[0].length, "regexp-modifier");
+                        foundToken(stream.col, stream.col += m[0].length, 'regexp-modifier');
                     return true;
                 }
-                esc = !esc && ch === "\\";
+                esc = !esc && ch === '\\';
                 stream.nextCol();
             }
-            foundToken(start, stream.col, "regexp");
+            foundToken(start, stream.col, 'regexp');
         };
 
         function next() {
@@ -217,54 +218,45 @@ parseInt undefined window document alert prototype constructor".qw();
             if ($cont.length > 0)
                 return $cont.peek()();
             var ch = stream.peek(), m, tmp;
-            if (stream.lookingAt("/*")) {
-                $inComment = { line: stream.line, c1: stream.col };
-                foundToken(stream.col, stream.col += 2, "mcomment-starter");
+            if (stream.lookingAt('/*')) {
+                $inComment = {line: stream.line, c1: stream.col};
+                foundToken(stream.col, stream.col += 2, 'mcomment-starter');
                 $cont.push(readComment);
-            }
-            else if (stream.lookingAt("//")) {
-                foundToken(stream.col, stream.col += 2, "comment-starter");
-                foundToken(stream.col, stream.col = stream.lineLength(), "comment");
-            }
-            else if (ch === '"' || ch === "'") {
-                $inString = { line: stream.line, c1: stream.col };
-                foundToken(stream.col, ++stream.col, "string-starter");
-                $cont.push(readString.$C(ch, "string"));
-            }
-            else if ((m = stream.lookingAt(/^0x[0-9a-f]+|^[0-9]*\.?[0-9]+/))) {
-                foundToken(stream.col, stream.col += m[0].length, "number");
-            }
-            else if (isNameStart(ch) && (tmp = readName())) {
-                var type = tmp.id in KEYWORDS ? "keyword"
-                    : tmp.id in KEYWORDS_TYPE ? "type"
-                    : tmp.id in KEYWORDS_CONST ? "constant"
-                    : tmp.id in KEYWORDS_BUILTIN ? "builtin"
-                    : null;
+            } else if (stream.lookingAt('//')) {
+                foundToken(stream.col, stream.col += 2, 'comment-starter');
+                foundToken(stream.col, stream.col = stream.lineLength(), 'comment');
+            } else if (ch === '"' || ch === '\'') {
+                $inString = {line: stream.line, c1: stream.col};
+                foundToken(stream.col, ++stream.col, 'string-starter');
+                $cont.push(readString.$C(ch, 'string'));
+            } else if ((m = stream.lookingAt(/^0x[0-9a-f]+|^[0-9]*\.?[0-9]+/))) {
+                foundToken(stream.col, stream.col += m[0].length, 'number');
+            } else if (isNameStart(ch) && (tmp = readName())) {
+                var type = tmp.id in KEYWORDS ? 'keyword'
+                    : tmp.id in KEYWORDS_TYPE ? 'type'
+                        : tmp.id in KEYWORDS_CONST ? 'constant'
+                            : tmp.id in KEYWORDS_BUILTIN ? 'builtin'
+                                : null;
                 foundToken(tmp.c1, tmp.c2, type);
-            }
-            else if ((tmp = isOpenParen(ch))) {
-                $parens.push({ line: stream.line, col: stream.col, type: ch });
-                foundToken(stream.col, ++stream.col, "open-paren");
-            }
-            else if ((tmp = isCloseParen(ch))) {
+            } else if ((tmp = isOpenParen(ch))) {
+                $parens.push({line: stream.line, col: stream.col, type: ch});
+                foundToken(stream.col, ++stream.col, 'open-paren');
+            } else if ((tmp = isCloseParen(ch))) {
                 var p = $parens.pop();
                 if (!p || p.type != tmp) {
-                    foundToken(stream.col, ++stream.col, "error");
+                    foundToken(stream.col, ++stream.col, 'error');
                 } else {
                     // circular reference; poor browsers will leak.  mwuhahahaha
-                    p.closed = { line: stream.line, col: stream.col, opened: p };
+                    p.closed = {line: stream.line, col: stream.col, opened: p};
                     $passedParens.push(p);
-                    foundToken(stream.col, ++stream.col, "close-paren");
+                    foundToken(stream.col, ++stream.col, 'close-paren');
                 }
-            }
-            else if (ch === "/" && ALLOW_REGEXP_AFTER.test(stream.textBefore())) {
-                foundToken(stream.col, ++stream.col, "regexp-starter");
+            } else if (ch === '/' && ALLOW_REGEXP_AFTER.test(stream.textBefore())) {
+                foundToken(stream.col, ++stream.col, 'regexp-starter');
                 $cont.push(readLiteralRegexp);
-            }
-            else if ((m = stream.lookingAt(/^\s+$/))) {
-                foundToken(stream.col, stream.col += m[0].length, "trailing-whitespace");
-            }
-            else {
+            } else if ((m = stream.lookingAt(/^\s+$/))) {
+                foundToken(stream.col, stream.col += m[0].length, 'trailing-whitespace');
+            } else {
                 foundToken(stream.col, ++stream.col, null);
             }
         };
@@ -296,7 +288,7 @@ parseInt undefined window document alert prototype constructor".qw();
             var p = $parens.peek();
             if (p) {
                 // check if the current line closes the paren
-                var re = new RegExp("^\\s*\\" + OPEN_PAREN[p.type]);
+                var re = new RegExp('^\\s*\\' + OPEN_PAREN[p.type]);
                 var thisLineCloses = re.test(currentLine);
 
                 // Check if there is text after the opening paren.  If so, indent to that column.
@@ -307,8 +299,7 @@ parseInt undefined window document alert prototype constructor".qw();
                 if (m) {
                     // but if this line closes the paren, better use the column of the open paren
                     indent = thisLineCloses ? p.col : m.index;
-                }
-                else {
+                } else {
                     // Otherwise we should indent to one level more than the indentation of the line
                     // containing the opening paren.
                     indent = stream.lineIndentation(p.line) + INDENT_LEVEL();
@@ -335,8 +326,7 @@ parseInt undefined window document alert prototype constructor".qw();
                     var stmtLine = stream.lineText(p.line);
                     if (/^\s*(if|for|while)\W/.test(stmtLine))
                         indent += INDENT_LEVEL();
-                }
-                else if (/\Welse\s*$/.test(before)) {
+                } else if (/\Welse\s*$/.test(before)) {
                     indent += INDENT_LEVEL();
                 }
             }
@@ -352,7 +342,7 @@ parseInt undefined window document alert prototype constructor".qw();
 
     };
 
-    Ymacs_Tokenizer.define("js", JS_PARSER.$C(
+    Ymacs_Tokenizer.define('js', JS_PARSER.$C(
         KEYWORDS.toHash(true),
         KEYWORDS_TYPE.toHash(true),
         KEYWORDS_CONST.toHash(true),
@@ -361,13 +351,13 @@ parseInt undefined window document alert prototype constructor".qw();
 
     /* -----[ DynarchLIB ]----- */
 
-    var DL_KEYWORDS_BUILTIN = KEYWORDS_BUILTIN.concat("\
+    var DL_KEYWORDS_BUILTIN = KEYWORDS_BUILTIN.concat('\
 DEFINE_CLASS DEFINE_SINGLETON DEFINE_HIDDEN_CLASS \
 DEFAULT_ARGS DEFAULT_EVENTS \
 FIXARGS CONSTRUCT BEFORE_BASE FINISH_OBJECT_DEF \
-D P $".qw());
+D P $'.qw());
 
-    Ymacs_Tokenizer.define("js-dynarchlib", JS_PARSER.$C(
+    Ymacs_Tokenizer.define('js-dynarchlib', JS_PARSER.$C(
         KEYWORDS.toHash(true),
         KEYWORDS_TYPE.toHash(true),
         KEYWORDS_CONST.toHash(true),
@@ -378,61 +368,62 @@ D P $".qw());
 
 /* -----[ Keymap for C-like language mode ]----- */
 
-DEFINE_SINGLETON("Ymacs_Keymap_CLanguages", Ymacs_Keymap, function(D, P){
+DEFINE_SINGLETON('Ymacs_Keymap_CLanguages', Ymacs_Keymap, function (D, P) {
 
     D.KEYS = {
-        "ENTER"                                     : "newline_and_indent",
-        "} && ) && ] && : && ; && { && ( && [ && *" : "c_insert_and_indent",
-        "{"                                         : "c_electric_block",
-
+        'ENTER': 'newline_and_indent',
+        '} && ) && ] && : && ; && { && ( && [ && *': 'c_insert_and_indent',
+        '{': 'c_electric_block',
+        'C-x C-e': 'eval_region',
     };
 
 });
 
-DEFINE_SINGLETON("Ymacs_Keymap_JS", Ymacs_Keymap_CLanguages().constructor, function(D, P){});
+DEFINE_SINGLETON('Ymacs_Keymap_JS', Ymacs_Keymap_CLanguages().constructor, function (D, P) {
+});
 
 /* -----[ Mode entry point ]----- */
 
-Ymacs_Buffer.newMode("javascript_mode", function(useDL) {
+Ymacs_Buffer.newMode('javascript_mode', function (useDL) {
     var tok = this.tokenizer;
     var keymap = Ymacs_Keymap_JS();
-    this.setTokenizer(new Ymacs_Tokenizer({ buffer: this, type: useDL ? "js-dynarchlib" : "js" }));
+    this.setTokenizer(new Ymacs_Tokenizer({buffer: this, type: useDL ? 'js-dynarchlib' : 'js'}));
     this.pushKeymap(keymap);
-    var was_paren_match = this.cmd("paren_match_mode", true);
+    var was_paren_match = this.cmd('paren_match_mode', true);
     var changed_vars = this.setq({
         syntax_comment_line: {
             rx: /\s*\x2f+\s?/g,
-            ch: "//"
+            ch: '//'
         }
     });
 
-    return function() {
+    return function () {
         this.setTokenizer(tok);
         this.popKeymap(keymap);
         if (!was_paren_match)
-            this.cmd("paren_match_mode", false);
+            this.cmd('paren_match_mode', false);
     };
 
 });
 
 Ymacs_Buffer.newCommands({
 
-    javascript_dl_mode: Ymacs_Interactive(function() {
-        return this.cmd("javascript_mode", true);
+    javascript_dl_mode: Ymacs_Interactive(function () {
+        return this.cmd('javascript_mode', true);
     }),
 
-    c_electric_block: Ymacs_Interactive(function() {
-        this.cmd("indent_line");
-        this.cmd("insert", "{\n\n}");
-        this.cmd("indent_line");
-        this.cmd("backward_line", 1);
-        this.cmd("indent_line");
+    c_electric_block: Ymacs_Interactive(function () {
+        this.cmd('indent_line');
+        this.cmd('insert', '{\n\n}');
+        this.cmd('indent_line');
+        this.cmd('backward_line', 1);
+        this.cmd('indent_line');
     }),
 
-    c_insert_and_indent: Ymacs_Interactive(function() {
+    c_insert_and_indent: Ymacs_Interactive(function () {
         var ret;
-        if ((ret = this.cmd("self_insert_command"))) {
-            this.cmd("indent_line");
+        if ((ret = this.cmd('self_insert_command'))) {
+            this.cmd('indent_line');
             return ret;
         }
     })

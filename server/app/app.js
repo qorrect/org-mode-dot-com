@@ -1,4 +1,3 @@
-
 class Application {
 
     async main() {
@@ -333,6 +332,14 @@ class Application {
                     console.log(e);
             }
 
+            FileDAO.refresh().then(fileTree => {
+                console.log('HERE IN DROPBOX GOT FILES !!');
+                console.dir(fileTree);
+                fileSubmenu.addSeparator();
+                addDropboxSource(fileTree, fileSubmenu);
+            });
+
+
         } catch (ex) {
             console.log(ex);
         }
@@ -340,6 +347,33 @@ class Application {
 
     }
 }
+
+function addDropboxSource(fileeTree, parent, menuLabel = '[D] Dropbox') {
+    const toplevel = new DlMenuItem({parent, label: menuLabel});
+    const submenu = new DlVMenu({});
+
+    if (fileeTree.children) {
+        fileeTree.children.forEach(child => {
+            let str = child.name.toString().replace(/ /g, '&nbsp;');
+            if (child.type === Strings.Types.FOLDER) {
+                str += '/';
+                addDropboxSource(child, submenu, str);
+            } else {
+                const item = new DlMenuItem({parent: submenu, label: str});
+                item.addEventListener('onSelect', () => {
+                    ymacs.createOrOpen(child.path);
+                });
+            }
+        });
+    }
+    toplevel.setMenu(submenu);
+
+}
+
+function _addDropboxSource(fileeTree, parent) {
+
+}
+
 // Expects to be called like evaluateJavascript.call(buffer / this , arguments)
 // TODO:  Put this somewhere
 function evaluateJavascript(code_string, variables) {

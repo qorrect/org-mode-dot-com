@@ -161,7 +161,7 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
                 local_stream.nextLine();
                 line = local_stream.lineText();
 
-                while (line) {
+                while (!local_stream.eof()) {
                     // while (line) {
 
                     const isAHeadingMatch = line.match(HEADING_REGEX);
@@ -169,9 +169,7 @@ Ymacs_Tokenizer.define('org', (stream, tok) => {
                     if (isAHeadingMatch) {
                         if (isAHeadingMatch[0].length <= orgLevel) break;
                         if (line.match(FOLDED_REGEX)) break;
-                        else {
-                            break;
-                        }
+
                     } else {
 
                         safePush(FOLDED_RING, id, line);

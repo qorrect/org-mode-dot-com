@@ -25,11 +25,11 @@ class DropboxFileSystem extends BaseFileSystem {
     async readFile(path) {
         const url = `../api/file/${encodeURIComponent(path)}`;
         const res = await RPC.get(url, null, false);
-        return res.text;
+        return res.text.replace(/\r\n/g,'\n');
     }
 
     async refresh() {
-        const res = RPC.get('../api/files?recursive=true');
+        const res = await RPC.get('../api/files?recursive=true');
         return res.json;
     }
 }
