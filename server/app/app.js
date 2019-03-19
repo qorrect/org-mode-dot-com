@@ -121,7 +121,7 @@ class Application {
                 '../../app.js'
             ];
             files.foreach((file) => {
-                const item = new DlMenuItem({label: file, parent: ymacsSourceItemsubmenu});
+                const item = new DlMenuItem({label: getMenuIcon(file) + file, parent: ymacsSourceItemsubmenu});
                 item.addEventListener('onSelect', () => {
                     const request = new DlRPC({url: YMACS_SRC_PATH + file + '?killCache=' + new Date().getTime()});
                     request.call({
@@ -348,6 +348,71 @@ class Application {
     }
 }
 
+function getMenuIcon(path) {
+    const idx = path.lastIndexOf('.'),
+        fileIdx = path.lastIndexOf('/'),
+        fileName = path.substr(fileIdx + 1),
+        suffix = path.substr(idx + 1);
+    if (path.substring(path.length - 1) === '~') {
+        return '<span style="color: slategray;font-size: 1em" class="devicons devicons-gnu"></span> ';
+    } else if (suffix === 'js') {
+        if (fileName.toLowerCase() === 'app.js' ||
+            fileName.toLowerCase() === 'index.js') {
+            return '<span style="color: darkgreen;" class="devicons devicons-nodejs_small"></span> ';
+        } else if (fileName === 'gulpfile.js') {
+            return '<span style="color: #4e4e4e" class="devicons devicons-gulp"></span> ';
+        } else if (fileName.toLowerCase() === 'gruntfile.js') {
+            return '<span style="color: #4e4e4e" class="devicons devicon-grunt-line"></span> ';
+        } else return '<i style="color: rgba(233,121,29,0.92);font-size: .9em" class="devicons devicons-javascript_badge"></i> ';
+    } else if (suffix === 'css' || suffix === 'scss') {
+        return '<span style="color: skyblue" class="devicons devicons-css3_full"></span> ';
+    } else if (suffix === 'html') {
+        return '<span style="color: gold" class="devicons devicons-html5"></span> ';
+    } else if (suffix === 'sh') {
+        return '<span style="color: lightslategray" class="devicons devicons-terminal_badge"></span> ';
+    } else if (suffix === 'org') {
+        return '<i class="fas fa-sitemap" style="font-size: .8em;color: lightgray"></i> ';
+    } else if (suffix === 'ps1') {
+        return '<span style="color: steelblue" class="devicons devicons-windows"></span> ';
+    } else if (suffix === 'json') {
+        if (fileName.toLowerCase() === 'bower.json') {
+            return '<span style="background-color: yellow;color: #543729" class="devicons devicons-bower"></span> ';
+        } else if (fileName.toLowerCase() === 'package.json' || fileName.toLowerCase() === 'package-lock.json') {
+            return '<span style="color: darkred" class="devicons devicons-npm"></span> ';
+        }
+        return '<span style="color: steelblue" class="devicons devicons-javascript"></span> ';
+    } else if (suffix === 'md') {
+        return '<i class="fab fa-markdown" style="font-size: .8em;"></i> ';
+    } else if (suffix === 'org') {
+        return '<i class="fas fa-sitemap" style="font-size: .9em;color: lightgray"></i> ';
+    } else if (fileName.startsWith('.') || suffix === 'log' || suffix === 'conf' || suffix === 'cfg') {
+        return '<i class="far fa-file-alt" style="font-size: .9em;color: lightgray"></i> ';
+    } else if (suffix === 'xml' || suffix === 'xsl' || suffix === 'iml' || suffix === 'xslt') {
+        return '<i class="fas fa-code" style="font-size: .9em;color: darkslategrey"></i> ';
+    } else if (suffix === 'ico' || suffix === 'png' || suffix === 'jpg' || suffix === 'jpeg') {
+        return '<i class="far fa-image" style="font-size: .9em;color: darkslategrey"></i> ';
+    } else if (suffix === 'py' || suffix === 'pyc') {
+        return '<span style="color: steelblue" class="devicons devicons-python"></span> ';
+
+    }
+    else if (suffix === 'java' || suffix === 'javac') {
+        return '<span style="color: #5181a0;" class="devicons devicon-java-plain"></span> ';
+
+    }else if (suffix === 'php' || suffix === 'phar') {
+        return '<span style="color: #4e4e4e" class="devicons devicons-php"></span> ';
+    }
+    else if (fileName.toLowerCase() === 'jenkinsfile') {
+        return '<span style="background-color: black;color: white;" class="devicons devicons-jenkins"></span> ';
+    }
+    else if (fileName.toLowerCase() === 'dockerfile') {
+        return '<span style="color: #099cec" class="devicons devicons-docker"></span> ';
+    }
+    else if (suffix === 'clojure') {
+        return '<span style="color: #099cec" class="devicons devicons-clojure_alt"></span> ';
+    }
+    else return '<span class="far fa-file" style="font-size: 1.2em;"> </span> ';
+}
+
 function addDropboxSource(fileeTree, parent, menuLabel = '[D] Dropbox') {
     const toplevel = new DlMenuItem({parent, label: menuLabel});
     const submenu = new DlVMenu({});
@@ -356,10 +421,10 @@ function addDropboxSource(fileeTree, parent, menuLabel = '[D] Dropbox') {
         fileeTree.children.forEach(child => {
             let str = child.name.toString().replace(/ /g, '&nbsp;');
             if (child.type === Strings.Types.FOLDER) {
-                str += '/';
+                str = '<i class="far fa-folder" style="font-size: 1.2em;color: darkgoldenrod;"></i> ' + str + '/';
                 addDropboxSource(child, submenu, str);
             } else {
-                const item = new DlMenuItem({parent: submenu, label: str});
+                const item = new DlMenuItem({parent: submenu, label: getMenuIcon(child.path) + str});
                 item.addEventListener('onSelect', () => {
                     ymacs.createOrOpen(child.path);
                 });
