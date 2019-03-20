@@ -335,8 +335,15 @@ class Application {
             FileDAO.refresh().then(fileTree => {
                 console.log('HERE IN DROPBOX GOT FILES !!');
                 console.dir(fileTree);
-                fileSubmenu.addSeparator();
-                addDropboxSource(fileTree, fileSubmenu);
+                if (fileTree.children && fileTree.children.length) {
+                    fileSubmenu.addSeparator();
+                    addDropboxSource(fileTree, fileSubmenu);
+                } else {
+                    fileSubmenu.addSeparator();
+                    new DlMenuItem({parent: fileSubmenu, label: 'Dropbox'});
+
+                }
+
             });
 
 
@@ -394,23 +401,18 @@ function getMenuIcon(path) {
     } else if (suffix === 'py' || suffix === 'pyc') {
         return '<span style="color: steelblue" class="devicons devicons-python"></span> ';
 
-    }
-    else if (suffix === 'java' || suffix === 'javac') {
+    } else if (suffix === 'java' || suffix === 'javac') {
         return '<span style="color: #5181a0;" class="devicons devicon-java-plain"></span> ';
 
-    }else if (suffix === 'php' || suffix === 'phar') {
+    } else if (suffix === 'php' || suffix === 'phar') {
         return '<span style="color: #4e4e4e" class="devicons devicons-php"></span> ';
-    }
-    else if (fileName.toLowerCase() === 'jenkinsfile') {
+    } else if (fileName.toLowerCase() === 'jenkinsfile') {
         return '<span style="background-color: black;color: white;" class="devicons devicons-jenkins"></span> ';
-    }
-    else if (fileName.toLowerCase() === 'dockerfile') {
+    } else if (fileName.toLowerCase() === 'dockerfile') {
         return '<span style="color: #099cec" class="devicons devicons-docker"></span> ';
-    }
-    else if (suffix === 'clojure') {
+    } else if (suffix === 'clojure') {
         return '<span style="color: #099cec" class="devicons devicons-clojure_alt"></span> ';
-    }
-    else return '<span class="far fa-file" style="font-size: 1.2em;"> </span> ';
+    } else return '<span class="far fa-file" style="font-size: 1.2em;"> </span> ';
 }
 
 function addDropboxSource(fileeTree, parent, menuLabel = '[D] Dropbox') {

@@ -288,10 +288,11 @@ DEFINE_CLASS("DlPopup", DlContainer, function(D, P, DOM) {
         P.popup = function(args) {
                 this.args = args;
                 this.cancel();
-                if (!args.timeout)
+                    if (!args.timeout)
                         _do_popup.call(this, args);
-                else
+                    else
                         this._timer = _do_popup.$(this, args).delayed(args.timeout);
+
         };
 
         function _do_hide() {
@@ -339,32 +340,33 @@ DEFINE_CLASS("DlPopup", DlContainer, function(D, P, DOM) {
         };
 
         P.showAt = function(anchor, align, mousePos, shift, fluid) {
+            try {
                 var origpos, p, sa, div = this.getScrollDiv();
                 if (!align)
-                        align = this._align;
+                    align = this._align;
                 if (align == "mouse") {
-                        if (mousePos == null)
-                                mousePos = Object.makeCopy(DlEvent.latestMouseEvent.pos);
-                        origpos = mousePos;
-                        if (this._mouseDiff) {
-                                origpos.x += this._mouseDiff.x;
-                                origpos.y += this._mouseDiff.y;
-                        }
-                        align = {
-                                prefer : "__",
-                                fallX1 : "_R",
-                                fallX2 : "_L",
-                                fallY1 : "B_",
-                                fallY2 : "T_"
-                        };
+                    if (mousePos == null)
+                        mousePos = Object.makeCopy(DlEvent.latestMouseEvent.pos);
+                    origpos = mousePos;
+                    if (this._mouseDiff) {
+                        origpos.x += this._mouseDiff.x;
+                        origpos.y += this._mouseDiff.y;
+                    }
+                    align = {
+                        prefer: "__",
+                        fallX1: "_R",
+                        fallX2: "_L",
+                        fallY1: "B_",
+                        fallY2: "T_"
+                    };
                 } else {
-                        origpos = DOM.getPos(anchor);
-                        if (shift) {
-                                if (shift.x)
-                                        origpos.x += shift.x;
-                                if (shift.y)
-                                        origpos.y += shift.y;
-                        }
+                    origpos = DOM.getPos(anchor);
+                    if (shift) {
+                        if (shift.x)
+                            origpos.x += shift.x;
+                        if (shift.y)
+                            origpos.y += shift.y;
+                    }
                 }
                 sa = DOM.getOuterSize(anchor);
                 p = Object.makeCopy(origpos);
@@ -374,36 +376,40 @@ DEFINE_CLASS("DlPopup", DlContainer, function(D, P, DOM) {
                 this.setPos(-30000, -30000);
                 this.display(true);
                 if (is_ie)
-                        this.getElement().style.width = "";
+                    this.getElement().style.width = "";
                 var r = this._bestPosition(align, p, sa),
-                        h = r.height();
+                    h = r.height();
                 var sph = this.getScrollDiv().offsetHeight;
                 var fuzz = this.getElement().offsetHeight - sph;
                 p = r.getTL();
                 // alert(h+ " -- "+ sp.h);
                 if (h < sph) {
-                        if (fluid) {
-                                this.children(0).setSize({ y: h });
-                        } else {
-                                if (is_ie)
-                                        this.getElement().style.width = div.offsetWidth + "px";
-                                this._scroll_setup();
-                                var
-                                        h1 = this._scroll_el(0).offsetHeight,
-                                        h2 = this._scroll_el(1).offsetHeight;
-                                div.style.height = h - h1 - h2 - fuzz + "px";
-                                this._scrollSetArrowState();
-                                div.scrollTop = 0;
-                        }
+                    if (fluid) {
+                        this.children(0).setSize({y: h});
+                    } else {
+                        if (is_ie)
+                            this.getElement().style.width = div.offsetWidth + "px";
+                        this._scroll_setup();
+                        var
+                            h1 = this._scroll_el(0).offsetHeight,
+                            h2 = this._scroll_el(1).offsetHeight;
+                        div.style.height = h - h1 - h2 - fuzz + "px";
+                        this._scrollSetArrowState();
+                        div.scrollTop = 0;
+                    }
                 }
                 this.correctPos(p);
                 this.setPos(p.x, p.y);
                 if (this._parentPopup) {
-                        var ZI = this._parentPopup.zIndex() + 1;
-                        this.zIndex(ZI);
+                    var ZI = this._parentPopup.zIndex() + 1;
+                    this.zIndex(ZI);
                 }
                 this.visibility(true);
                 this.visible = true;
+            }
+            catch (e) {
+                console.log(e.toString() + ' thrown on empty content TODO: fix_eventually');
+            }
         };
 
         P._bestPosition = function(align, p, sa) {
