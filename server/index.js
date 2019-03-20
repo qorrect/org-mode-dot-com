@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const session = require('express-session');
 const DropboxController = require('./src/controllers/DropboxController.class');
+
 const _path = require('path');
 const stringUtils = require('./src/utils/stringUtils');
 const SESSION_OPTIONS = {
