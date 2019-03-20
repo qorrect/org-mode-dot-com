@@ -149,7 +149,8 @@ Ymacs_Buffer.newMode('minibuffer_mode', function () {
                 let completions = [];
                 for (const f in files) {
                     if (f.indexOf(partial) == 0) {
-                        completions.push(add_trailing_slash_to_dir(f) + getMenuIcon(f));
+                        console.log('Decorate file names in the menu here');
+                        completions.push(add_trailing_slash_to_dir(f) );
                     }
                 }
                 if (completions.length == 0) {

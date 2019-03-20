@@ -19,6 +19,20 @@ a {
     border-radius: 25px;
 }
 
+
+
+#dropbox-warning {
+    font-size: 1em;
+    border: #5a5a5a solid;
+    margin: 0 auto;
+    /*height: 100px;*/
+    width: 500px;
+    padding: 15px 5px 15px 5px;
+    background-color: rgb(215, 215, 215);
+    border-radius: 25px;
+    text-align: left;
+}
+
 #dropboxbtn:hover {
     background-color: #1566ca;
     cursor: pointer;
