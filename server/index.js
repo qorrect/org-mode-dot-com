@@ -31,8 +31,8 @@ process.on('uncaughtException', err => {
 
 });
 
-app.get('/api/file/:path', async (req, res) => {
-    const path = req.params.path;
+app.get('/api/file', async (req, res) => {
+    const path = req.query.path || '';
     let content = '';
     try {
         content = await DropboxController.get(req.session.accessToken).readFile(stringUtils.ensureStartsWithSlash(path));

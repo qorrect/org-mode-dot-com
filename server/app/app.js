@@ -27,7 +27,7 @@ class Application {
 
             const dotYmacsContent = await DAO.get(Strings.DefaultFiles._YMACS);
             if (!dotYmacsContent) {
-                await DAO.put(Strings.DefaultFiles._YMACS, '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font you set in the Options menu\n// Uncomment and run eval_buffer to apply changes\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'14px\'});\n');
+                await DAO.put(Strings.DefaultFiles._YMACS, '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// The next line overrides the font you set in the Options menu, uncomment and run eval_buffer to apply changes\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'14px\'});\n');
             }
 
             const dotYmacs = await ymacs.createOrOpen(Strings.DefaultFiles._YMACS, true);

@@ -43,13 +43,8 @@ class DropboxController extends BaseFileController {
         else return DropboxController.set(accessToken);
     }
 
-    cleanUpPath(path) {
-        return path.replace('//','/');
-    }
+    async readFile(path) {
 
-    async readFile(_path) {
-
-        const path = this.cleanUpPath(_path);
         const data = await this.dropbox.filesDownload({path});
         const blob = data.fileBinary;
         const file = new TextDecoder('utf-8').decode(blob);
