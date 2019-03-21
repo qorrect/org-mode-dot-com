@@ -4,7 +4,7 @@
 
         <!--<p style="text-align: center;text-decoration: underline;">Ymacs Cheat Sheet</p>-->
         <p>
-            Ymacs is a keyboard driven editor that is built on <b>functions</b> ( type <span
+            Ymacs is a keyboard driven editor that is built atop <b>functions</b> ( type <span
                 style="color: darkslategrey;">`M-x TAB`</span> to see a list of all
             functions available ) . These functions can be mapped to keyboard bindings to execute them quickly.
 
@@ -31,7 +31,7 @@
         <h3><u>The Essentials:</u><br/>
         </h3>
         <div style="padding: 10px;">
-            C-x C-c = close_Ymacs  <br/>
+            C-x C-c = close_ymacs  <br/>
             C-g <span>&nbsp;</span> &nbsp;  = cancel <br/>
             M-x <span>&nbsp;</span> &nbsp;  = execute_function <br/>
             C-x C-f = open_file <br/>
@@ -83,12 +83,10 @@
         <h3><u>Copy Functions:</u><br/></h3>
         <div style="padding: 10px;">
             C-SPACE = set_mark_command<br/>
-            C-x x   = kill_region<br/>
-            C-x z   = kill_region_no_killring<br/>
-            C-x c   = copy<br/>
-            C-x v   = paste<br/>
-            C-x b   = paste_second_to_last<br/>
-            C-x n $digit  = paste_nth_copy<br/>
+            M-w     = kill_ring_save<br/>
+            M-q     = copy_region<br/>
+            C-q     = kill_region<br/>
+            C-y     = paste (yank)<br/>
         </div>
     </div>
 </div>

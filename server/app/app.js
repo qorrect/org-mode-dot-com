@@ -27,7 +27,7 @@ class Application {
 
             const dotYmacsContent = await DAO.get(Strings.DefaultFiles._YMACS);
             if (!dotYmacsContent) {
-                await DAO.put(Strings.DefaultFiles._YMACS, '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font you set in the Options menu\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'14px\'});\n');
+                await DAO.put(Strings.DefaultFiles._YMACS, '// Arguments are (ymacs, buffer) \n// ymacs = the running top level application see (docs)\n// buffer = the (.ymacs) buffer  \n// This line overrides the font you set in the Options menu\n// Uncomment and run eval_buffer to apply changes\n// ymacs.getActiveFrame().setStyle({fontFamily: \'Ubuntu Mono\',fontSize: \'14px\'});\n');
             }
 
             const dotYmacs = await ymacs.createOrOpen(Strings.DefaultFiles._YMACS, true);
@@ -390,16 +390,27 @@ function getMenuIcon(path) {
         return '<span style="color: steelblue" class="devicons devicons-javascript"></span> ';
     } else if (suffix === 'md') {
         return '<i class="fab fa-markdown" style="font-size: .8em;"></i> ';
+    } else if (suffix === 'swf') {
+        return '<i class="fab fa-adobe" style="font-size: .8em;"></i> ';
     } else if (suffix === 'org') {
         return '<i class="fas fa-sitemap" style="font-size: .9em;color: lightgray"></i> ';
     } else if (fileName.startsWith('.') || suffix === 'log' || suffix === 'conf' || suffix === 'cfg') {
         return '<i class="far fa-file-alt" style="font-size: .9em;color: lightgray"></i> ';
     } else if (suffix === 'xml' || suffix === 'xsl' || suffix === 'iml' || suffix === 'xslt') {
         return '<i class="fas fa-code" style="font-size: .9em;color: darkslategrey"></i> ';
-    } else if (suffix === 'ico' || suffix === 'png' || suffix === 'jpg' || suffix === 'jpeg') {
+    } else if (suffix === 'ico' || suffix === 'png' || suffix === 'jpg' || suffix === 'jpeg'
+        || suffix === 'svg' || suffix === 'xcf') {
         return '<i class="far fa-image" style="font-size: .9em;color: darkslategrey"></i> ';
     } else if (suffix === 'py' || suffix === 'pyc') {
         return '<span style="color: steelblue" class="devicons devicons-python"></span> ';
+
+    } else if (suffix === 'pl' || suffix === 'pm') {
+        return '<span style="color: rebeccapurple" class="devicons devicons-perl"></span> ';
+
+    } else if (suffix === 'exe' || suffix === 'cgi' || suffix === 'sh' || suffix === 'cmd') {
+        return '<span style="color: black;" class="devicons devicons-terminal"></span> ';
+    } else if (suffix === 'java' || suffix === 'javac') {
+        return '<span style="color: #5181a0;" class="devicons devicon-java-plain"></span> ';
 
     } else if (suffix === 'java' || suffix === 'javac') {
         return '<span style="color: #5181a0;" class="devicons devicon-java-plain"></span> ';
