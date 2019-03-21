@@ -495,7 +495,7 @@ Ymacs_Buffer.newCommands({
 
             const self = this;
             const dlg = new DlDialog({
-                title: 'Wemacs Help', fixed: true, scroll: true, quitBtn: () => {
+                title: 'Ymacs Help', fixed: true, scroll: true, quitBtn: () => {
                     self.__helpDlg = null;
                     dlg.destroy();
                 }

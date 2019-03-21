@@ -30,7 +30,7 @@ log4js.configure(
   }
 );
 
-const loggerFacade = log4js.getLogger('wemacs');
+const loggerFacade = log4js.getLogger('Ymacs');
 
 class LoggerFacade {
   constructor() {
