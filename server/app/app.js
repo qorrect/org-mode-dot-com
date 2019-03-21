@@ -390,7 +390,7 @@ function getMenuIcon(path) {
         return '<span style="color: steelblue" class="devicons devicons-javascript"></span> ';
     } else if (suffix === 'md') {
         return '<i class="fab fa-markdown" style="font-size: .8em;"></i> ';
-    } else if (suffix === 'swf') {
+    } else if (suffix === 'swf' || suffix === 'pdf') {
         return '<i class="fab fa-adobe" style="font-size: .8em;"></i> ';
     } else if (suffix === 'org') {
         return '<i class="fas fa-sitemap" style="font-size: .9em;color: lightgray"></i> ';
